@@ -1,4 +1,11 @@
 package com.example.careplus.data.model
 
-interface Medicationform {
-}
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+data class Medicationform(
+    val id: Long,
+    val name: String,
+    val patient_id: Long?
+) : Parcelable

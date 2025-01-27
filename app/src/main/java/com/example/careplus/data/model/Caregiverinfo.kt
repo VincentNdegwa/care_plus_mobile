@@ -1,4 +1,10 @@
 package com.example.careplus.data.model
 
-class Caregiverinfo {
-}
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+data class Caregiverinfo(
+    val id: Long,
+    val name: String
+) : Parcelable

@@ -21,15 +21,8 @@ class EditMedicationViewModel(application: Application) : AndroidViewModel(appli
     private val _updateResult = MutableLiveData<Result<Unit>>()
     val updateResult: LiveData<Result<Unit>> = _updateResult
 
-    fun loadMedicationDetails(medicationId: Long) {
-        viewModelScope.launch {
-            try {
-                val details = repository.getMedicationById(medicationId)
-                _medicationDetails.value = Result.success(details)
-            } catch (e: Exception) {
-                _medicationDetails.value = Result.failure(e)
-            }
-        }
+    fun setMedicationDetails(details: MedicationDetailResponse) {
+        _medicationDetails.value = Result.success(details)
     }
 
     fun updateMedication(medicationId: Long, updateData: MedicationUpdateRequest) {

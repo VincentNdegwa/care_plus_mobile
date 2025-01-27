@@ -89,10 +89,15 @@ class MedicationDetailFragment : Fragment() {
         }
         
         binding.editDetailsFab.setOnClickListener {
-            val action = MedicationDetailFragmentDirections
-                .actionMedicationDetailToEdit(args.medicationId)
-            findNavController().navigate(action)
-            collapseFabs()
+            viewModel.medication.value?.getOrNull()?.let { medicationDetails ->
+                val action = MedicationDetailFragmentDirections
+                    .actionMedicationDetailToEdit(
+                        medicationId = args.medicationId,
+                        medicationDetails = medicationDetails
+                    )
+                findNavController().navigate(action)
+                collapseFabs()
+            }
         }
         
         binding.deleteFab.setOnClickListener {

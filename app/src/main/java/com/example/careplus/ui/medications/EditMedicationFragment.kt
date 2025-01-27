@@ -30,7 +30,7 @@ class EditMedicationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupToolbar()
-        loadMedicationDetails()
+        setupInitialData()
         setupUpdateButton()
         observeUpdateResult()
     }
@@ -44,8 +44,8 @@ class EditMedicationFragment : Fragment() {
         }
     }
 
-    private fun loadMedicationDetails() {
-        viewModel.loadMedicationDetails(args.medicationId)
+    private fun setupInitialData() {
+        viewModel.setMedicationDetails(args.medicationDetails)
         viewModel.medicationDetails.observe(viewLifecycleOwner) { result ->
             result.onSuccess { medication ->
                 binding.apply {
