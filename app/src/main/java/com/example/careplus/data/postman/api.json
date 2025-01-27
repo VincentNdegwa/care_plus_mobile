@@ -1,0 +1,1683 @@
+{
+	"info": {
+		"_postman_id": "27c1e84a-f5c8-4c18-8f7a-f875c6a96d5d",
+		"name": "CareSync+",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25886411",
+		"_collection_link": "https://restless-astronaut-486543.postman.co/workspace/My-Workspace~0e4381aa-f124-47ef-8ddd-eb487add8248/collection/25886411-27c1e84a-f5c8-4c18-8f7a-f875c6a96d5d?action=share&source=collection_link&creator=25886411"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Logout User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"User should logout\", function(){",
+									"    pm.response.to.have.status(200)",
+									"    const responseJson = pm.response.json()",
+									"",
+									"    pm.expect(responseJson).to.have.property(\"error\")",
+									"    pm.expect(responseJson.error).to.be.false",
+									"    pm.expect(responseJson).to.have.property(\"message\")",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/logout",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Login response should contain token\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const responseJson = pm.response.json();",
+									"",
+									"    pm.expect(responseJson.error).to.be.false;",
+									"    pm.expect(responseJson).to.have.property(\"token\");",
+									"",
+									"    pm.collectionVariables.set(\"authToken\", responseJson.token);",
+									"    ",
+									"    console.log(\"Token saved as collection variable:\", responseJson.token);",
+									"});",
+									"",
+									"pm.test(\"Login message should be 'Login successful'\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.message).to.eql(\"Login successful\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"ndegwavincent7@gmail.com\",\n    \"password\": \"1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/login",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/user",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response should contain token\", function(){",
+									"    pm.response.to.have.status(200)",
+									"    const responseJson = pm.response.json()",
+									"",
+									"    pm.expect(responseJson.error).to.be.false",
+									"    pm.expect(responseJson).to.have.property(\"token\")",
+									"",
+									"    pm.collectionVariables.set(\"authToken\", responseJson.token)",
+									"",
+									"    console.log(\"collection variable authToken saved as: \" + responseJson.token)",
+									"})",
+									"",
+									"pm.test(\"Response has user object\",()=>{",
+									"    let responseJson = pm.response.json()",
+									"",
+									"    pm.expect(responseJson).to.have.property(\"user\")",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"{{$randomUserName}}\",\n  \"email\":\"{{$randomExampleEmail}}\",\n  \"password\": \"1234\",\n  \"password_confirmation\": \"1234\",\n  \"role\":\"Doctor\" //Doctor, Patient, Caregiver\n}\n\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/register",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Request Email Verification",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/email/request-verification",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"email",
+								"request-verification"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/verify-email/:id/:hash?expires=1731449304&signature=a4f7168a69481209ba788ebb7a5bf6caf179d3b2b3f9c201829b1a23ae375e27",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"verify-email",
+								":id",
+								":hash"
+							],
+							"query": [
+								{
+									"key": "expires",
+									"value": "1731449304"
+								},
+								{
+									"key": "signature",
+									"value": "a4f7168a69481209ba788ebb7a5bf6caf179d3b2b3f9c201829b1a23ae375e27"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "hash",
+									"value": "c4d964afe07afe393ac2cc9b029f929613bfe262"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"8aff5eeb0cc44ffa71294372f9d880a9f09d08dd71a480bbd68aaf24f54073bb\", //\"required|string\"\n  \"email\": \"ndegwavincent07@gmail.com\", //\"required|string\"\n  \"password\": \"1234\",  //\"required|string\"\n  \"password_confirmation\": \"1234\" // //\"required|string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/reset-password",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"reset-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"Rosalia.Parisian36@example.net\" //required|string\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/forgot-password",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"forgot-password"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Personal Profile",
+			"item": [
+				{
+					"name": "Update Personal Profile",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"gender\": \"\", //'nullable|in:male,female,other'\n    \"date_of_birth\": \"\", //\"nullable|date\"\n    \"address\": \"{{$randomStreetAddress}}\", //\"nullable|string\"\n    \"phone_number\": \"{{$randomPhoneNumber}}\", //\"nullable|string\"\n    \"avatar\": \"{{$randomAvatarImage}}\" //\"nullable|string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/profile",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Personal Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/profile",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"profile"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Doctor Request",
+			"item": [
+				{
+					"name": "Professional Profile",
+					"item": [
+						{
+							"name": "Doctor Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let response = pm.response.json();",
+											"",
+											"pm.test(\"Error field is false\", function () {",
+											"    pm.expect(response.error).to.eql(false);",
+											"});",
+											"",
+											"pm.test(\"Data object is present\", function () {",
+											"    pm.expect(response).to.have.property(\"data\");",
+											"});",
+											"",
+											"if (response.data && response.data.id) {",
+											"    pm.collectionVariables.set(\"doctorId\", response.data.id);",
+											"} ",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrls}}/user/doctor",
+									"host": [
+										"{{baseUrls}}"
+									],
+									"path": [
+										"user",
+										"doctor"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Doctor Professional Profile",
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"specialization\": \"Cardiologist\", //\"required|string\"\n    \"qualifications\": \"BSc Medicine\", //\"required|string\"\n    \"active\": \"\", //\"nullable|boolean\"\n    \"license_number\": \"{{$randomUUID}}\", //\"required|string\"\n    \"license_issuing_body\": \"WHO\", //\"required|string\"\n    \"clinic_name\": \"General Hosptial Nairobi\",  //\"required|string\"\n    \"clinic_address\": \"{{$randomStreetAddress}}\"  //\"required|string\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrls}}/user/doctor",
+									"host": [
+										"{{baseUrls}}"
+									],
+									"path": [
+										"user",
+										"doctor"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Diagnosis",
+					"item": [
+						{
+							"name": "Create New Diagnosis",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status CODE 200\", () => {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response has no error\", ()=>{",
+											"    let responseJson = pm.response.json();",
+											"    pm.expect(responseJson).to.have.property('error'); ",
+											"})",
+											"",
+											"pm.test(\"Response has data\", ()=>{",
+											"    let responseJson = pm.response.json();",
+											"    pm.expect(responseJson).to.have.property('data'); ",
+											"    let data = responseJson.data",
+											"    pm.expect(data).to.have.property(\"id\")",
+											"    pm.collectionVariables.set(\"diagnosisId\", data.id)",
+											"    pm.collectionVariables.set(\"patientId\",data.patient_id)",
+											"    pm.collectionVariables.set(\"doctorId\", data.doctor_id)",
+											"})",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"patient_id\": {{patientId}},                    //\"required|exists:patients,id\",\n    \"diagnosis_name\": \"Malaria\",          // \"required\",\n    \"description\": \"\",                    //\"nullable|string\",\n    \"symptoms\": \"\",                       //\"nullable|string\",\n    \"date_diagnosed\": \"2024-11-21\"        //\"required|date\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrls}}/diagnosis/create",
+									"host": [
+										"{{baseUrls}}"
+									],
+									"path": [
+										"diagnosis",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Diagnosis",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status CODE 200\", () => {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test('Return true response', ()=>{",
+											"    let response = pm.response.json()",
+											"    pm.expect(response).to.have.property(\"error\", false);",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"diagnosis_name\": \"Flu\",                                 // sometimes|string; example: \"Flu\"\n  \"description\": \"A common viral infection affecting the respiratory system.\", // sometimes|string; example: \"A detailed description of the diagnosis\"\n  \"symptoms\": \"Fever, Cough, Sore Throat\",                // sometimes|string; example: \"Fever, Cough, Sore Throat\"\n  \"date_diagnosed\": \"2025-01-11\"                          // sometimes|date; must be a valid date in the format YYYY-MM-DD\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrls}}/diagnosis/update/{{diagnosisId}}",
+									"host": [
+										"{{baseUrls}}"
+									],
+									"path": [
+										"diagnosis",
+										"update",
+										"{{diagnosisId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Diagnosis",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status CODE 200\", () => {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test('Return true response', ()=>{",
+											"    let response = pm.response.json()",
+											"    pm.expect(response).to.have.property(\"error\", false);",
+											"    pm.collectionVariables.unset(\"diagnosisId\");",
+											"})",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrls}}/diagnosis/delete/{{diagnosisId}}",
+									"host": [
+										"{{baseUrls}}"
+									],
+									"path": [
+										"diagnosis",
+										"delete",
+										"{{diagnosisId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Patient Request",
+			"item": []
+		},
+		{
+			"name": "Caregiver Request",
+			"item": [
+				{
+					"name": "Professional Profile",
+					"item": [
+						{
+							"name": "Caregiver Profile",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrls}}/user/caregiver",
+									"host": [
+										"{{baseUrls}}"
+									],
+									"path": [
+										"user",
+										"caregiver"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Caregiver Professional Profile",
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"specialization\": \"\",  //\"nullable|string\"\n    \"agency_name\": \"{{$randomCompanyName}}\", //\"required|string\"\n    \"agency_contact\": \"{{$randomPhoneNumber}}\" //\"required|string\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrls}}/user/caregiver",
+									"host": [
+										"{{baseUrls}}"
+									],
+									"path": [
+										"user",
+										"caregiver"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Diagnosis",
+			"item": [
+				{
+					"name": "Get Diagnosis By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/diagnosis/:id",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"diagnosis",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{diagnosisId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Diagnoses By Doctor",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/diagnosis/doctor/:doctor_id?per_page=1&page_number=1",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"diagnosis",
+								"doctor",
+								":doctor_id"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "1"
+								},
+								{
+									"key": "page_number",
+									"value": "1"
+								}
+							],
+							"variable": [
+								{
+									"key": "doctor_id",
+									"value": "{{doctorId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Diagnoses By Patient",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/diagnosis/patient/:patient_id?per_page=1&page_number=2",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"diagnosis",
+								"patient",
+								":patient_id"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "1"
+								},
+								{
+									"key": "page_number",
+									"value": "2"
+								}
+							],
+							"variable": [
+								{
+									"key": "patient_id",
+									"value": "{{patientId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Diagnoses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/diagnosis/search/:doctor_or_patient?search=Malaria&per_page=10&page_number=1",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"diagnosis",
+								"search",
+								":doctor_or_patient"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "Malaria"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								},
+								{
+									"key": "page_number",
+									"value": "1"
+								}
+							],
+							"variable": [
+								{
+									"key": "doctor_or_patient",
+									"value": "{{patientId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Diagnosis",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"date_from\": \"\",                // \"nullable|date|before:date_to\" - Optional, must be a valid date and earlier than `date_to` if provided\n    \"date_to\": \"\",                  // \"nullable|date|after:date_from\" - Optional, must be a valid date and later than `date_from` if provided\n    \"diagnosis_name\": \"Malaria\",    // \"nullable|string\" - Optional, must be a string if provided\n    \"patient_id\": {{patientId}},    // \"nullable|integer|required_without:doctor_id\" - Optional, must be an integer and required if `doctor_id` is not provided\n    \"doctor_id\": null               // \"nullable|integer|required_without:patient_id\" - Optional, must be an integer and required if `patient_id` is not provided\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/diagnosis/filter",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"diagnosis",
+								"filter"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Medications",
+			"item": [
+				{
+					"name": "Create New Medication",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();",
+									"",
+									"pm.test(\"API call successful\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"    pm.expect(response.error).to.be.false;",
+									"    pm.expect(response.message).to.equal(\"Medication record created successfully.\");",
+									"});",
+									"",
+									"if (response.data && response.data.id) {",
+									"    pm.collectionVariables.set(\"medicationId\", response.data.id);",
+									"    console.log(\"Medication ID set in collection variable: \" + response.data.id);",
+									"} else {",
+									"    console.error(\"Medication ID not found in response!\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patient_id\": {{patientId}},                                         // required|integer; must exist in patients table\n  \"diagnosis_id\": null,                                       // nullable|integer; must exist in diagnoses table if provided\n  \"medication_name\": \"Amoxicillin\",                        // required|string; example: \"Amoxicillin\"\n  \"dosage_quantity\": \"1\",                                  // required|string; example: \"1\"\n  \"dosage_strength\": \"500mg\",                              // required|string; example: \"500mg\"\n  \"form_id\": 3,                                            // nullable|integer; must exist in medication_forms table if provided\n  \"route_id\": 2,                                           // nullable|integer; must exist in medication_routes table if provided\n  \"frequency\": \"Three times a day\",                              // required|string; example: \"Twice a day\"\n  \"duration\": \"60 days\",                                    // nullable|string; example: \"7 days\"\n  \"prescribed_date\": null,                                 // nullable|date; must be a valid date if provided\n  \"stock\": 20                                              // nullable|integer|min:0; example: 20\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/medications/create",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Medication Forms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/medications/medication-resources/forms",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"medication-resources",
+								"forms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Medication Routes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/medications/medication-resources/routes",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"medication-resources",
+								"routes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Medication Units",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/medications/medication-resources/units",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"medication-resources",
+								"units"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Medical Frequencies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/medications/medication-resources/frequencies",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"medication-resources",
+								"frequencies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Default Schedule Medication",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"medication_id\": {{medicationId}},\n    \"start_datetime\": \"2025-01-25 14:00:00\"                            //Required|datetime\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/medications/schedule/default",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"schedule",
+								"default"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Schedule Medication",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"medication_id\": {{medicationId}},                            //required\n    \"schedules\": [\"05:00\",\"12:00\", \"15:00\"],                       //required|array|items_should_be_time eg 12:00, 15:00 \n    \"start_datetime\": \"2025-01-17 14:00:00\"                            //Required|datetime\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/medications/schedule/custom",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"schedule",
+								"custom"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Medication By Patient",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"patient_id\": 2,                      // required | exists:patients,id\n    \"per_page\": {{perPage}},                          // optional | integer|min:1\n    \"page_number\": {{pageNumber}}                     // optional | integer|min:1\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/medications/fetch/by-patient",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"fetch",
+								"by-patient"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Medication By Doctor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"doctor_id\": {{doctorId}},                        // required | exists:doctors,id\n    \"per_page\": {{perPage}},                          // optional | integer|min:1\n    \"page_number\": {{pageNumber}}                     // optional | integer|min:1\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/medications/fetch/by-doctor",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"fetch",
+								"by-doctor"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Medication",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"patient_id\": null,                      // optional | exists:patients,id\n    \"diagnosis_id\": null,                    // optional | exists:diagnoses,id\n    \"medication_name\": null,                 // optional | string\n    \"form_id\": null,                         // optional | exists:medication_forms,id\n    \"unit_id\": null,                         // optional | exists:medication_units,id\n    \"route_id\": null,                        // optional | exists:medication_routes,id\n    \"doctor_id\": null,                       // optional | exists:doctors,id\n    \"caregiver_id\": null,                    // optional | exists:caregivers,id\n    \"frequency\": null,                       // optional | string\n    \"duration\": null,                        // optional | string\n    \"active\": null,                          // optional | boolean\n    \"stock_min\": null,                       // optional | integer|min:0\n    \"stock_max\": null,                       // optional | integer|min:0\n    \"prescribed_date_from\": null,            // optional | date\n    \"prescribed_date_to\": null,              // optional | date|after_or_equal:prescribed_date_from\n    \"per_page\": null,                        // optional | integer|min:1\n    \"page_number\": null                      // optional | integer|min:1\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/medications/fetch/filter",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"fetch",
+								"filter"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Medication By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/medications/:medication_id",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								":medication_id"
+							],
+							"variable": [
+								{
+									"key": "medication_id",
+									"value": "{{medicationId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Medication",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status CODE 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Return true response', ()=>{",
+									"    let response = pm.response.json()",
+									"    pm.expect(response).to.have.property(\"error\", false);",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"diagnosis_id\": {{diagnosisId}},                                  // nullable|exists:diagnoses,id; must be a valid diagnosis ID if provided\n  \"medication_name\": \"Sertraline\",                       // required|string; example: \"Amoxicillin\"\n  \"dosage_quantity\": \"1\",                                 // required|string|max:255; example: \"1\"\n  \"dosage_strength\": \"500mg\",                             // required|string|max:255; example: \"500mg\"\n  \"form_id\": null,                                        // nullable|exists:medication_forms,id; must be a valid form ID if provided\n  \"route_id\": null,                                       // nullable|exists:medication_routes,id; must be a valid route ID if provided\n  \"frequency\": \"2 times per day\",                         // required|string|max:255; example: \"2 times per day\"\n  \"duration\": \"7 days\",                                   // nullable|string|max:255; example: \"7 days\"\n  \"prescribed_date\": \"2025-01-11\",                        // nullable|date; example: \"2025-01-11\"\n  \"stock\": 20                                             // nullable|integer|min:0; example: 20\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/medications/update/{{medicationId}}",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"update",
+								"{{medicationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Medication",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status CODE 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Return true response', ()=>{",
+									"    let response = pm.response.json()",
+									"    pm.expect(response).to.have.property(\"error\", false);",
+									"    pm.collectionVariables.unset(\"diagnosisId\");",
+									"})",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/medications/delete/{{medicationId}}",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medications",
+								"delete",
+								"{{medicationId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "SideEffects",
+			"item": [
+				{
+					"name": "Create SideEffect",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"200 Status code\", ()=>{",
+									"    pm.response.to.have.status(200)",
+									"})",
+									"",
+									"pm.test(\"No error and created\",()=>{",
+									"    let jsonResponse = pm.response.json()",
+									"    pm.expect(jsonResponse).to.have.property(\"error\", false)",
+									"",
+									"})",
+									"pm.test(\"Response to have side-effect object\", ()=>{",
+									"    let jsonResponse = pm.response.json()",
+									"    pm.expect(jsonResponse).to.have.property(\"side_effect\")",
+									"    pm.collectionVariables.set(\"sideEffectId\", jsonResponse.side_effect.id)",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"medication_id\": {{medicationId}},                                     // required|exists:medications,id; must be a valid medication ID\n  \"datetime\": \"2025-01-11 12:33:26\",                     // required|date; must be a valid date and time\n  \"side_effect\": \"Nausea\",                                // required|string; example: \"Nausea\"\n  \"severity\": \"moderate\",                                 // required|in:mild,moderate,severe; example: \"moderate\"\n  \"duration\": null,                                       // nullable|integer; example: 5 (in hours or minutes, based on context)\n  \"notes\": null                                           // nullable|string; example: \"Patient reported feeling better after rest\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/side-effects/create",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"side-effects",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch SideEffects",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patient_id\": {{patientId}},                             // required|integer|exists:patients,id; must be a valid patient ID\n  \"medication_id\": null,                                   // nullable|integer|exists:medications,id; must be a valid medication ID if provided\n  \"severity\": null,                                        // nullable|in:mild,moderate,severe; example: \"mild\", \"moderate\", or \"severe\"\n  \"from_datetime\": null,                                 // nullable|date|before_or_equal:to_datetime; must be a valid date in the format YYYY-MM-DD HH:MM:SS\n  \"to_datetime\": null,                                   // nullable|date|after_or_equal:from_datetime; must be a valid date in the format YYYY-MM-DD HH:MM:SS\n  \"per_page\": 10,                                          // nullable|integer|min:1|max:100; example: 10\n  \"page_number\": 1                                         // nullable|integer|min:1; example: 1\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/side-effects/fetch",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"side-effects",
+								"fetch"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Side Effect By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/side-effects/{{sideEffectId}}",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"side-effects",
+								"{{sideEffectId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update SideEffects",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check response structure\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property(\"error\");",
+									"    pm.expect(response.error).to.be.false;",
+									"    pm.expect(response).to.have.property(\"message\", \"Side Effect Updated successfully\");",
+									"    pm.expect(response).to.have.property(\"side_effect\");",
+									"    pm.expect(response.side_effect).to.be.an(\"object\");",
+									"    pm.expect(response.side_effect).to.have.property(\"datetime\");",
+									"    pm.expect(response.side_effect).to.have.property(\"side_effect\");",
+									"    pm.expect(response.side_effect).to.have.property(\"severity\");",
+									"    pm.expect(response.side_effect).to.have.property(\"duration\");",
+									"    pm.expect(response.side_effect).to.have.property(\"notes\");",
+									"});",
+									"",
+									"pm.test(\"Check updated side effect details\", function () {",
+									"    const response = pm.response.json();",
+									"    const requestBody = pm.request.body ? JSON.parse(pm.request.body.raw) : {};",
+									"",
+									"    pm.expect(response.side_effect.datetime).to.equal(requestBody.datetime);",
+									"    pm.expect(response.side_effect.side_effect).to.equal(requestBody.side_effect);",
+									"    pm.expect(response.side_effect.severity).to.equal(requestBody.severity);",
+									"    pm.expect(response.side_effect.notes).to.equal(requestBody.notes);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"datetime\": \"2025-01-11 12:33:26\",                      // required|date; must be a valid date in the format YYYY-MM-DD HH:MM:SS\n  \"side_effect\": \"Nausea\",                                // required|string; example: \"Nausea\"\n  \"severity\": \"moderate\",                                 // required|in:mild,moderate,severe; example: \"mild\", \"moderate\", or \"severe\"\n  \"duration\": 120,                                        // nullable|integer; example: 120 (duration in minutes or hours as per your requirement)\n  \"notes\": \"Patient reported nausea after taking medication.\" // nullable|string; example: \"Detailed notes about the observation\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/side-effects/update/{{sideEffectId}}",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"side-effects",
+								"update",
+								"{{sideEffectId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete SideEffect",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has correct success message\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.message).to.eql('Side Effect Deleted');",
+									"    pm.expect(responseJson.error).to.eql(false);",
+									"});",
+									"",
+									"pm.test(\"Side Effect Not Found returns correct error\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.message === 'Side Effects Not Found') {",
+									"        pm.expect(responseJson.error).to.eql(true);",
+									"        pm.expect(responseJson.message).to.eql('Side Effects Not Found');",
+									"    }",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/side-effects/delete/{{sideEffectId}}",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"side-effects",
+								"delete",
+								"{{sideEffectId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "CareProviders",
+			"item": [
+				{
+					"name": "Fetch Patient Doctors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/care-providers/fetch-patient-doctors/{{patientId}}",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"care-providers",
+								"fetch-patient-doctors",
+								"{{patientId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Patient Caregivers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/care-providers/fetch-patient-caregivers/{{patientId}}",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"care-providers",
+								"fetch-patient-caregivers",
+								"{{patientId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Patient Doctor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"doctor_id\": {{doctorId}},                                         // required|exists:doctors,id; must be a valid doctor ID\n  \"patient_id\": {{patientId}},                                        // required|exists:patients,id; must be a valid patient ID\n  \"isMain\": false                                                      // nullable|boolean; example: true or false\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/care-providers/set-doctor",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"care-providers",
+								"set-doctor"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Patient Care Giver",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"caregiver_id\":1 ,                                      // required|exists:caregivers,id; must be a valid caregiver ID\n  \"patient_id\": {{patientId}},                                        // required|exists:patients,id; must be a valid patient ID\n  \"relation\": \"Parent\"                                    // required|string; example: \"Parent\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/care-providers/set-caregiver",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"care-providers",
+								"set-caregiver"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Patient Caregiver Relation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"caregiver_id\": 1,                                       // required|exists:caregivers,id; must be a valid caregiver ID\n  \"patient_id\": {{patientId}}                                          // required|exists:patients,id; must be a valid patient ID\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/care-providers/remove-caregiver",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"care-providers",
+								"remove-caregiver"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Patient Doctor Relation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"doctor_id\": {{doctorId}},                                         // required|exists:doctors,id; must be a valid doctor ID\n  \"patient_id\": {{patientId}}                                        // required|exists:patients,id; must be a valid patient ID\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/care-providers/remove-doctor",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"care-providers",
+								"remove-doctor"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Medication Schedules",
+			"item": [
+				{
+					"name": "Fetch Patients Medication Schedules By Date",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"patient_id\": {{patientId}},              // \"required|exists:patients,id\" - Required, must match an existing patient ID in the 'patients' table\n    \"start_date\": \"2025-01-17 17:20:00\",     // \"required|date\" - Required, must be a valid date\n    \"end_date\": \"2025-01-21 11:00:00\"        // \"required|date\" - Required, must be a valid date\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrls}}/medication-schedules/fetch",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medication-schedules",
+								"fetch"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Today's Patient Medication Schedule",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrls}}/medication-schedules/2?today_date=2025-01-26",
+							"host": [
+								"{{baseUrls}}"
+							],
+							"path": [
+								"medication-schedules",
+								"2"
+							],
+							"query": [
+								{
+									"key": "today_date",
+									"value": "2025-01-26"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrls",
+			"value": "https://care.tech360.systems/v1",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": ""
+		},
+		{
+			"key": "devUrl",
+			"value": "http://127.0.0.1:8000/v1",
+			"type": "string"
+		},
+		{
+			"key": "prodUrl",
+			"value": "https://care.tech360.systems/v1",
+			"type": "string"
+		},
+		{
+			"key": "doctorId",
+			"value": ""
+		},
+		{
+			"key": "patientId",
+			"value": ""
+		},
+		{
+			"key": "medicationId",
+			"value": ""
+		},
+		{
+			"key": "perPage",
+			"value": "10",
+			"type": "string"
+		},
+		{
+			"key": "pageNumber",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "diagnosisId",
+			"value": ""
+		},
+		{
+			"key": "sideEffectId",
+			"value": ""
+		}
+	]
+}

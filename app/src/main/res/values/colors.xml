@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#454BE7</color>
+    <color name="primary_variant">#3238B0</color>
+    <color name="secondary">#6065EA</color>
+    <color name="secondary_variant">#7A7EEC</color>
+    <color name="accent">#FFB74D</color>
+    
+    <!-- Light Theme Colors -->
+    <color name="background_light">#FFFFFF</color>
+    <color name="surface_light">#FFFFFF</color>
+    <color name="text_primary_light">#0F172A</color>  <!-- slate-900 -->
+    <color name="text_secondary_light">#334155</color> <!-- slate-700 -->
+    <color name="card_light">#FFFFFF</color>
+    <color name="divider_light">#E0E0E0</color>
+    
+    <!-- Common Colors -->
+    <color name="error">#B00020</color>
+    <color name="success">#4CAF50</color>
+    <color name="transparent">#00000000</color>
+</resources>
