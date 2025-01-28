@@ -17,7 +17,7 @@ data class MedicationDetailResponse(
     val prescribed_date: String,
     val doctor: Doctorinfo?,
     val caregiver: Caregiverinfo?,
-    val stock: Int,
+    val stock: Int?,
     val active: Int,
-    val diagnosis: String?
+    val diagnosis: Diagnosisinfo?
 ) : Parcelable

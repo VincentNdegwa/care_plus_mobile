@@ -6,7 +6,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.careplus.data.SessionManager
-import com.example.careplus.data.model.MedicationDetailResponse
+import com.example.careplus.data.model.MedicationDetails
+import com.example.careplus.data.model.MedicationFormResource
+import com.example.careplus.data.model.MedicationFrequencyResource
+import com.example.careplus.data.model.MedicationRouteResource
+import com.example.careplus.data.model.MedicationUnitResource
 import com.example.careplus.data.model.MedicationUpdateRequest
 import com.example.careplus.data.repository.MedicationRepository
 import kotlinx.coroutines.launch
@@ -15,20 +19,53 @@ class EditMedicationViewModel(application: Application) : AndroidViewModel(appli
     private val sessionManager = SessionManager(application)
     private val repository = MedicationRepository(sessionManager)
 
-    private val _medicationDetails = MutableLiveData<Result<MedicationDetailResponse>>()
-    val medicationDetails: LiveData<Result<MedicationDetailResponse>> = _medicationDetails
+    private val _medicationDetails = MutableLiveData<Result<MedicationDetails>>()
+    val medicationDetails: LiveData<Result<MedicationDetails>> = _medicationDetails
 
     private val _updateResult = MutableLiveData<Result<Unit>>()
     val updateResult: LiveData<Result<Unit>> = _updateResult
 
-    fun setMedicationDetails(details: MedicationDetailResponse) {
+    private val _forms = MutableLiveData<Result<List<MedicationFormResource>>>()
+    val forms: LiveData<Result<List<MedicationFormResource>>> = _forms
+
+    private val _routes = MutableLiveData<Result<List<MedicationRouteResource>>>()
+    val routes: LiveData<Result<List<MedicationRouteResource>>> = _routes
+
+    private val _units = MutableLiveData<Result<List<MedicationUnitResource>>>()
+    val units: LiveData<Result<List<MedicationUnitResource>>> = _units
+
+    private val _frequencies = MutableLiveData<Result<List<MedicationFrequencyResource>>>()
+    val frequencies: LiveData<Result<List<MedicationFrequencyResource>>> = _frequencies
+
+    init {
+        loadMedicationResources()
+    }
+
+    private fun loadMedicationResources() {
+        viewModelScope.launch {
+            try {
+                _forms.value = Result.success(repository.getMedicationForms())
+                _routes.value = Result.success(repository.getMedicationRoutes())
+                _units.value = Result.success(repository.getMedicationUnits())
+                _frequencies.value = Result.success(repository.getMedicationFrequencies())
+            } catch (e: Exception) {
+                // If any resource fails to load, we'll show the error in the UI
+                _forms.value = Result.failure(e)
+                _routes.value = Result.failure(e)
+                _units.value = Result.failure(e)
+                _frequencies.value = Result.failure(e)
+            }
+        }
+    }
+
+    fun setMedicationDetails(details: MedicationDetails) {
         _medicationDetails.value = Result.success(details)
     }
 
-    fun updateMedication(medicationId: Long, updateData: MedicationUpdateRequest) {
+    fun updateMedication(medicationId: Int, updateData: MedicationUpdateRequest) {
         viewModelScope.launch {
             try {
-                repository.updateMedication(medicationId, updateData)
+                repository.updateMedication(medicationId.toLong(), updateData)
                 _updateResult.value = Result.success(Unit)
             } catch (e: Exception) {
                 _updateResult.value = Result.failure(e)

@@ -12,6 +12,8 @@ import com.example.careplus.databinding.FragmentMedicationDetailBinding
 import com.example.careplus.utils.SnackbarUtils
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import com.example.careplus.data.model.MedicationDetails
+import com.example.careplus.data.model.MedicationDetailResponse
 
 class MedicationDetailFragment : Fragment() {
     private var _binding: FragmentMedicationDetailBinding? = null
@@ -31,54 +33,45 @@ class MedicationDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupObservers()
-        viewModel.fetchMedicationDetails(args.medicationId)
         setupFabs()
+        
+        // Use the medication details from arguments directly
+        displayMedicationDetails(args.medicationDetails)
+        
+        // Pass the data to ViewModel for any future operations
+        viewModel.setMedicationDetails(args.medicationDetails)
     }
 
-    private fun setupObservers() {
-        viewModel.medication.observe(viewLifecycleOwner) { result ->
-            result.onSuccess { medication ->
-                binding.apply {
-                    toolbar.setPageTitle(medication.medication_name)
-                    
-                    dosageText.text = "${medication.dosage_quantity} ${medication.dosage_strength}"
-                    formText.text = medication.form.name
-                    routeText.text = medication.route.name
-                    frequencyText.text = medication.frequency
-                    durationText.text = medication.duration
-                    stockText.text = "${medication.stock} units remaining"
-                    
-                    // Format prescribed date
-                    val prescribedDate = LocalDateTime.parse(
-                        medication.prescribed_date.replace(" ", "T")
-                    ).format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
-                    prescribedDateText.text = prescribedDate
+    private fun displayMedicationDetails(medication: MedicationDetails) {
+        binding.apply {
+            toolbar.setPageTitle(medication.medication_name)
+            dosageText.text = "${medication.dosage_quantity} ${medication.dosage_strength}"
+            formText.text = medication.form.name
+            routeText.text = medication.route.name
+            frequencyText.text = medication.frequency
+            durationText.text = medication.duration
+            stockText.text = "${medication.stock} units remaining"
+            
+            // Format prescribed date
+            val prescribedDate = LocalDateTime.parse(
+                medication.prescribed_date.replace(" ", "T")
+            ).format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
+            prescribedDateText.text = prescribedDate
 
-                    // Show doctor info if available
-                    medication.doctor?.let { doctor ->
-                        doctorNameText.text = doctor.name
-                        doctorContainer.visibility = View.VISIBLE
-                    } ?: run {
-                        doctorContainer.visibility = View.GONE
-                    }
+            // Show doctor info if available
+            medication.doctor?.let { doctor ->
+                doctorNameText.text = doctor.name
+                doctorContainer.visibility = View.VISIBLE
+            } ?: run {
+                doctorContainer.visibility = View.GONE
+            }
 
-                    // Show diagnosis if available
-                    medication.diagnosis?.let { diagnosis ->
-                        diagnosisText.text = diagnosis
-                        diagnosisContainer.visibility = View.VISIBLE
-                    } ?: run {
-                        diagnosisContainer.visibility = View.GONE
-                    }
-
-                    // Show route description
-                    routeDescriptionText.text = medication.route.description
-                }
-            }.onFailure { exception ->
-                SnackbarUtils.showSnackbar(
-                    binding.root, 
-                    exception.message ?: "Error loading medication details"
-                )
+            // Show diagnosis if available
+            medication.diagnosis?.let { diagnosis ->
+                diagnosisText.text = diagnosis
+                diagnosisContainer.visibility = View.VISIBLE
+            } ?: run {
+                diagnosisContainer.visibility = View.GONE
             }
         }
     }
@@ -89,15 +82,12 @@ class MedicationDetailFragment : Fragment() {
         }
         
         binding.editDetailsFab.setOnClickListener {
-            viewModel.medication.value?.getOrNull()?.let { medicationDetails ->
-                val action = MedicationDetailFragmentDirections
-                    .actionMedicationDetailToEdit(
-                        medicationId = args.medicationId,
-                        medicationDetails = medicationDetails
-                    )
-                findNavController().navigate(action)
-                collapseFabs()
-            }
+            findNavController().navigate(
+                MedicationDetailFragmentDirections.actionMedicationDetailToEdit(
+                    args.medicationDetails.id.toInt(),
+                    args.medicationDetails
+                )
+            )
         }
         
         binding.deleteFab.setOnClickListener {

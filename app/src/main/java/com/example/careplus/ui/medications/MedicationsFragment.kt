@@ -33,7 +33,7 @@ class MedicationsFragment : Fragment() {
     }
     private val medicationsAdapter = MedicationsAdapter { medication ->
         findNavController().navigate(
-            MedicationsFragmentDirections.actionMedicationsToMedicationDetail(medication.id)
+            MedicationsFragmentDirections.actionMedicationsToMedicationDetail(medication)
         )
     }
 

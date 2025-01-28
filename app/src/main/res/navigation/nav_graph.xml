@@ -57,8 +57,8 @@
         android:name="com.example.careplus.ui.medications.MedicationDetailFragment"
         android:label="Medication Details">
         <argument
-            android:name="medicationId"
-            app:argType="long" />
+            android:name="medicationDetails"
+            app:argType="com.example.careplus.data.model.MedicationDetails" />
         <action
             android:id="@+id/actionMedicationDetailToEdit"
             app:destination="@id/editMedicationFragment" />
@@ -70,10 +70,10 @@
         android:label="Edit Medication">
         <argument
             android:name="medicationId"
-            app:argType="long" />
+            app:argType="integer" />
         <argument
             android:name="medicationDetails"
-            app:argType="com.example.careplus.data.model.MedicationDetailResponse" />
+            app:argType="com.example.careplus.data.model.MedicationDetails" />
     </fragment>
 
 </navigation> 

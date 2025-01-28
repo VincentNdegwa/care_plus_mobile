@@ -1,11 +1,15 @@
 package com.example.careplus.data.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
 data class MedicationListResponse(
     val error: Boolean,
     val data: List<MedicationDetails>?,
     val pagination: PaginationData?
 )
 
+@Parcelize
 data class MedicationDetails(
     val id: Long,
     val patient: PatientInfo,
@@ -22,26 +26,29 @@ data class MedicationDetails(
     val stock: Int,
     val active: Int,
     val diagnosis: String?
-)
+) : Parcelable
 
+@Parcelize
 data class PatientInfo(
-    val patient_id: Int,
+    val patient_id: Long,
     val name: String,
     val email: String,
     val avatar: String?
-)
+) : Parcelable
 
+@Parcelize
 data class MedicationForm(
-    val id: Int,
+    val id: Long,
     val name: String,
-    val patient_id: Int?
-)
+    val patient_id: Long?
+) : Parcelable
 
+@Parcelize
 data class MedicationRoute(
-    val id: Int,
+    val id: Long,
     val name: String,
     val description: String
-)
+) : Parcelable
 
 data class PaginationData(
     val current_page: Int,
@@ -50,12 +57,14 @@ data class PaginationData(
     val per_page: Int
 )
 
+@Parcelize
 data class DoctorInfo(
-    val id: Int,
+    val id: Long,
     val name: String
-)
+) : Parcelable
 
+@Parcelize
 data class CaregiverInfo(
-    val id: Int,
+    val id: Long,
     val name: String
-) 
+) : Parcelable 
