@@ -11,68 +11,56 @@ import android.view.Gravity
 import androidx.core.view.GravityCompat
 import android.graphics.Color
 import android.os.Build
+import androidx.navigation.NavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import android.view.ViewGroup
 
 class MainActivity : AppCompatActivity() {
-    internal lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
     private lateinit var sessionManager: SessionManager
+    private lateinit var navController: NavController
+    private lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Handle system insets
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(false)
-        } else {
-            @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        }
-
         // Set navigation bar color to transparent
         window.navigationBarColor = Color.TRANSPARENT
 
         sessionManager = SessionManager(this)
 
+        // Get NavController using NavHostFragment
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
+        navController = navHostFragment.navController
 
-        // Add destination changed listener to handle both navigation and bottom nav
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.loginFragment, R.id.registerFragment, R.id.forgotPasswordFragment -> {
-                    binding.bottomNav.visibility = View.GONE
-                }
-                R.id.homeFragment -> {
-                    binding.bottomNav.visibility = View.VISIBLE
-                    binding.bottomNav.selectedItemId = R.id.navigation_home
-                }
-                R.id.medicationsFragment -> {
-                    binding.bottomNav.visibility = View.VISIBLE
-                    binding.bottomNav.selectedItemId = R.id.navigation_medications
-                }
-            }
-        }
+        appBarConfiguration = AppBarConfiguration(
+            setOf(
+                R.id.homeFragment,
+                R.id.medicationsFragment,
+                R.id.caregiversFragment
+            )
+        )
 
-        // Setup bottom navigation clicks
+        // Setup bottom navigation with custom listener
+        binding.bottomNav.setupWithNavController(navController)
         binding.bottomNav.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.navigation_home -> {
-                    if (navController.currentDestination?.id != R.id.homeFragment) {
-                        navController.navigate(R.id.homeFragment)
-                    }
+                R.id.homeFragment -> {
+                    navController.navigate(R.id.homeFragment)
                     true
                 }
-                R.id.navigation_medications -> {
-                    if (navController.currentDestination?.id != R.id.medicationsFragment) {
-                        navController.navigate(R.id.medicationsFragment)
-                    }
+                R.id.medicationsFragment -> {
+                    navController.navigate(R.id.medicationsFragment)
                     true
                 }
-                R.id.navigation_profile -> {
-                    // TODO: Navigate to profile
+                R.id.caregiversFragment -> {
+                    navController.navigate(R.id.caregiversFragment)
                     true
                 }
                 R.id.navigation_more -> {
@@ -80,6 +68,20 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 else -> false
+            }
+        }
+
+        // Hide bottom navigation on auth screens
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.loginFragment,
+                R.id.registerFragment,
+                R.id.forgotPasswordFragment -> {
+                    binding.bottomNav.visibility = View.GONE
+                }
+                else -> {
+                    binding.bottomNav.visibility = View.VISIBLE
+                }
             }
         }
 
@@ -118,5 +120,31 @@ class MainActivity : AppCompatActivity() {
             navGraph.setStartDestination(R.id.homeFragment)
             navController.graph = navGraph
         }
+
+        // Replace the keyboard visibility listener with this simpler version
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
+            val imeVisible = windowInsets.isVisible(WindowInsetsCompat.Type.ime())
+            val navigationBars = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val statusBars = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars())
+            
+            // Apply padding for status bar
+            binding.root.setPadding(0, statusBars.top, 0, 0)
+            
+            // Handle bottom navigation visibility
+            binding.bottomNav.apply {
+                if (imeVisible) {
+                    visibility = View.GONE
+                } else {
+                    visibility = View.VISIBLE
+                    setPadding(0, 0, 0, navigationBars.bottom)
+                }
+            }
+
+            WindowInsetsCompat.CONSUMED
+        }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 } 

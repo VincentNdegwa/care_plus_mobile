@@ -26,8 +26,8 @@ import com.example.careplus.MainActivity
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private lateinit var sessionManager: SessionManager
     private val viewModel: HomeViewModel by viewModels()
+    private lateinit var sessionManager: SessionManager
     private lateinit var scheduleAdapter: MedicationScheduleAdapter
 
     override fun onCreateView(
@@ -36,12 +36,23 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        sessionManager = SessionManager(requireContext())
+        
+        // Display stored user name immediately
+        sessionManager.getUser()?.let { user ->
+            binding.headerLayout.setUserName(user.name)
+        }
         
         setupRecyclerView()
         setupObservers()
         setupCalendar()
-        viewModel.fetchProfile()
+        
+        // Only fetch profile if we don't have stored user data
+        if (sessionManager.getUser() == null) {
+            viewModel.fetchProfile()
+        }
         viewModel.fetchMedicationSchedules()
+        
         return binding.root
     }
 

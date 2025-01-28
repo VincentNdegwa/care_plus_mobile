@@ -15,6 +15,7 @@ import com.example.careplus.data.model.MedicationFormResource
 import com.example.careplus.data.model.MedicationFrequencyResource
 import com.example.careplus.data.model.MedicationRouteResource
 import com.example.careplus.data.model.MedicationUpdateRequest
+import com.example.careplus.data.model.MedicationUnitResource
 import com.example.careplus.databinding.FragmentEditMedicationBinding
 import com.example.careplus.utils.SnackbarUtils
 
@@ -27,6 +28,7 @@ class EditMedicationFragment : Fragment() {
     private var selectedForm: MedicationFormResource? = null
     private var selectedRoute: MedicationRouteResource? = null
     private var selectedFrequency: MedicationFrequencyResource? = null
+    private var selectedUnit: MedicationUnitResource? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,7 +44,7 @@ class EditMedicationFragment : Fragment() {
         setupToolbar()
         setupObservers()
         setupUpdateButton()
-        
+
         // Set the initial medication details from navigation args
         viewModel.setMedicationDetails(args.medicationDetails)
     }
@@ -58,9 +60,29 @@ class EditMedicationFragment : Fragment() {
 
     private fun setupObservers() {
         // Observe medication details
-        viewModel.medicationDetails.observe(viewLifecycleOwner) { result: Result<MedicationDetails> ->
-            result.onSuccess { medication ->
-                populateFields(medication)
+        viewModel.medicationDetails.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { details ->
+                binding.apply {
+                    medicationNameInput.setText(details.medication_name)
+                    dosageQuantityInput.setText(details.dosage_quantity)
+                    
+                    // Split dosage strength into value and unit
+                    val strengthPattern = "(\\d+(?:\\.\\d+)?)(\\s*\\w+)".toRegex()
+                    val matchResult = strengthPattern.find(details.dosage_strength)
+                    
+                    if (matchResult != null) {
+                        val (value, unit) = matchResult.destructured
+                        dosageStrengthValueInput.setText(value)
+                        dosageStrengthUnitInput.setText(unit.trim())
+                    }
+
+                    durationInput.setText(details.duration)
+                    stockInput.setText(details.stock.toString())
+                    
+                    formInput.setText(details.form.name)
+                    routeInput.setText(details.route.name)
+                    frequencyInput.setText(details.frequency)
+                }
             }.onFailure { exception ->
                 SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error loading medication details")
             }
@@ -91,6 +113,16 @@ class EditMedicationFragment : Fragment() {
             }.onFailure { exception ->
                 SnackbarUtils.showSnackbar(binding.root, "Error loading medication frequencies")
             }
+        }
+
+        //Observe units
+        viewModel.units.observe(viewLifecycleOwner){ result: Result<List<MedicationUnitResource>>->
+            result.onSuccess { units->
+                setupUnitDropdown(units)
+            }.onFailure {
+                SnackbarUtils.showSnackbar(binding.root, "Error loading medication units")
+            }
+
         }
 
         // Observe update result
@@ -135,7 +167,7 @@ class EditMedicationFragment : Fragment() {
     }
 
     private fun setupFrequencyDropdown(frequencies: List<MedicationFrequencyResource>) {
-        val adapter = ArrayAdapter<String>(
+        val adapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_dropdown_item_1line,
             frequencies.map { it.frequency }
@@ -145,42 +177,79 @@ class EditMedicationFragment : Fragment() {
             setAdapter(adapter)
             setOnItemClickListener { _, _, position, _ ->
                 selectedFrequency = frequencies[position]
-                setText(frequencies[position].frequency)
             }
         }
     }
 
-    private fun populateFields(medication: MedicationDetails) {
-        binding.apply {
-            medicationNameInput.setText(medication.medication_name)
-            dosageQuantityInput.setText(medication.dosage_quantity)
-            dosageStrengthInput.setText(medication.dosage_strength)
-            formInput.setText(medication.form.name)
-            routeInput.setText(medication.route.name)
-            frequencyInput.setText(medication.frequency)
-            durationInput.setText(medication.duration)
-            stockInput.setText(medication.stock.toString())
-        }
+    private fun setupUnitDropdown(units: List<MedicationUnitResource>) {
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            units.map { it.name }
+        )
+        binding.dosageStrengthUnitInput.setAdapter(adapter)
     }
 
     private fun setupUpdateButton() {
         binding.updateButton.setOnClickListener {
-            val updateData = collectFormData()
-            viewModel.updateMedication(args.medicationId, updateData)
+            if (validateAndUpdateMedication()) {
+                // No need to collect data again, as the viewModel handles the update
+            }
         }
     }
 
-    private fun collectFormData(): MedicationUpdateRequest {
-        return MedicationUpdateRequest(
-            medication_name = binding.medicationNameInput.text.toString(),
-            dosage_quantity = binding.dosageQuantityInput.text.toString(),
-            dosage_strength = binding.dosageStrengthInput.text.toString(),
-            form_id = selectedForm?.id ?: args.medicationDetails.form.id,
-            route_id = selectedRoute?.id ?: args.medicationDetails.route.id,
-            frequency = selectedFrequency?.frequency ?: binding.frequencyInput.text.toString(),
-            duration = binding.durationInput.text.toString(),
-            stock = binding.stockInput.text.toString().toIntOrNull() ?: 0
-        )
+    private fun validateAndUpdateMedication(): Boolean {
+        var isValid = true
+
+        if (binding.medicationNameInput.text.isNullOrBlank()) {
+            binding.medicationNameLayout.error = "Please enter medication name"
+            isValid = false
+        } else {
+            binding.medicationNameLayout.error = null
+        }
+
+        if (binding.dosageQuantityInput.text.isNullOrBlank()) {
+            binding.dosageQuantityLayout.error = "Please enter dosage quantity"
+            isValid = false
+        } else {
+            binding.dosageQuantityLayout.error = null
+        }
+
+        if (binding.dosageStrengthValueInput.text.isNullOrBlank()) {
+            binding.dosageStrengthValueLayout.error = "Please enter strength value"
+            isValid = false
+        } else {
+            binding.dosageStrengthValueLayout.error = null
+        }
+
+        if (binding.dosageStrengthUnitInput.text.isNullOrBlank()) {
+            binding.dosageStrengthUnitLayout.error = "Please select unit"
+            isValid = false
+        } else {
+            binding.dosageStrengthUnitLayout.error = null
+        }
+
+        if (isValid) {
+            val strengthValue = binding.dosageStrengthValueInput.text.toString()
+            val strengthUnit = binding.dosageStrengthUnitInput.text.toString()
+            val combinedStrength = "$strengthValue $strengthUnit"
+
+            viewModel.updateMedication(
+                args.medicationId,
+                MedicationUpdateRequest(
+                    medication_name = binding.medicationNameInput.text.toString(),
+                    dosage_quantity = binding.dosageQuantityInput.text.toString(),
+                    dosage_strength = combinedStrength,
+                    form_id = selectedForm?.id ?: 0,
+                    route_id = selectedRoute?.id ?: 0,
+                    frequency = binding.frequencyInput.text.toString(),
+                    duration = binding.durationInput.text.toString(),
+                    stock = binding.stockInput.text.toString().toIntOrNull() ?: 0
+                )
+            )
+            return true
+        }
+        return false
     }
 
     override fun onDestroyView() {

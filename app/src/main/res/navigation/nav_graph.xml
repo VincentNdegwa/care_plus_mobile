@@ -76,4 +76,9 @@
             app:argType="com.example.careplus.data.model.MedicationDetails" />
     </fragment>
 
+    <fragment
+        android:id="@+id/caregiversFragment"
+        android:name="com.example.careplus.ui.caregivers.CaregiversFragment"
+        android:label="Caregivers" />
+
 </navigation> 

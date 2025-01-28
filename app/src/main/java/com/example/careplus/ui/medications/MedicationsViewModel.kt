@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.careplus.data.model.Medication
 import com.example.careplus.data.model.SimpleProfile
 import com.example.careplus.data.repository.MedicationRepository
 import com.example.careplus.data.repository.ProfileRepository
