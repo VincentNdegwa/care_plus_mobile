@@ -1,5 +1,6 @@
 package com.example.careplus.ui.home
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -48,7 +49,9 @@ class HomeFragment : Fragment() {
         sessionManager.getUser()?.let { user ->
             binding.headerLayout.setUserName(user.name)
         }
-        
+        binding.medicationLoadingProgressBar.visibility = View.VISIBLE
+
+
         setupRecyclerView()
         setupObservers()
         setupCalendar()
@@ -59,6 +62,7 @@ class HomeFragment : Fragment() {
         }
         viewModel.fetchMedicationSchedules()
         viewModel.fetchStats()
+
         return binding.root
     }
 
@@ -68,6 +72,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+        binding.medicationLoadingProgressBar.visibility = View.GONE
         scheduleAdapter = MedicationScheduleAdapter()
         binding.medicationsList.apply {
             adapter = scheduleAdapter
@@ -176,33 +181,49 @@ class HomeFragment : Fragment() {
                 android.content.res.Configuration.UI_MODE_NIGHT_YES
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateDashboardUI(patientStats: PatientStats, healthVitals: List<HealthVital>) {
         binding.medicationCount.text = patientStats.medication.current.toString()
         binding.caregiversCount.text = patientStats.caregiver.current.toString()
         binding.sideEffectsCount.text = patientStats.side_effect.current.toString()
         binding.diagnosesCount.text = patientStats.diagnosis.current.toString()
 
+        // Update medication change text and color
         binding.medicationChangeText.text = "${patientStats.medication.change} ${patientStats.medication.label}"
+        setChangeTextColor(binding.medicationChangeText, patientStats.medication.change)
+
+        // Update caregiver change text (no color change)
         binding.caregiverChangeText.text = "${patientStats.caregiver.change} ${patientStats.caregiver.label}"
+
+        // Update side effect change text and color
         binding.sideEffectChangeText.text = "${patientStats.side_effect.change} ${patientStats.side_effect.label}"
+        setChangeTextColor(binding.sideEffectChangeText, patientStats.side_effect.change)
+
+        // Update diagnoses change text and color
         binding.diagnosesChangeText.text = "${patientStats.diagnosis.change} ${patientStats.diagnosis.label}"
+        setChangeTextColor(binding.diagnosesChangeText, patientStats.diagnosis.change)
 
         for (vital in healthVitals) {
-            if (vital.name == "Blood Pressure"){
-                binding.bloodPressureStat.text = vital.value
-            }
-            if (vital.name == "Heart Rate" ){
-                binding.heartRateStat.text = vital.value
-            }
-            if (vital.name == "Glucose"){
-                binding.glucoseStat.text = vital.value
-            }
-            if (vital.name == "Cholesterol" ){
-                binding.cholesterolStat.text = vital.value
+            when (vital.name) {
+                "Blood Pressure" -> binding.bloodPressureStat.text = "${vital.value} ${vital.unit}"
+                "Heart Rate" -> binding.heartRateStat.text = "${vital.value} ${vital.unit}"
+                "Glucose" -> binding.glucoseStat.text = "${vital.value} ${vital.unit}"
+                "Cholesterol" -> binding.cholesterolStat.text = "${vital.value} ${vital.unit}"
             }
         }
     }
 
+    // Helper function to set text color based on change value
+    private fun setChangeTextColor(textView: TextView, change: String) {
+        val changeValue = change.replace("%", "").toIntOrNull() ?: 0
+        textView.setTextColor(
+            when {
+                changeValue < 0 -> ContextCompat.getColor(requireContext(), R.color.success) // Red for negative
+                changeValue > 0 -> ContextCompat.getColor(requireContext(), R.color.error) // Green for positive
+                else -> ContextCompat.getColor(requireContext(), R.color.success)
+            }
+        )
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
