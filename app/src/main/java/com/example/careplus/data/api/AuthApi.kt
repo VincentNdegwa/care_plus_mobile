@@ -26,4 +26,6 @@ interface AuthApi {
         @Path("patientId") patientId: Int,
         @Query("today_date") date: String
     ): Response<MedicationScheduleResponse>
+    @GET("dashboard/patient-data/{patientId}")
+    suspend fun getPatientData(@Path("patientId") patientId: Int): DashboardResponse
 } 

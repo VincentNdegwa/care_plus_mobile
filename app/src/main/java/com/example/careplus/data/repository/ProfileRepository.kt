@@ -18,4 +18,5 @@ class ProfileRepository(private val sessionManager: SessionManager) {
             throw Exception(response.message ?: "Failed to fetch profile")
         }
     }
+
 } 

@@ -3,6 +3,7 @@ package com.example.careplus.data.repository
 import com.example.careplus.data.api.ApiClient
 import com.example.careplus.data.model.*
 import com.example.careplus.data.SessionManager
+import retrofit2.HttpException
 
 class AuthRepository(private val sessionManager: SessionManager) {
     private val api = ApiClient.create(sessionManager)
@@ -109,4 +110,14 @@ class AuthRepository(private val sessionManager: SessionManager) {
             Result.failure(e)
         }
     }
+
+    suspend fun getDashboardStats(patientId: Int): Result<DashboardResponse> {
+        return try {
+            val response = ApiClient.dashboardApi.getPatientData(patientId)
+            Result.success(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 } 

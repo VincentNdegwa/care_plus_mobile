@@ -5,6 +5,8 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.example.careplus.data.SessionManager
+import retrofit2.http.GET
+import retrofit2.http.Path
 
 object ApiClient {
     private const val BASE_URL = "https://care.tech360.systems/v1/"
@@ -42,4 +44,13 @@ object ApiClient {
         }
         retrofit.create(ProfileApi::class.java)
     }
-} 
+
+    val dashboardApi: DashboardApi by lazy {
+        if (!::retrofit.isInitialized) {
+            throw IllegalStateException("ApiClient must be initialized with create() before accessing dashboardApi")
+        }
+        retrofit.create(DashboardApi::class.java)
+    }
+
+}
+

@@ -22,6 +22,12 @@ import java.time.format.TextStyle
 import java.util.Locale
 import com.example.careplus.utils.SnackbarUtils
 import com.example.careplus.MainActivity
+import com.example.careplus.data.api.ApiClient
+import com.example.careplus.data.model.DashboardResponse
+import com.example.careplus.data.model.HealthVital
+import com.example.careplus.data.model.PatientStats
+import retrofit2.HttpException
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
@@ -52,7 +58,7 @@ class HomeFragment : Fragment() {
             viewModel.fetchProfile()
         }
         viewModel.fetchMedicationSchedules()
-        
+        viewModel.fetchStats()
         return binding.root
     }
 
@@ -89,6 +95,15 @@ class HomeFragment : Fragment() {
                     binding.root,
                     exception.message ?: "Failed to load schedules"
                 )
+            }
+        }
+
+        viewModel.stats.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { dashboardResponse ->
+                updateDashboardUI(dashboardResponse.patient_stats, dashboardResponse.health_vitals)
+            }.onFailure { exception ->
+                // Handle the error (e.g., show a Snackbar)
+                SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error fetching stats", true)
             }
         }
     }
@@ -160,6 +175,34 @@ class HomeFragment : Fragment() {
         return resources.configuration?.uiMode?.and(android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
                 android.content.res.Configuration.UI_MODE_NIGHT_YES
     }
+
+    private fun updateDashboardUI(patientStats: PatientStats, healthVitals: List<HealthVital>) {
+        binding.medicationCount.text = patientStats.medication.current.toString()
+        binding.caregiversCount.text = patientStats.caregiver.current.toString()
+        binding.sideEffectsCount.text = patientStats.side_effect.current.toString()
+        binding.diagnosesCount.text = patientStats.diagnosis.current.toString()
+
+        binding.medicationChangeText.text = "${patientStats.medication.change} ${patientStats.medication.label}"
+        binding.caregiverChangeText.text = "${patientStats.caregiver.change} ${patientStats.caregiver.label}"
+        binding.sideEffectChangeText.text = "${patientStats.side_effect.change} ${patientStats.side_effect.label}"
+        binding.diagnosesChangeText.text = "${patientStats.diagnosis.change} ${patientStats.diagnosis.label}"
+
+        for (vital in healthVitals) {
+            if (vital.name == "Blood Pressure"){
+                binding.bloodPressureStat.text = vital.value
+            }
+            if (vital.name == "Heart Rate" ){
+                binding.heartRateStat.text = vital.value
+            }
+            if (vital.name == "Glucose"){
+                binding.glucoseStat.text = vital.value
+            }
+            if (vital.name == "Cholesterol" ){
+                binding.cholesterolStat.text = vital.value
+            }
+        }
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

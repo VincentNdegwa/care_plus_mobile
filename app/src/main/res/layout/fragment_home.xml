@@ -106,9 +106,10 @@
                                         android:textColor="@color/primary"/>
 
                                     <TextView
+                                        android:id="@+id/medicationChangeText"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="+5% this Month"
+                                        android:text="- -"
                                         android:textSize="12sp"
                                         android:textColor="@android:color/holo_green_dark"/>
                                 </LinearLayout>
@@ -158,9 +159,10 @@
                                         android:textColor="@color/error"/>
 
                                     <TextView
+                                        android:id="@+id/sideEffectChangeText"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="-5% this Month"
+                                        android:text="- -"
                                         android:textSize="12sp"
                                         android:textColor="@color/error"/>
                                 </LinearLayout>
@@ -219,9 +221,10 @@
                                         android:textColor="@color/primary"/>
 
                                     <TextView
+                                        android:id="@+id/caregiverChangeText"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="Active"
+                                        android:text="- -"
                                         android:textSize="12sp"
                                         android:textColor="@android:color/holo_green_dark"/>
                                 </LinearLayout>
@@ -271,9 +274,10 @@
                                         android:textColor="@color/primary"/>
 
                                     <TextView
+                                        android:id="@+id/diagnosesChangeText"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="This Month"
+                                        android:text="- -"
                                         android:textSize="12sp"
                                         android:textColor="@android:color/darker_gray"/>
                                 </LinearLayout>
@@ -392,9 +396,10 @@
                                     android:textSize="14sp"/>
 
                                 <TextView
+                                    android:id="@+id/bloodPressureStat"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="120/80"
+                                    android:text="0/0"
                                     android:textSize="20sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/primary"/>
@@ -428,9 +433,10 @@
                                     android:textSize="14sp"/>
 
                                 <TextView
+                                    android:id="@+id/heartRateStat"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="72 bpm"
+                                    android:text="0 bpm"
                                     android:textSize="20sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/primary"/>
@@ -464,9 +470,10 @@
                                     android:textSize="14sp"/>
 
                                 <TextView
+                                    android:id="@+id/glucoseStat"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="97 mg/dl"
+                                    android:text="0 mg/dl"
                                     android:textSize="20sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/primary"/>
@@ -500,9 +507,10 @@
                                     android:textSize="14sp"/>
 
                                 <TextView
+                                    android:id="@+id/cholesterolStat"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="87 mg/dl"
+                                    android:text="0 mg/dl"
                                     android:textSize="20sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/primary"/>
