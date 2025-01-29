@@ -81,7 +81,7 @@ class MedicationRepository(private val sessionManager: SessionManager) {
                 caregiver = response.caregiver?.let { CaregiverInfo(it.id, it.name) },
                 stock = response.stock ?: 0,
                 active = response.active,
-                diagnosis = response.diagnosis?.diagnosis_name
+                diagnosis = response.diagnosis
             )
         } catch (e: HttpException) {
             Log.e("MedicationRepository", "HTTP Error: ${e.code()}", e)

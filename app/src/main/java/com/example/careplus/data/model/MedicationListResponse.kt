@@ -25,7 +25,7 @@ data class MedicationDetails(
     val caregiver: CaregiverInfo?,
     val stock: Int,
     val active: Int,
-    val diagnosis: String?
+    val diagnosis: Diagnosisinfo?
 ) : Parcelable
 
 @Parcelize

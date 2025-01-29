@@ -120,4 +120,9 @@ class AuthRepository(private val sessionManager: SessionManager) {
         }
     }
 
+    suspend fun getMedicationById(patientId: Int):MedicationDetails {
+        val response  = ApiClient.medicationApi.getMedicationById(patientId)
+        return response
+    }
+
 } 

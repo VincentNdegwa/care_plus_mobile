@@ -2,6 +2,8 @@ package com.example.careplus.ui.home
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.careplus.databinding.ItemMedicationScheduleBinding
 import com.example.careplus.R
@@ -12,17 +14,12 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import androidx.core.content.ContextCompat
+import com.example.careplus.data.model.MedicationDetails
 import com.example.careplus.data.model.ScheduledMedication
 
-class MedicationScheduleAdapter : 
-    RecyclerView.Adapter<MedicationScheduleAdapter.ScheduleViewHolder>() {
-    
-    private var schedules: List<Schedule> = emptyList()
-
-    fun submitList(newSchedules: List<Schedule>) {
-        schedules = newSchedules
-        notifyDataSetChanged()
-    }
+class MedicationScheduleAdapter(
+    private val onMedicationClick: (Int) -> Unit
+) : ListAdapter<Schedule, MedicationScheduleAdapter.ScheduleViewHolder>(ScheduleDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScheduleViewHolder {
         val binding = ItemMedicationScheduleBinding.inflate(
@@ -32,15 +29,22 @@ class MedicationScheduleAdapter :
     }
 
     override fun onBindViewHolder(holder: ScheduleViewHolder, position: Int) {
-        holder.bind(schedules[position])
+        holder.bind(getItem(position)) // Use getItem from ListAdapter
     }
 
-    override fun getItemCount() = schedules.size
-
-    class ScheduleViewHolder(
+    inner class ScheduleViewHolder(
         private val binding: ItemMedicationScheduleBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         
+        init {
+            binding.root.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onMedicationClick(getItem(position).medication_id)
+                }
+            }
+        }
+
         fun bind(schedule: Schedule) {
             binding.apply {
                 medicationName.text = schedule.medication.medication_name
@@ -89,5 +93,16 @@ class MedicationScheduleAdapter :
                 timeRelative.text = relativeTime
             }
         }
+    }
+}
+
+// DiffUtil for Schedule
+class ScheduleDiffCallback : DiffUtil.ItemCallback<Schedule>() {
+    override fun areItemsTheSame(oldItem: Schedule, newItem: Schedule): Boolean {
+        return oldItem.id == newItem.id // Assuming Schedule has an id
+    }
+
+    override fun areContentsTheSame(oldItem: Schedule, newItem: Schedule): Boolean {
+        return oldItem == newItem
     }
 } 

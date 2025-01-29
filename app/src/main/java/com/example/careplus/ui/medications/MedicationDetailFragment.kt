@@ -35,11 +35,9 @@ class MedicationDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupFabs()
         
-        // Use the medication details from arguments directly
-        displayMedicationDetails(args.medicationDetails)
-        
-        // Pass the data to ViewModel for any future operations
-        viewModel.setMedicationDetails(args.medicationDetails)
+        val medicationDetails = args.medicationDetails
+        displayMedicationDetails(medicationDetails)
+        viewModel.setMedicationDetails(medicationDetails)
     }
 
     private fun displayMedicationDetails(medication: MedicationDetails) {
@@ -68,7 +66,7 @@ class MedicationDetailFragment : Fragment() {
 
             // Show diagnosis if available
             medication.diagnosis?.let { diagnosis ->
-                diagnosisText.text = diagnosis
+                diagnosisText.text = diagnosis.diagnosis_name
                 diagnosisContainer.visibility = View.VISIBLE
             } ?: run {
                 diagnosisContainer.visibility = View.GONE

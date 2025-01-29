@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.careplus.R
@@ -26,6 +27,7 @@ import com.example.careplus.MainActivity
 import com.example.careplus.data.api.ApiClient
 import com.example.careplus.data.model.DashboardResponse
 import com.example.careplus.data.model.HealthVital
+import com.example.careplus.data.model.MedicationDetails
 import com.example.careplus.data.model.PatientStats
 import retrofit2.HttpException
 import kotlinx.coroutines.launch
@@ -72,12 +74,14 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        binding.medicationLoadingProgressBar.visibility = View.GONE
-        scheduleAdapter = MedicationScheduleAdapter()
-        binding.medicationsList.apply {
-            adapter = scheduleAdapter
-            layoutManager = LinearLayoutManager(context)
+        scheduleAdapter = MedicationScheduleAdapter { medicationId:Int ->
+            fetchMedicationDetails(medicationId)
         }
+        binding.medicationsList.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = scheduleAdapter
+        }
+        binding.medicationLoadingProgressBar.visibility = View.GONE
     }
 
     private fun setupObservers() {
@@ -223,6 +227,22 @@ class HomeFragment : Fragment() {
                 else -> ContextCompat.getColor(requireContext(), R.color.success)
             }
         )
+    }
+
+    // Function to fetch medication details and navigate
+    private fun fetchMedicationDetails(medicationId: Int) {
+        // Use the viewModel to launch a coroutine
+        viewModel.viewModelScope.launch {
+            try {
+                // Call the repository method to fetch medication details
+                val result = viewModel.repository.getMedicationById(medicationId)
+                // Navigate to MedicationDetailFragment with the medication details
+                val action = HomeFragmentDirections.actionHomeFragmentToMedicationDetailFragment(result)
+                findNavController().navigate(action)
+            } catch (e: Exception) {
+                SnackbarUtils.showSnackbar(binding.root, e.message ?: "Error fetching medication details", true)
+            }
+        }
     }
 
     override fun onDestroyView() {

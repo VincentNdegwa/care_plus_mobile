@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val sessionManager = SessionManager(application)
-    private val repository = AuthRepository(sessionManager)
+    val repository = AuthRepository(sessionManager)
 
     private val _profile = MutableLiveData<Result<UserProfile>>()
     val profile: LiveData<Result<UserProfile>> = _profile

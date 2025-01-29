@@ -3,6 +3,7 @@ package com.example.careplus.data.api
 import com.example.careplus.data.model.MedicationListResponse
 import com.example.careplus.data.model.MedicationRequest
 import com.example.careplus.data.model.MedicationDetailResponse
+import com.example.careplus.data.model.MedicationDetails
 import com.example.careplus.data.model.MedicationUpdateRequest
 import com.example.careplus.data.model.MedicationFormResource
 import com.example.careplus.data.model.MedicationRouteResource
@@ -19,7 +20,7 @@ interface MedicationApi {
     suspend fun getMedications(@Body request: MedicationRequest): MedicationListResponse
 
     @GET("medications/{id}")
-    suspend fun getMedicationById(@Path("id") id: Int): MedicationDetailResponse
+    suspend fun getMedicationById(@Path("id") id: Int): MedicationDetails
 
     @PATCH("medications/update/{id}")
     suspend fun updateMedication(
