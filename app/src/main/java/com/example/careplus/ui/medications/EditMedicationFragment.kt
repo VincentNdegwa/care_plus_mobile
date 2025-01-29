@@ -1,6 +1,7 @@
 package com.example.careplus.ui.medications
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,8 +46,16 @@ class EditMedicationFragment : Fragment() {
         setupObservers()
         setupUpdateButton()
 
-        // Set the initial medication details from navigation args
-        viewModel.setMedicationDetails(args.medicationDetails)
+        // Log the received medication details
+        Log.d("EditMedicationFragment", "Received medication details: ${args.medicationDetails}")
+
+        // Check if medication details are valid
+        if (args.medicationDetails != null) {
+            viewModel.setMedicationDetails(args.medicationDetails)
+        } else {
+            Log.e("EditMedicationFragment", "Received medication details are null")
+            // Handle the error case, e.g., show a message to the user
+        }
     }
 
     private fun setupToolbar() {
@@ -68,7 +77,7 @@ class EditMedicationFragment : Fragment() {
                     
                     // Split dosage strength into value and unit
                     val strengthPattern = "(\\d+(?:\\.\\d+)?)(\\s*\\w+)".toRegex()
-                    val matchResult = strengthPattern.find(details.dosage_strength)
+                    val matchResult = details?.dosage_strength?.let { strengthPattern.find(it) }
                     
                     if (matchResult != null) {
                         val (value, unit) = matchResult.destructured
@@ -79,8 +88,8 @@ class EditMedicationFragment : Fragment() {
                     durationInput.setText(details.duration)
                     stockInput.setText(details.stock.toString())
                     
-                    formInput.setText(details.form.name)
-                    routeInput.setText(details.route.name)
+                    formInput.setText(details.form?.name)
+                    routeInput.setText(details.route?.name)
                     frequencyInput.setText(details.frequency)
                 }
             }.onFailure { exception ->
@@ -247,6 +256,7 @@ class EditMedicationFragment : Fragment() {
                     stock = binding.stockInput.text.toString().toIntOrNull() ?: 0
                 )
             )
+
             return true
         }
         return false

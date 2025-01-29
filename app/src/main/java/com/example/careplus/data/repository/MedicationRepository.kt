@@ -65,14 +65,14 @@ class MedicationRepository(private val sessionManager: SessionManager) {
                 dosage_quantity = response.dosage_quantity,
                 dosage_strength = response.dosage_strength,
                 form = MedicationForm(
-                    id = response.form.id,
-                    name = response.form.name,
-                    patient_id = response.form.patient_id
+                    id = response.form?.id,
+                    name = response.form?.name,
+                    patient_id = response.form?.patient_id
                 ),
                 route = MedicationRoute(
-                    id = response.route.id,
-                    name = response.route.name,
-                    description = response.route.description
+                    id = response.route?.id,
+                    name = response.route?.name,
+                    description = response.route?.description
                 ),
                 frequency = response.frequency,
                 duration = response.duration,

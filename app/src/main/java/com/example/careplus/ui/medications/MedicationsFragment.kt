@@ -27,9 +27,17 @@ class MedicationsFragment : Fragment() {
         }
     }
     private val medicationsAdapter = MedicationsAdapter { medication ->
-        findNavController().navigate(
-            MedicationsFragmentDirections.actionMedicationsToMedicationDetail(medication)
-        )
+        // Log the medication details before navigating
+        Log.d("MedicationsFragment", "Navigating to EditMedicationFragment with: $medication")
+        
+        // Ensure medication is not null
+        if (medication != null) {
+            findNavController().navigate(
+                MedicationsFragmentDirections.actionMedicationsToMedicationDetail(medication)
+            )
+        } else {
+            Log.e("MedicationsFragment", "Medication is null, cannot navigate")
+        }
     }
 
     override fun onCreateView(

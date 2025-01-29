@@ -27,7 +27,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             result.onSuccess { response ->
                 if (!response.error && response.token != null && response.user != null) {
                     sessionManager.saveAuthToken(response.token)
-                    sessionManager.saveUser(response.user)
+//                    sessionManager.saveUser(response.user)
+                    repository.getProfile()
                 }
             }
             _authResult.value = result
@@ -42,7 +43,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             result.onSuccess { response ->
                 if (!response.error && response.token != null && response.user != null) {
                     sessionManager.saveAuthToken(response.token)
-                    sessionManager.saveUser(response.user)
+//                    sessionManager.saveUser(response.user)
+                    repository.getProfile()
                 }
             }
             _authResult.value = result

@@ -1,6 +1,7 @@
 package com.example.careplus.ui.medications
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,21 +39,32 @@ class MedicationDetailFragment : Fragment() {
         val medicationDetails = args.medicationDetails
         displayMedicationDetails(medicationDetails)
         viewModel.setMedicationDetails(medicationDetails)
+
+        setupObservers()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Fetch the updated medication details when the fragment is resumed
+        val medicationId = args.medicationDetails.id // Assuming you have the ID from the args
+        viewModel.fetchMedicationDetails(medicationId)
+        setupObservers()
+
     }
 
     private fun displayMedicationDetails(medication: MedicationDetails) {
         binding.apply {
-            toolbar.setPageTitle(medication.medication_name)
-            dosageText.text = "${medication.dosage_quantity} ${medication.dosage_strength}"
-            formText.text = medication.form.name
-            routeText.text = medication.route.name
-            frequencyText.text = medication.frequency
-            durationText.text = medication.duration
-            stockText.text = "${medication.stock} units remaining"
+            toolbar.setPageTitle(medication.medication_name ?: "Unknown Medication")
+            dosageText.text = "${medication.dosage_quantity ?: "- - -"} ${medication.dosage_strength ?: "- - -"}"
+            formText.text = medication.form?.name ?: "- - -"
+            routeText.text = medication.route?.name ?: "- - -"
+            frequencyText.text = medication.frequency ?: "- - -"
+            durationText.text = medication.duration ?: "- - -"
+            stockText.text = "${medication.stock ?: 0} units remaining"
             
             // Format prescribed date
             val prescribedDate = LocalDateTime.parse(
-                medication.prescribed_date.replace(" ", "T")
+                medication.prescribed_date?.replace(" ", "T")
             ).format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
             prescribedDateText.text = prescribedDate
 
@@ -157,6 +169,17 @@ class MedicationDetailFragment : Fragment() {
             .rotation(0f)
             .setDuration(200)
             .start()
+    }
+
+    private fun setupObservers() {
+        viewModel.medication.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { medicationDetails ->
+                displayMedicationDetails(medicationDetails)
+            }.onFailure { exception ->
+                Log.e("MedicationDetailFragment", "Error fetching medication details", exception)
+                SnackbarUtils.showSnackbar(binding.root, "Failed to load medication details")
+            }
+        }
     }
 
     override fun onDestroyView() {
