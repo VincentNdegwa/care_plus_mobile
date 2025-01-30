@@ -8,7 +8,7 @@ class CaregiverPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment)
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> AllCaregiversFragment()
+            0 -> AllCareProvidersFragment()
             1 -> MyDoctorsFragment()
             2 -> MyCaregiversFragment()
             else -> throw IllegalStateException("Unexpected position: $position")

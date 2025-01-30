@@ -7,4 +7,10 @@ class CaregiverRepository {
     suspend fun fetchAllCaregivers(): CaregiverResponse {
         return ApiClient.caregiverApi.fetchAllCaregivers()
     }
+    suspend fun fetchMyDoctors(patientId:Int): CaregiverResponse {
+        return ApiClient.caregiverApi.fetchMyDoctors(patientId)
+    }
+    suspend fun fetchMyCaregivers(patientId:Int): CaregiverResponse {
+        return ApiClient.caregiverApi.fetchMyCaregivers(patientId)
+    }
 } 

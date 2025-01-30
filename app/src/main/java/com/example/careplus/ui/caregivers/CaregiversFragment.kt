@@ -29,8 +29,6 @@ class CaregiversFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupViewPager()
-        observeCaregivers()
-        viewModel.fetchAllCaregivers() // Fetch caregivers when the view is created
     }
 
     private fun setupViewPager() {
@@ -39,7 +37,7 @@ class CaregiversFragment : Fragment() {
 
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = when (position) {
-                0 -> "All Caregivers"
+                0 -> "Care Providers"
                 1 -> "My Doctors"
                 2 -> "My Caregivers"
                 else -> null
@@ -47,16 +45,7 @@ class CaregiversFragment : Fragment() {
         }.attach()
     }
 
-    private fun observeCaregivers() {
-        viewModel.caregivers.observe(viewLifecycleOwner) { result ->
-            result.onSuccess { response ->
-                caregiversAdapter.submitList(response.data) // Update the adapter with the fetched data
-                binding.recyclerView.visibility = View.VISIBLE // Show the RecyclerView when data is available
-            }.onFailure { exception ->
-                SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error fetching caregivers")
-            }
-        }
-    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
