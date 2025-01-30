@@ -1,4 +1,4 @@
-package com.example.careplus.ui.caregivers
+package com.example.careplus.ui.health_providers
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,23 +6,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.careplus.databinding.FragmentCaregiversBinding
-import com.example.careplus.utils.SnackbarUtils
+import com.example.careplus.databinding.FragmentHealthProvidersBinding
 import com.google.android.material.tabs.TabLayoutMediator
 
-class CaregiversFragment : Fragment() {
-    private var _binding: FragmentCaregiversBinding? = null
+class HealthProvidersFragment : Fragment() {
+    private var _binding: FragmentHealthProvidersBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: CaregiverViewModel by viewModels()
-    private lateinit var caregiversAdapter: CaregiversAdapter // Create an adapter for displaying caregivers
+    private val viewModel: HealthProvidersViewModel by viewModels()
+    private lateinit var healthProvidersAdapter: HealthProvidersAdapter // Create an adapter for displaying caregivers
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentCaregiversBinding.inflate(inflater, container, false)
+        _binding = FragmentHealthProvidersBinding.inflate(inflater, container, false)
         return binding.root
     }
 

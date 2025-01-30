@@ -78,7 +78,7 @@
 
     <fragment
         android:id="@+id/caregiversFragment"
-        android:name="com.example.careplus.ui.caregivers.CaregiversFragment"
+        android:name="com.example.careplus.ui.health_providers.HealthProvidersFragment"
         android:label="Caregivers" />
 
     <action

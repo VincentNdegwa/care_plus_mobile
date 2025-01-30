@@ -1,4 +1,4 @@
-package com.example.careplus.ui.caregivers
+package com.example.careplus.ui.health_providers
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,8 +13,8 @@ import com.example.careplus.utils.SnackbarUtils
 class AllCareProvidersFragment : Fragment() {
     private var _binding: FragmentAllCaregiversBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: CaregiverViewModel by viewModels()
-    private lateinit var caregiversAdapter: CaregiversAdapter
+    private val viewModel: HealthProvidersViewModel by viewModels()
+    private lateinit var healthProvidersAdapter: HealthProvidersAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,16 +33,16 @@ class AllCareProvidersFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        caregiversAdapter = CaregiversAdapter()
+        healthProvidersAdapter = HealthProvidersAdapter()
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = caregiversAdapter
+            adapter = healthProvidersAdapter
         }
     }
     private fun observeCaregivers() {
         viewModel.caregivers.observe(viewLifecycleOwner) { result ->
             result.onSuccess { response ->
-                caregiversAdapter.submitList(response.data) // Update the adapter with the fetched data
+                healthProvidersAdapter.submitList(response.data) // Update the adapter with the fetched data
                 binding.recyclerView.visibility = View.VISIBLE // Show the RecyclerView when data is available
             }.onFailure { exception ->
                 SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error fetching caregivers")

@@ -1,15 +1,14 @@
-package com.example.careplus.ui.caregivers
+package com.example.careplus.ui.health_providers
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.careplus.data.api.ApiClient
 import com.example.careplus.data.repository.CaregiverRepository
 import com.example.careplus.data.model.CaregiverResponse
 import kotlinx.coroutines.launch
 
-class CaregiverViewModel : ViewModel() {
+class HealthProvidersViewModel : ViewModel() {
     private val repository = CaregiverRepository()
     private val _caregivers = MutableLiveData<Result<CaregiverResponse>>()
     val caregivers: LiveData<Result<CaregiverResponse>> = _caregivers

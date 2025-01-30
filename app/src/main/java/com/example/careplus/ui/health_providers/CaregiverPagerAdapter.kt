@@ -1,4 +1,4 @@
-package com.example.careplus.ui.caregivers
+package com.example.careplus.ui.health_providers
 
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
