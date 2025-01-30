@@ -7,10 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.careplus.MainActivity
+import com.example.careplus.R
 import com.example.careplus.data.model.MedicationDetails
 import com.example.careplus.data.model.MedicationFormResource
 import com.example.careplus.data.model.MedicationFrequencyResource
@@ -21,6 +24,7 @@ import com.example.careplus.data.model.MedicationUpdateResponse
 import com.example.careplus.data.model.MedicationUpdated
 import com.example.careplus.databinding.FragmentEditMedicationBinding
 import com.example.careplus.utils.SnackbarUtils
+import com.google.android.material.snackbar.Snackbar
 
 class EditMedicationFragment : Fragment() {
     private var _binding: FragmentEditMedicationBinding? = null
@@ -50,14 +54,7 @@ class EditMedicationFragment : Fragment() {
 
         // Log the received medication details
         Log.d("EditMedicationFragment", "Received medication details: ${args.medicationDetails}")
-
-        // Check if medication details are valid
-        if (args.medicationDetails != null) {
-            viewModel.setMedicationDetails(args.medicationDetails)
-        } else {
-            Log.e("EditMedicationFragment", "Received medication details are null")
-            // Handle the error case, e.g., show a message to the user
-        }
+        viewModel.setMedicationDetails(args.medicationDetails)
     }
 
     private fun setupToolbar() {
@@ -95,7 +92,7 @@ class EditMedicationFragment : Fragment() {
                     frequencyInput.setText(details.frequency)
                 }
             }.onFailure { exception ->
-                SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error loading medication details")
+                showError(exception.message ?: "Failed to load medication details")
             }
         }
 
@@ -138,15 +135,16 @@ class EditMedicationFragment : Fragment() {
 
         // Observe update result
         viewModel.updateResult.observe(viewLifecycleOwner) { result: Result<MedicationUpdateResponse> ->
-            result.onSuccess { response->
-                if (!response.error){
+            result.onSuccess { response ->
+                Log.e("EditMedicationFragment", "Response: $response")
+                if (!response.error) {
                     SnackbarUtils.showSnackbar(binding.root, response.message, false)
                     findNavController().navigateUp()
-                }else{
-                    SnackbarUtils.showSnackbar(binding.root, response.message ?: "Error updating medication",true)
+                } else {
+                    showError(response.message)
                 }
             }.onFailure { exception ->
-                SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error updating medication")
+                showError(exception.message ?: "Error updating medication")
             }
         }
     }
@@ -255,7 +253,7 @@ class EditMedicationFragment : Fragment() {
                     medication_name = binding.medicationNameInput.text.toString(),
                     dosage_quantity = binding.dosageQuantityInput.text.toString(),
                     dosage_strength = combinedStrength,
-                    form_id = selectedForm?.id,
+                    form_id = selectedForm?.id ,
                     route_id = selectedRoute?.id,
                     frequency = binding.frequencyInput.text.toString(),
                     duration = binding.durationInput.text.toString(),
@@ -266,6 +264,17 @@ class EditMedicationFragment : Fragment() {
             return true
         }
         return false
+    }
+
+    private fun showError(message: String) {
+        val bottomNav = (requireActivity() as MainActivity).findViewById<View>(R.id.bottomNav)
+
+        Log.e("EditMedicationFragment", "Error: $message")
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
+            .setBackgroundTint(ContextCompat.getColor(requireContext(), R.color.error))
+            .setTextColor(ContextCompat.getColor(requireContext(), R.color.surface_light))
+            .setAnchorView(bottomNav) // Set the bottom navigation view as the anchor
+            .show()
     }
 
     override fun onDestroyView() {

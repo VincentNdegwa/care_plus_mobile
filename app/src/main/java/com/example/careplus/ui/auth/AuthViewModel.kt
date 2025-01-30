@@ -36,10 +36,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun register(name: String, email: String, password: String, passwordConfirmation: String) {
+    fun register(name: String, email: String, password: String, passwordConfirmation: String, role:String) {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = repository.register(name, email, password, passwordConfirmation)
+            val result = repository.register(name, email, password, passwordConfirmation, role)
             result.onSuccess { response ->
                 if (!response.error && response.token != null && response.user != null) {
                     sessionManager.saveAuthToken(response.token)

@@ -28,7 +28,8 @@ class AuthRepository(private val sessionManager: SessionManager) {
         name: String,
         email: String,
         password: String,
-        passwordConfirmation: String
+        passwordConfirmation: String,
+        role:String
     ): Result<AuthResponse> {
         return try {
             val response = api.register(
@@ -36,7 +37,8 @@ class AuthRepository(private val sessionManager: SessionManager) {
                     name = name,
                     email = email,
                     password = password,
-                    password_confirmation = passwordConfirmation
+                    password_confirmation = passwordConfirmation,
+                    role=role
                 )
             )
             if (response.isSuccessful && response.body() != null) {

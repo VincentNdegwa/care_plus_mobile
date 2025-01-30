@@ -102,9 +102,6 @@ class MedicationRepository(private val sessionManager: SessionManager) {
         try {
             val response = ApiClient.medicationApi.updateMedication(id, updateData)
             if (response.isSuccessful && response.body() != null){
-                if (response.body()!!.error){
-                    return Result.failure(Exception(response.body()!!.message))
-                }
                 return Result.success(response.body()!!)
             }
             return  Result.failure(Exception("Unable to update medication"))

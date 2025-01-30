@@ -63,7 +63,7 @@ class RegisterFragment : Fragment() {
             val password = binding.passwordInput.text.toString()
             
             if (validateInput(name, email, password)) {
-                viewModel.register(name, email, password, password)
+                viewModel.register(name, email, password, password, "Patient")
             }
         }
     }

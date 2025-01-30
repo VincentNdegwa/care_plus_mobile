@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="@drawable/auth_background_gradient">
+    android:fillViewport="true" >
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -16,7 +15,6 @@
             android:layout_height="120dp"
             android:layout_marginTop="48dp"
             android:src="@drawable/ic_medication"
-            android:tint="@color/surface_light"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -27,7 +25,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Welcome Back"
-            android:textColor="@color/surface_light"
             android:textSize="32sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -40,7 +37,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Your health companion awaits"
-            android:textColor="@color/surface_light"
             android:alpha="0.8"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -56,7 +52,7 @@
             android:layout_marginBottom="24dp"
             app:cardCornerRadius="28dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="#66FFFFFF"
+            app:cardBackgroundColor="#0DFFFFFF"
             android:alpha="0.95"
             app:layout_constraintTop_toBottomOf="@id/subtitleText"
             app:layout_constraintBottom_toBottomOf="parent"

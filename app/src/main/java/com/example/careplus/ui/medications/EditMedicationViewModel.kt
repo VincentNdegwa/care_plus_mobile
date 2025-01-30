@@ -1,6 +1,7 @@
 package com.example.careplus.ui.medications
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -69,7 +70,11 @@ class EditMedicationViewModel(application: Application) : AndroidViewModel(appli
             try {
                 val result = repository.updateMedication(medicationId.toLong(), updateData)
                 result.onSuccess { response->
-                    _updateResult.value = Result.success(response)
+                    if (response.error){
+                        _updateResult.value = Result.failure(Exception(response.message))
+                    }else{
+                        _updateResult.value = Result.success(response)
+                    }
                 }
             } catch (e: Exception) {
                 _updateResult.value = Result.failure(e)

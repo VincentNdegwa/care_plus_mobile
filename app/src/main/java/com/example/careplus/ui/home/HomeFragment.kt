@@ -99,6 +99,9 @@ class HomeFragment : Fragment() {
         viewModel.schedules.observe(viewLifecycleOwner) { result ->
             result.onSuccess { schedules ->
                 scheduleAdapter.submitList(schedules)
+                if (schedules.isNotEmpty()){
+                    binding.medicationsTitle.visibility= View.VISIBLE
+                }
             }.onFailure { exception ->
                 SnackbarUtils.showSnackbar(
                     binding.root,
