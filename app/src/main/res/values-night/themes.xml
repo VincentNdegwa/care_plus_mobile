@@ -23,7 +23,7 @@
     </style>
 
     <style name="Widget.CarePlus.TextInputLayout.Glassmorphism" parent="Widget.CarePlus.TextInputLayout">
-        <item name="boxBackgroundColor">#26FFFFFF</item>
+        <item name="boxBackgroundColor">#FFFFFF</item>
         <item name="boxStrokeColor">@color/primary</item>
         <item name="android:alpha">0.9</item>
         <item name="hintTextColor">@color/surface_light</item>
