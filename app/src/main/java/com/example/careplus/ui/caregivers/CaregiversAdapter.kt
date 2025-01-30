@@ -24,7 +24,6 @@ class CaregiversAdapter : ListAdapter<Data, CaregiversAdapter.CaregiverViewHolde
             binding.apply {
                 caregiverName.text = caregiver.name
                 caregiverEmail.text = caregiver.email
-                // Set other fields as necessary
             }
         }
     }

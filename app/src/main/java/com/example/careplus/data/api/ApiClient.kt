@@ -51,6 +51,12 @@ object ApiClient {
         }
         retrofit.create(DashboardApi::class.java)
     }
+    val caregiverApi: CaregiverApi by lazy {
+        if (!::retrofit.isInitialized) {
+            throw IllegalStateException("ApiClient must be initialized with create() before accessing dashboardApi")
+        }
+        retrofit.create(CaregiverApi::class.java)
+    }
 
 }
 
