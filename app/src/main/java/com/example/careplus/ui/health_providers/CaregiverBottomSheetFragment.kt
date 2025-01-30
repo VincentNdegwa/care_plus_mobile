@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
+import android.widget.Toast
+import com.bumptech.glide.Glide
 import com.example.careplus.R
 import com.example.careplus.data.model.CaregiverData
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -33,15 +36,64 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         displayCaregiverDetails()
+        binding.menuButton.setOnClickListener {
+            showMenu(it)
+        }
+    }
+
+    private fun showMenu(view: View) {
+        val popupMenu = PopupMenu(requireContext(), view)
+        popupMenu.menuInflater.inflate(R.menu.caregiver_actions_menu, popupMenu.menu)
+
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_set_as_doctor -> {
+                    Toast.makeText(requireContext(), "Set as My Doctor clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.action_set_as_caregiver -> {
+                    Toast.makeText(requireContext(), "Set as Caregiver clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.action_call -> {
+                    Toast.makeText(requireContext(), "Call clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.action_send_report -> {
+                    Toast.makeText(requireContext(), "Send Health Report clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
+        }
+        popupMenu.show()
     }
 
     private fun displayCaregiverDetails() {
         binding.caregiverName.text = caregiverData.name
         binding.caregiverEmail.text = caregiverData.email
         binding.caregiverRole.text = caregiverData.role
-        // Load avatar if available
-        // Glide.with(this).load(caregiverData.profile.avatar).into(binding.caregiverAvatar)
+
+        binding.caregiverAddress.text = caregiverData.profile.address ?: "---"
+        binding.caregiverPhone.text = caregiverData.profile.phone_number ?: "---"
+        binding.caregiverSpecialization.text = caregiverData.user_role.specialization ?: "---"
+
+        // Load agency and clinic details
+        binding.agencyName.text = caregiverData.user_role.agency_name ?: "---"
+        binding.clinicName.text = caregiverData.user_role.clinic_name ?: "---"
+
+        // Load profile image (if available)
+        if (!caregiverData.profile.avatar.isNullOrEmpty()) {
+            Glide.with(binding.root.context)
+                .load(caregiverData.profile.avatar)
+                .placeholder(R.drawable.caregiver)
+                .error(R.drawable.caregiver)
+                .into(binding.profileImage)
+        } else {
+            binding.profileImage.setImageResource(R.drawable.caregiver)
+        }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

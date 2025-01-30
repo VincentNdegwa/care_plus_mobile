@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_set_as_doctor"
+        android:title="Set as My Doctor" />
+    <item
+        android:id="@+id/action_set_as_caregiver"
+        android:title="Set as Caregiver" />
+    <item
+        android:id="@+id/action_call"
+        android:title="Call" />
+    <item
+        android:id="@+id/action_send_report"
+        android:title="Send Health Report" />
+</menu> 
