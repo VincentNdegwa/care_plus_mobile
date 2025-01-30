@@ -41,7 +41,10 @@ class MyCaregiversFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        healthProvidersAdapter = HealthProvidersAdapter()
+        healthProvidersAdapter = HealthProvidersAdapter{ caregiver ->
+            val bottomSheet = CaregiverBottomSheetFragment.newInstance(caregiver)
+            bottomSheet.show(parentFragmentManager, bottomSheet.tag)
+        }
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = healthProvidersAdapter

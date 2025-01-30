@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.careplus.databinding.FragmentHealthProvidersBinding
 import com.google.android.material.tabs.TabLayoutMediator
+import androidx.lifecycle.ViewModelProvider
 
 class HealthProvidersFragment : Fragment() {
     private var _binding: FragmentHealthProvidersBinding? = null
@@ -28,6 +29,8 @@ class HealthProvidersFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.toolbar.setPageTitle("Health Providers")
         setupViewPager()
+        setupRecyclerView()
+        observeViewModel()
     }
 
     private fun setupViewPager() {
@@ -44,7 +47,22 @@ class HealthProvidersFragment : Fragment() {
         }.attach()
     }
 
+    private fun setupRecyclerView() {
+        healthProvidersAdapter = HealthProvidersAdapter { caregiver ->
+            val bottomSheet = CaregiverBottomSheetFragment.newInstance(caregiver)
+            bottomSheet.show(parentFragmentManager, bottomSheet.tag)
+        }
+        binding.recyclerView.adapter = healthProvidersAdapter
+    }
 
+    private fun observeViewModel() {
+        viewModel.fetchAllCaregivers() // Fetch caregivers
+        viewModel.caregivers.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { caregivers ->
+                healthProvidersAdapter.submitList(caregivers.data) // Update the adapter with the list of caregivers
+            }
+        }
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
