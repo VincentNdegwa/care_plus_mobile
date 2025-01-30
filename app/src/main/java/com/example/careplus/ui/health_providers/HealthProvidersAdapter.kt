@@ -24,6 +24,10 @@ class HealthProvidersAdapter : ListAdapter<Data, HealthProvidersAdapter.Caregive
             binding.apply {
                 caregiverName.text = caregiver.name
                 caregiverEmail.text = caregiver.email
+                caregiverRole.text = caregiver.role
+                if (caregiver.user_role.specialization != null){
+                    caregiverSpeciality.text = caregiver.user_role.specialization?.toString()
+                }
             }
         }
     }
