@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.careplus.databinding.FragmentCaregiversBinding
 import com.example.careplus.utils.SnackbarUtils
+import com.google.android.material.tabs.TabLayoutMediator
 
 class CaregiversFragment : Fragment() {
     private var _binding: FragmentCaregiversBinding? = null
@@ -27,17 +28,23 @@ class CaregiversFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupRecyclerView()
+        setupViewPager()
         observeCaregivers()
         viewModel.fetchAllCaregivers() // Fetch caregivers when the view is created
     }
 
-    private fun setupRecyclerView() {
-        caregiversAdapter = CaregiversAdapter() // Initialize your adapter
-        binding.recyclerView.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = caregiversAdapter
-        }
+    private fun setupViewPager() {
+        val pagerAdapter = CaregiverPagerAdapter(this)
+        binding.viewPager.adapter = pagerAdapter
+
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            tab.text = when (position) {
+                0 -> "All Caregivers"
+                1 -> "My Doctors"
+                2 -> "My Caregivers"
+                else -> null
+            }
+        }.attach()
     }
 
     private fun observeCaregivers() {
