@@ -68,11 +68,6 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        // No need to set bottom nav selection
-    }
-
     private fun setupRecyclerView() {
         scheduleAdapter = MedicationScheduleAdapter { medicationId:Int ->
             fetchMedicationDetails(medicationId)

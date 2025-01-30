@@ -23,6 +23,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/searchContainer"
         app:layout_constraintStart_toStartOf="parent"
+        android:padding="7dp"
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout> 
