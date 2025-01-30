@@ -89,4 +89,5 @@
             app:argType="com.example.careplus.data.model.MedicationDetails" />
     </action>
 
+
 </navigation> 

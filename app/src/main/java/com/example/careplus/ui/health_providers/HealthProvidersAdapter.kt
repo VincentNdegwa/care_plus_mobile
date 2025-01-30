@@ -41,4 +41,4 @@ class HealthProvidersAdapter : ListAdapter<Data, HealthProvidersAdapter.Caregive
             return oldItem == newItem
         }
     }
-} 
+}
