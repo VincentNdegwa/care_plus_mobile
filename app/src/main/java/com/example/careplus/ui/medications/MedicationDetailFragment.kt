@@ -21,6 +21,7 @@ class MedicationDetailFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: MedicationDetailViewModel by viewModels()
     private val args: MedicationDetailFragmentArgs by navArgs()
+    private lateinit var updatedMedicationDetails: MedicationDetails
     private var isFabExpanded = false
 
     override fun onCreateView(
@@ -37,7 +38,8 @@ class MedicationDetailFragment : Fragment() {
         setupFabs()
         
         val medicationDetails = args.medicationDetails
-        displayMedicationDetails(medicationDetails)
+        updatedMedicationDetails =medicationDetails
+        displayMedicationDetails(updatedMedicationDetails)
         viewModel.setMedicationDetails(medicationDetails)
 
         setupObservers()
@@ -95,7 +97,7 @@ class MedicationDetailFragment : Fragment() {
             findNavController().navigate(
                 MedicationDetailFragmentDirections.actionMedicationDetailToEdit(
                     args.medicationDetails.id.toInt(),
-                    args.medicationDetails
+                    updatedMedicationDetails
                 )
             )
         }
@@ -174,7 +176,8 @@ class MedicationDetailFragment : Fragment() {
     private fun setupObservers() {
         viewModel.medication.observe(viewLifecycleOwner) { result ->
             result.onSuccess { medicationDetails ->
-                displayMedicationDetails(medicationDetails)
+                displayMedicationDetails(updatedMedicationDetails)
+                updatedMedicationDetails = medicationDetails
             }.onFailure { exception ->
                 Log.e("MedicationDetailFragment", "Error fetching medication details", exception)
                 SnackbarUtils.showSnackbar(binding.root, "Failed to load medication details")

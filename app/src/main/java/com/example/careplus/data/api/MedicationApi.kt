@@ -9,6 +9,8 @@ import com.example.careplus.data.model.MedicationFormResource
 import com.example.careplus.data.model.MedicationRouteResource
 import com.example.careplus.data.model.MedicationUnitResource
 import com.example.careplus.data.model.MedicationFrequencyResource
+import com.example.careplus.data.model.MedicationUpdateResponse
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -26,7 +28,7 @@ interface MedicationApi {
     suspend fun updateMedication(
         @Path("id") id: Long,
         @Body updateRequest: MedicationUpdateRequest
-    )
+    ): Response<MedicationUpdateResponse>
 
     @GET("medications/medication-resources/forms")
     suspend fun getMedicationForms(): List<MedicationFormResource>

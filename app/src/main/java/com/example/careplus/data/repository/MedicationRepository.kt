@@ -14,8 +14,10 @@ import com.example.careplus.data.model.MedicationFrequencyResource
 import com.example.careplus.data.model.PatientInfo
 import com.example.careplus.data.model.DoctorInfo
 import com.example.careplus.data.model.CaregiverInfo
+import com.example.careplus.data.model.MedicationDetailResponse
 import com.example.careplus.data.model.MedicationForm
 import com.example.careplus.data.model.MedicationRoute
+import com.example.careplus.data.model.MedicationUpdateResponse
 
 class MedicationRepository(private val sessionManager: SessionManager) {
     init {
@@ -96,9 +98,16 @@ class MedicationRepository(private val sessionManager: SessionManager) {
         }
     }
 
-    suspend fun updateMedication(id: Long, updateData: MedicationUpdateRequest) {
+    suspend fun updateMedication(id: Long, updateData: MedicationUpdateRequest): Result<MedicationUpdateResponse> {
         try {
-            ApiClient.medicationApi.updateMedication(id, updateData)
+            val response = ApiClient.medicationApi.updateMedication(id, updateData)
+            if (response.isSuccessful && response.body() != null){
+                if (response.body()!!.error){
+                    return Result.failure(Exception(response.body()!!.message))
+                }
+                return Result.success(response.body()!!)
+            }
+            return  Result.failure(Exception("Unable to update medication"))
         } catch (e: HttpException) {
             when (e.code()) {
                 404 -> throw Exception("Medication not found")

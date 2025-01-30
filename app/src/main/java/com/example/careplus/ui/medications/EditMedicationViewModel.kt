@@ -12,6 +12,8 @@ import com.example.careplus.data.model.MedicationFrequencyResource
 import com.example.careplus.data.model.MedicationRouteResource
 import com.example.careplus.data.model.MedicationUnitResource
 import com.example.careplus.data.model.MedicationUpdateRequest
+import com.example.careplus.data.model.MedicationUpdateResponse
+import com.example.careplus.data.model.MedicationUpdated
 import com.example.careplus.data.repository.MedicationRepository
 import kotlinx.coroutines.launch
 
@@ -22,8 +24,8 @@ class EditMedicationViewModel(application: Application) : AndroidViewModel(appli
     private val _medicationDetails = MutableLiveData<Result<MedicationDetails>>()
     val medicationDetails: LiveData<Result<MedicationDetails>> = _medicationDetails
 
-    private val _updateResult = MutableLiveData<Result<Unit>>()
-    val updateResult: LiveData<Result<Unit>> = _updateResult
+    private val _updateResult = MutableLiveData<Result<MedicationUpdateResponse>>()
+    val updateResult: LiveData<Result<MedicationUpdateResponse>> = _updateResult
 
     private val _forms = MutableLiveData<Result<List<MedicationFormResource>>>()
     val forms: LiveData<Result<List<MedicationFormResource>>> = _forms
@@ -65,8 +67,10 @@ class EditMedicationViewModel(application: Application) : AndroidViewModel(appli
     fun updateMedication(medicationId: Int, updateData: MedicationUpdateRequest) {
         viewModelScope.launch {
             try {
-                repository.updateMedication(medicationId.toLong(), updateData)
-                _updateResult.value = Result.success(Unit)
+                val result = repository.updateMedication(medicationId.toLong(), updateData)
+                result.onSuccess { response->
+                    _updateResult.value = Result.success(response)
+                }
             } catch (e: Exception) {
                 _updateResult.value = Result.failure(e)
             }

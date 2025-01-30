@@ -17,6 +17,8 @@ import com.example.careplus.data.model.MedicationFrequencyResource
 import com.example.careplus.data.model.MedicationRouteResource
 import com.example.careplus.data.model.MedicationUpdateRequest
 import com.example.careplus.data.model.MedicationUnitResource
+import com.example.careplus.data.model.MedicationUpdateResponse
+import com.example.careplus.data.model.MedicationUpdated
 import com.example.careplus.databinding.FragmentEditMedicationBinding
 import com.example.careplus.utils.SnackbarUtils
 
@@ -135,10 +137,14 @@ class EditMedicationFragment : Fragment() {
         }
 
         // Observe update result
-        viewModel.updateResult.observe(viewLifecycleOwner) { result: Result<Unit> ->
-            result.onSuccess {
-                SnackbarUtils.showSnackbar(binding.root, "Medication updated successfully", false)
-                findNavController().navigateUp()
+        viewModel.updateResult.observe(viewLifecycleOwner) { result: Result<MedicationUpdateResponse> ->
+            result.onSuccess { response->
+                if (!response.error){
+                    SnackbarUtils.showSnackbar(binding.root, response.message, false)
+                    findNavController().navigateUp()
+                }else{
+                    SnackbarUtils.showSnackbar(binding.root, response.message ?: "Error updating medication",true)
+                }
             }.onFailure { exception ->
                 SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error updating medication")
             }
@@ -249,8 +255,8 @@ class EditMedicationFragment : Fragment() {
                     medication_name = binding.medicationNameInput.text.toString(),
                     dosage_quantity = binding.dosageQuantityInput.text.toString(),
                     dosage_strength = combinedStrength,
-                    form_id = selectedForm?.id ?: 0,
-                    route_id = selectedRoute?.id ?: 0,
+                    form_id = selectedForm?.id,
+                    route_id = selectedRoute?.id,
                     frequency = binding.frequencyInput.text.toString(),
                     duration = binding.durationInput.text.toString(),
                     stock = binding.stockInput.text.toString().toIntOrNull() ?: 0
