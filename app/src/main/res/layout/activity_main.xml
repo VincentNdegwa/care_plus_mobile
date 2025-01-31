@@ -38,7 +38,8 @@
         android:id="@+id/navigationView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_gravity="end"
+        android:layout_gravity="start"
+        android:background="?android:colorBackgroundFloating"
         app:menu="@menu/drawer_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout> 

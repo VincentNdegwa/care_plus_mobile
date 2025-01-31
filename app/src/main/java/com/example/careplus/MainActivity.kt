@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.navigation_more -> {
-                    binding.drawerLayout.openDrawer(GravityCompat.END)
+                    binding.drawerLayout.openDrawer(GravityCompat.START)
                     true
                 }
                 else -> false
@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.loginFragment)
                 }
             }
-            binding.drawerLayout.closeDrawer(GravityCompat.END)
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
 
