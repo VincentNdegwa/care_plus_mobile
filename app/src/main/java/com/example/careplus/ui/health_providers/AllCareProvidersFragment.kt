@@ -13,6 +13,8 @@ import com.example.careplus.utils.SnackbarUtils
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.ProgressBar
+import androidx.core.content.ContextCompat
+import com.google.android.material.snackbar.Snackbar
 
 class AllCareProvidersFragment : Fragment() {
     private var _binding: FragmentAllCaregiversBinding? = null

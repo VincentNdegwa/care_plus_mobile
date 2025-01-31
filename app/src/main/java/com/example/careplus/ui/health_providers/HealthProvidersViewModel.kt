@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.careplus.data.SessionManager
+import com.example.careplus.data.model.CaregiverData
 import com.example.careplus.data.repository.CaregiverRepository
 import com.example.careplus.data.model.CaregiverResponse
 import com.example.careplus.data.repository.AuthRepository
@@ -22,6 +23,7 @@ class HealthProvidersViewModel(application: Application) : AndroidViewModel(appl
 
     private val _myCaregivers = MutableLiveData<Result<CaregiverResponse>>()
     val myCaregivers: LiveData<Result<CaregiverResponse>> = _myCaregivers
+
     private val sessionManager = SessionManager(application)
 
     fun fetchAllCaregivers() {
@@ -34,32 +36,34 @@ class HealthProvidersViewModel(application: Application) : AndroidViewModel(appl
             }
         }
     }
+
     fun fetchMyDoctors() {
         viewModelScope.launch {
             try {
                 val patientId = sessionManager.getUser()?.patient?.id
-                if (patientId != null){
+                if (patientId != null) {
                     val response = repository.fetchMyDoctors(patientId)
                     _myDoctors.value = Result.success(response)
-                }else{
+                } else {
                     _myDoctors.value = Result.failure(Exception("Please logout then login"))
                 }
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 _myDoctors.value = Result.failure(e)
             }
         }
     }
+
     fun fetchMyCaregivers() {
         viewModelScope.launch {
             try {
                 val patientId = sessionManager.getUser()?.patient?.id
-                if (patientId != null){
+                if (patientId != null) {
                     val response = repository.fetchMyCaregivers(patientId)
                     _myCaregivers.value = Result.success(response)
-                }else{
+                } else {
                     _myCaregivers.value = Result.failure(Exception("Please logout then login"))
                 }
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 _myCaregivers.value = Result.failure(e)
             }
         }

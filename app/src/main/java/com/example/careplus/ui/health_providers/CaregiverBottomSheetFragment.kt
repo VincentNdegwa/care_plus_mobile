@@ -13,18 +13,43 @@ import com.example.careplus.R
 import com.example.careplus.data.model.CaregiverData
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.example.careplus.databinding.FragmentCaregiverBottomSheetBinding
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import com.example.careplus.data.SessionManager
+import com.example.careplus.data.repository.CaregiverRepository
+import com.example.careplus.utils.SnackbarUtils
+import android.util.Log
+import com.google.android.material.snackbar.Snackbar
+import androidx.core.content.ContextCompat
+import com.example.careplus.MainActivity
+import android.content.Context
+
+interface CaregiverActionListener {
+    fun onCaregiverRemoved(roleId: Int)
+    fun onDoctorRemoved(roleId: Int)
+}
 
 class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
     private var _binding: FragmentCaregiverBottomSheetBinding? = null
     private val binding get() = _binding!!
+    private var actionListener: CaregiverActionListener? = null
 
     private lateinit var caregiverData: CaregiverData
+    private lateinit var repository: CaregiverRepository
+    private lateinit var sessionManager: SessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             caregiverData = it.getParcelable(ARG_CAREGIVER)!!
         }
+        repository = CaregiverRepository()
+        sessionManager = SessionManager(requireContext())
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        actionListener = parentFragment as? CaregiverActionListener
     }
 
     override fun onCreateView(
@@ -32,8 +57,6 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCaregiverBottomSheetBinding.inflate(inflater, container, false)
-        
-        // Set the background of the bottom sheet to transparent
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         
         return binding.root
@@ -48,47 +71,165 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun showMenu(view: View) {
-        val popupMenu = PopupMenu(requireContext(), view)
+        val popup = PopupMenu(requireContext(), view)
+        popup.menuInflater.inflate(R.menu.caregiver_actions_menu, popup.menu)
 
-        // Inflate the menu layout
-        popupMenu.menuInflater.inflate(R.menu.caregiver_actions_menu, popupMenu.menu)
-
-        // Clear existing menu items
-        popupMenu.menu.clear()
-
-        // Add menu items conditionally based on the caregiver's role
-        if (caregiverData.role == "Doctor") {
-            popupMenu.menu.add(0, R.id.action_set_as_doctor, 0, "Set as My Doctor")
-        } else if (caregiverData.role == "Caregiver") {
-            popupMenu.menu.add(0, R.id.action_set_as_caregiver, 0, "Set as Caregiver")
+        // Show/hide menu items based on role
+        val menu = popup.menu
+        when (caregiverData.role.lowercase()) {
+            "doctor" -> {
+                menu.findItem(R.id.action_set_as_caregiver)?.isVisible = false
+                menu.findItem(R.id.action_remove_as_caregiver)?.isVisible = false
+            }
+            "caregiver" -> {
+                menu.findItem(R.id.action_set_as_doctor)?.isVisible = false
+                menu.findItem(R.id.action_remove_as_doctor)?.isVisible = false
+            }
         }
 
-        // Always add these options
-        popupMenu.menu.add(0, R.id.action_call, 0, "Call")
-        popupMenu.menu.add(0, R.id.action_send_report, 0, "Send Health Report")
-
-        popupMenu.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.action_call -> {
-                    Toast.makeText(requireContext(), "Call clicked", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                R.id.action_send_report -> {
-                    Toast.makeText(requireContext(), "Send Health Report clicked", Toast.LENGTH_SHORT).show()
-                    true
-                }
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
                 R.id.action_set_as_doctor -> {
-                    Toast.makeText(requireContext(), "Set as My Doctor clicked", Toast.LENGTH_SHORT).show()
+                    handleSetDoctor()
+                    true
+                }
+                R.id.action_remove_as_doctor -> {
+                    handleRemoveDoctor()
                     true
                 }
                 R.id.action_set_as_caregiver -> {
-                    Toast.makeText(requireContext(), "Set as Caregiver clicked", Toast.LENGTH_SHORT).show()
+                    handleSetCaregiver()
                     true
                 }
+                R.id.action_remove_as_caregiver -> {
+                    handleRemoveCaregiver()
+                    true
+                }
+//                R.id.action_call -> {
+//                    // Handle call action
+//                    Toast.makeText(context, "Call action clicked", Toast.LENGTH_SHORT).show()
+//                    true
+//                }
+//                R.id.action_send_report -> {
+//                    // Handle send report action
+//                    Toast.makeText(context, "Send report clicked", Toast.LENGTH_SHORT).show()
+//                    true
+//                }
                 else -> false
             }
         }
-        popupMenu.show()
+        popup.show()
+    }
+
+    private fun handleSetDoctor() {
+        lifecycleScope.launch {
+            try {
+                val patientId = sessionManager.getUser()?.patient?.id
+                if (patientId != null) {
+                    val result = repository.setDoctor(caregiverData.user_role.id, patientId)
+                    result.onSuccess { response ->
+                        if (response.error) {
+                            showSnackbar(response.message)
+                        } else {
+                            showSnackbar("Successfully set as doctor", false)
+                        }
+                    }.onFailure { exception ->
+                        showSnackbar(exception.message ?: "Failed to set doctor")
+                    }
+                }
+            } catch (e: Exception) {
+                showSnackbar(e.message ?: "An error occurred")
+            }
+            dismiss()
+        }
+    }
+
+    private fun handleRemoveDoctor() {
+        lifecycleScope.launch {
+            try {
+                val patientId = sessionManager.getUser()?.patient?.id
+                if (patientId != null) {
+                    val result = repository.removeDoctor(caregiverData.user_role.id, patientId)
+                    result.onSuccess { response ->
+                        if (response.error) {
+                            showSnackbar(response.message)
+                        } else {
+                            actionListener?.onDoctorRemoved(caregiverData.user_role.id)
+                            showSnackbar("Successfully removed doctor", false)
+                        }
+                    }.onFailure { exception ->
+                        showSnackbar(exception.message ?: "Failed to remove doctor")
+                    }
+                }
+            } catch (e: Exception) {
+                showSnackbar(e.message ?: "An error occurred")
+            }
+            dismiss()
+        }
+    }
+
+    private fun handleSetCaregiver() {
+        lifecycleScope.launch {
+            try {
+                val patientId = sessionManager.getUser()?.patient?.id
+                if (patientId != null) {
+                    val result = repository.setCaregiver(caregiverData.user_role.id, patientId, "mother")
+                    result.onSuccess { response ->
+                        if (response.error) {
+                            showSnackbar(response.message)
+                        } else {
+                            showSnackbar("Successfully set as caregiver", false)
+                        }
+                    }.onFailure { exception ->
+                        showSnackbar(exception.message ?: "Failed to set caregiver")
+                    }
+                }
+            } catch (e: Exception) {
+                showSnackbar(e.message ?: "An error occurred")
+            }
+            dismiss()
+
+        }
+    }
+
+    private fun handleRemoveCaregiver() {
+        lifecycleScope.launch {
+            try {
+                val patientId = sessionManager.getUser()?.patient?.id
+                if (patientId != null) {
+                    val result = repository.removeCaregiver(caregiverData.user_role.id, patientId)
+                    result.onSuccess { response ->
+                        if (response.error) {
+                            showSnackbar(response.message)
+                        } else {
+                            actionListener?.onCaregiverRemoved(caregiverData.user_role.id)
+                            showSnackbar("Successfully removed caregiver", false)
+                        }
+                    }.onFailure { exception ->
+                        showSnackbar(exception.message ?: "Failed to remove caregiver")
+                    }
+                }
+            } catch (e: Exception) {
+                showSnackbar(e.message ?: "An error occurred")
+            }
+            dismiss()
+        }
+    }
+
+    private fun showSnackbar(message: String, isError: Boolean = true) {
+        val activity = requireActivity() as MainActivity
+        val bottomNav = activity.findViewById<View>(R.id.bottomNav)
+        val rootView = activity.findViewById<View>(android.R.id.content)
+
+        val snackbar = Snackbar.make(rootView, message, Snackbar.LENGTH_LONG)
+            .setBackgroundTint(ContextCompat.getColor(
+                requireContext(),
+                if (isError) R.color.error else R.color.success
+            ))
+            .setTextColor(ContextCompat.getColor(requireContext(), R.color.surface_light))
+            .setAnchorView(bottomNav)
+
+        snackbar.show()
     }
 
     private fun displayCaregiverDetails() {
@@ -116,10 +257,14 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        actionListener = null
     }
 
     companion object {
@@ -134,5 +279,4 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
             return fragment
         }
     }
-
 } 

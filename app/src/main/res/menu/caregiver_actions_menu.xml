@@ -4,8 +4,14 @@
         android:id="@+id/action_set_as_doctor"
         android:title="Set as My Doctor" />
     <item
+        android:id="@+id/action_remove_as_doctor"
+        android:title="Remove as My Doctor" />
+    <item
         android:id="@+id/action_set_as_caregiver"
         android:title="Set as Caregiver" />
+    <item
+        android:id="@+id/action_remove_as_caregiver"
+        android:title="Remove as Caregiver" />
     <item
         android:id="@+id/action_call"
         android:title="Call" />

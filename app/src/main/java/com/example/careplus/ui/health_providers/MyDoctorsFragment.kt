@@ -13,12 +13,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.careplus.databinding.FragmentMyDoctorsBinding
 import com.example.careplus.utils.SnackbarUtils
 import android.widget.ProgressBar
+import androidx.core.content.ContextCompat
 
 class MyDoctorsFragment : Fragment() {
     private var _binding: FragmentMyDoctorsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: HealthProvidersViewModel by viewModels()
-    private lateinit var healthProvidersAdapter: HealthProvidersAdapter // Create an adapter for displaying doctors
+    private lateinit var healthProvidersAdapter: HealthProvidersAdapter
     private lateinit var loadingIndicator: ProgressBar
     private lateinit var emptyStateText: TextView
 
@@ -40,7 +41,7 @@ class MyDoctorsFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        healthProvidersAdapter = HealthProvidersAdapter{  caregiver ->
+        healthProvidersAdapter = HealthProvidersAdapter { caregiver ->
             val bottomSheet = CaregiverBottomSheetFragment.newInstance(caregiver)
             bottomSheet.show(parentFragmentManager, bottomSheet.tag)
         }
@@ -52,16 +53,16 @@ class MyDoctorsFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.myDoctors.observe(viewLifecycleOwner) { result ->
-            loadingIndicator.visibility = GONE // Hide loading indicator
+            loadingIndicator.visibility = GONE
             result.onSuccess { response ->
                 if (response.data.isNullOrEmpty()) {
-                    emptyStateText.visibility = VISIBLE // Show empty state
-                    healthProvidersAdapter.submitList(emptyList()) // Clear the adapter
-                    binding.recyclerView.visibility = GONE // Hide the RecyclerView
+                    emptyStateText.visibility = VISIBLE
+                    healthProvidersAdapter.submitList(emptyList())
+                    binding.recyclerView.visibility = GONE
                 } else {
-                    emptyStateText.visibility = GONE // Hide empty state
-                    healthProvidersAdapter.submitList(response.data) // Update the adapter with the fetched data
-                    binding.recyclerView.visibility = VISIBLE // Show the RecyclerView when data is available
+                    emptyStateText.visibility = GONE
+                    healthProvidersAdapter.submitList(response.data)
+                    binding.recyclerView.visibility = VISIBLE
                 }
             }.onFailure { exception ->
                 SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error fetching doctors")
