@@ -59,7 +59,7 @@ class HealthProvidersFragment : Fragment() {
         viewModel.fetchAllCaregivers() // Fetch caregivers
         viewModel.caregivers.observe(viewLifecycleOwner) { result ->
             result.onSuccess { caregivers ->
-                healthProvidersAdapter.submitList(caregivers.data) // Update the adapter with the list of caregivers
+                healthProvidersAdapter.submitList(caregivers) // Update the adapter with the list of caregivers
             }
         }
     }

@@ -15,8 +15,10 @@ import com.example.careplus.databinding.FragmentMyDoctorsBinding
 import com.example.careplus.utils.SnackbarUtils
 import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
-class MyDoctorsFragment : Fragment(), CaregiverActionListener {
+class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheetFragment.FilterListener {
     private var _binding: FragmentMyDoctorsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: HealthProvidersViewModel by viewModels()
@@ -36,6 +38,9 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupSearch()
+        setupFilterButton()
         setupRecyclerView()
         setupObservers()
         viewModel.fetchMyDoctors()
@@ -44,6 +49,20 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener {
     override fun onResume() {
         super.onResume()
         viewModel.fetchMyDoctors()
+    }
+
+    private fun setupSearch() {
+//        binding.searchEditText.doOnTextChanged { text, _, _, _ ->
+//            // TODO: Implement search functionality
+//        }
+    }
+
+    private fun setupFilterButton() {
+//        binding.filterButton.setOnClickListener {
+//            val filterBottomSheet = FilterBottomSheetFragment.newInstance()
+//            filterBottomSheet.setFilterListener(this)
+//            filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
+//        }
     }
 
     private fun setupRecyclerView() {
@@ -94,5 +113,13 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener {
             binding.recyclerView.visibility = GONE
         }
         healthProvidersAdapter.submitList(currentList)
+    }
+
+    override fun onFiltersApplied(
+        specialization: String?,
+        clinicName: String?,
+        agencyName: String?
+    ) {
+        // TODO: Implement filter functionality
     }
 } 

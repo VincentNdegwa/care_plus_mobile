@@ -27,4 +27,5 @@
     <color name="error">#B00020</color>
     <color name="success">#4CAF50</color>
     <color name="transparent">#00000000</color>
+    <color name="glass_morphism_background_dark">#1A1A1A</color>
 </resources>

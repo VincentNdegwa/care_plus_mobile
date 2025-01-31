@@ -15,8 +15,9 @@ import android.view.View.VISIBLE
 import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
+import androidx.core.widget.doOnTextChanged
 
-class AllCareProvidersFragment : Fragment() {
+class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterListener {
     private var _binding: FragmentAllCaregiversBinding? = null
     private val binding get() = _binding!!
     private val viewModel: HealthProvidersViewModel by viewModels()
@@ -36,14 +37,15 @@ class AllCareProvidersFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
-        observeCaregivers()
-        viewModel.fetchAllCaregivers()
-        // Fetch and observe caregivers data here
+        setupSearch()
+        setupFilterButton()
+        observeViewModel()
     }
 
     private fun setupRecyclerView() {
-        healthProvidersAdapter = HealthProvidersAdapter{ caregiver ->
+        healthProvidersAdapter = HealthProvidersAdapter { caregiver ->
             val bottomSheet = CaregiverBottomSheetFragment.newInstance(caregiver)
             bottomSheet.show(parentFragmentManager, bottomSheet.tag)
         }
@@ -52,21 +54,53 @@ class AllCareProvidersFragment : Fragment() {
             adapter = healthProvidersAdapter
         }
     }
-    private fun observeCaregivers() {
-        viewModel.caregivers.observe(viewLifecycleOwner) { result ->
-            loadingIndicator.visibility = GONE // Hide loading indicator
-            result.onSuccess { response ->
-                if (response.data.isNullOrEmpty()) {
-                    emptyStateText.visibility = VISIBLE // Show empty state
-                    healthProvidersAdapter.submitList(emptyList()) // Clear the adapter
-                    binding.recyclerView.visibility = GONE // Hide the RecyclerView
+
+    private fun setupSearch() {
+        binding.searchEditText.doOnTextChanged { text, _, _, _ ->
+            viewModel.searchCaregivers(text?.toString() ?: "")
+        }
+    }
+
+    private fun setupFilterButton() {
+        binding.filterButton.setOnClickListener {
+            val filterBottomSheet = FilterBottomSheetFragment.newInstance()
+            filterBottomSheet.setFilterListener(this)
+            filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
+        }
+    }
+
+    override fun onFiltersApplied(
+        specialization: String?,
+        clinicName: String?,
+        agencyName: String?
+    ) {
+        if (specialization == null && clinicName == null && agencyName == null) {
+            // All filters were cleared
+            binding.searchEditText.text?.clear()
+            viewModel.clearFilters()
+        } else {
+            viewModel.applyFilters(specialization, clinicName, agencyName)
+        }
+    }
+
+    private fun observeViewModel() {
+        viewModel.filteredCaregivers.observe(viewLifecycleOwner) { result ->
+            binding.loadingIndicator.visibility = View.GONE
+            
+            result.onSuccess { caregivers ->
+                if (caregivers.isEmpty()) {
+                    binding.emptyStateText.visibility = View.VISIBLE
+                    binding.recyclerView.visibility = View.GONE
                 } else {
-                    emptyStateText.visibility = GONE // Hide empty state
-                    healthProvidersAdapter.submitList(response.data) // Update the adapter with the fetched data
-                    binding.recyclerView.visibility = VISIBLE // Show the RecyclerView when data is available
+                    binding.emptyStateText.visibility = View.GONE
+                    binding.recyclerView.visibility = View.VISIBLE
+                    healthProvidersAdapter.submitList(caregivers)
                 }
             }.onFailure { exception ->
-                SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error fetching caregivers")
+                SnackbarUtils.showSnackbar(
+                    binding.root,
+                    exception.message ?: "Error fetching caregivers"
+                )
             }
         }
     }

@@ -15,8 +15,9 @@ import com.example.careplus.databinding.FragmentMedicationsBinding
 import com.example.careplus.utils.SnackbarUtils
 import com.example.careplus.data.model.MedicationDetails
 import androidx.navigation.fragment.findNavController
+import com.example.careplus.ui.health_providers.FilterBottomSheetFragment
 
-class MedicationsFragment : Fragment() {
+class MedicationsFragment : Fragment(), FilterBottomSheetFragment.FilterListener {
     private var _binding: FragmentMedicationsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: MedicationsViewModel by viewModels {
@@ -29,7 +30,7 @@ class MedicationsFragment : Fragment() {
     private val medicationsAdapter = MedicationsAdapter { medication ->
         // Log the medication details before navigating
         Log.d("MedicationsFragment", "Navigating to EditMedicationFragment with: $medication")
-        
+
         // Ensure medication is not null
         if (medication != null) {
             findNavController().navigate(
@@ -46,17 +47,19 @@ class MedicationsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMedicationsBinding.inflate(inflater, container, false)
-        
+
         setupViews()
         setupRecyclerView()
         setupObservers()
-        
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.toolbar.setPageTitle("Medications")
+//        setupSearch()
+//        setupFilterButton()
     }
 
     private fun setupViews() {
@@ -80,7 +83,7 @@ class MedicationsFragment : Fragment() {
         viewModel.medications.observe(viewLifecycleOwner) { result: Result<List<MedicationDetails>> ->
             binding.progressBar.visibility = View.GONE
             binding.medicationsList.visibility = View.VISIBLE
-            
+
             result.onSuccess { medications ->
                 Log.d("MedicationsFragment", "Medications received: ${medications.size}")
                 medicationsAdapter.submitList(medications)
@@ -95,8 +98,12 @@ class MedicationsFragment : Fragment() {
 
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    override fun onFiltersApplied(
+        specialization: String?,
+        clinicName: String?,
+        agencyName: String?
+    ) {
+        TODO("Not yet implemented")
     }
-} 
+}
+   

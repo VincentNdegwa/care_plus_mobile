@@ -15,8 +15,10 @@ import android.view.View.VISIBLE
 import android.widget.ProgressBar
 import com.google.android.material.snackbar.Snackbar
 import androidx.core.content.ContextCompat
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
-class MyCaregiversFragment : Fragment(), CaregiverActionListener {
+class MyCaregiversFragment : Fragment(), CaregiverActionListener, FilterBottomSheetFragment.FilterListener {
     private var _binding: FragmentMyCaregiversBinding? = null
     private val binding get() = _binding!!
     private val viewModel: HealthProvidersViewModel by viewModels()
@@ -36,6 +38,9 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupSearch()
+        setupFilterButton()
         setupRecyclerView()
         setupObservers()
         viewModel.fetchMyCaregivers()
@@ -45,6 +50,20 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener {
     override fun onResume() {
         super.onResume()
         viewModel.fetchMyDoctors()
+    }
+
+    private fun setupSearch() {
+//        binding.searchEditText.doOnTextChanged { text, _, _, _ ->
+//            // TODO: Implement search functionality
+//        }
+    }
+
+    private fun setupFilterButton() {
+//        binding.filterButton.setOnClickListener {
+//            val filterBottomSheet = FilterBottomSheetFragment.newInstance()
+//            filterBottomSheet.setFilterListener(this)
+//            filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
+//        }
     }
 
     private fun setupRecyclerView() {
@@ -97,5 +116,13 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onFiltersApplied(
+        specialization: String?,
+        clinicName: String?,
+        agencyName: String?
+    ) {
+        // TODO: Implement filter functionality
     }
 } 

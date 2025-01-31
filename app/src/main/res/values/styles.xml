@@ -39,4 +39,8 @@
 <!--        <item name="backgroundTint">@color/primary</item>-->
 <!--        <item name="rippleColor">#40FFFFFF</item>-->
 <!--    </style>-->
+
+    <style name="SearchContainerStyle">
+        <item name="cardBackgroundColor">?android:attr/colorBackground</item>
+    </style>
 </resources> 
