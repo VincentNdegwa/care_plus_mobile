@@ -1,5 +1,6 @@
 package com.example.careplus.ui.health_providers
 
+import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -23,6 +24,9 @@ import com.google.android.material.snackbar.Snackbar
 import androidx.core.content.ContextCompat
 import com.example.careplus.MainActivity
 import android.content.Context
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.example.careplus.utils.BottomSheetUtils
 
 interface CaregiverActionListener {
     fun onCaregiverRemoved(roleId: Int)
@@ -267,6 +271,12 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
     override fun onDetach() {
         super.onDetach()
         actionListener = null
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
+        BottomSheetUtils.setupBottomSheetDialog(this, dialog)
+        return dialog
     }
 
     companion object {
