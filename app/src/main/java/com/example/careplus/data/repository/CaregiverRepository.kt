@@ -5,16 +5,32 @@ import com.example.careplus.data.model.*
 import retrofit2.HttpException
 import com.google.gson.Gson
 import android.util.Log
+import com.example.careplus.data.filter_model.FilterCareProviders
 
 class CaregiverRepository {
-    suspend fun fetchAllCaregivers(): CaregiverResponse {
-        return ApiClient.caregiverApi.fetchAllCaregivers()
+    private fun FilterCareProviders?.toMap(): Map<String, String> {
+        if (this == null) return emptyMap()
+        return buildMap {
+            agency_name?.let { if (it.isNotBlank()) put("agency_name", it) }
+            gender?.let { if (it.isNotBlank()) put("gender", it) }
+            role?.let { if (it.isNotBlank()) put("role", it) }
+            search?.let { if (it.isNotBlank()) put("search", it) }
+            specialization?.let { if (it.isNotBlank()) put("specialization", it) }
+            per_page?.let { put("per_page", it.toString()) }
+            page_number?.let { put("page_number", it.toString()) }
+        }
     }
-    suspend fun fetchMyDoctors(patientId:Int): CaregiverResponse {
-        return ApiClient.caregiverApi.fetchMyDoctors(patientId)
+
+    suspend fun fetchAllCaregivers(filter: FilterCareProviders? = null): CaregiverResponse {
+        return ApiClient.caregiverApi.fetchAllCaregivers(filter.toMap())
     }
-    suspend fun fetchMyCaregivers(patientId:Int): CaregiverResponse {
-        return ApiClient.caregiverApi.fetchMyCaregivers(patientId)
+
+    suspend fun fetchMyDoctors(patientId: Int, filter: FilterCareProviders? = null): CaregiverResponse {
+        return ApiClient.caregiverApi.fetchMyDoctors(patientId, filter.toMap())
+    }
+
+    suspend fun fetchMyCaregivers(patientId: Int, filter: FilterCareProviders? = null): CaregiverResponse {
+        return ApiClient.caregiverApi.fetchMyCaregivers(patientId, filter.toMap())
     }
 
     suspend fun setDoctor(doctorId: Int, patientId: Int, isMain: Boolean = false): Result<DoctorRelationResponse> {

@@ -15,6 +15,7 @@ import com.example.careplus.databinding.FragmentMyDoctorsBinding
 import com.example.careplus.utils.SnackbarUtils
 import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
+import com.example.careplus.data.filter_model.FilterCareProviders
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
@@ -115,11 +116,7 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheet
         healthProvidersAdapter.submitList(currentList)
     }
 
-    override fun onFiltersApplied(
-        specialization: String?,
-        clinicName: String?,
-        agencyName: String?
-    ) {
-        // TODO: Implement filter functionality
+    override fun onFiltersApplied(filter: FilterCareProviders) {
+            viewModel.fetchMyDoctors(filter)
     }
 } 

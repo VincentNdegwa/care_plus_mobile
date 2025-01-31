@@ -15,8 +15,10 @@ import android.view.View.VISIBLE
 import android.widget.ProgressBar
 import com.google.android.material.snackbar.Snackbar
 import androidx.core.content.ContextCompat
+import com.example.careplus.data.filter_model.FilterMedications
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.example.careplus.data.filter_model.FilterCareProviders
 
 class MyCaregiversFragment : Fragment(), CaregiverActionListener, FilterBottomSheetFragment.FilterListener {
     private var _binding: FragmentMyCaregiversBinding? = null
@@ -118,11 +120,7 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener, FilterBottomSh
         _binding = null
     }
 
-    override fun onFiltersApplied(
-        specialization: String?,
-        clinicName: String?,
-        agencyName: String?
-    ) {
-        // TODO: Implement filter functionality
+    override fun onFiltersApplied(filter: FilterCareProviders) {
+        viewModel.fetchMyCaregivers(filter)
     }
 } 

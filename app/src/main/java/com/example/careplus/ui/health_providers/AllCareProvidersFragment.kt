@@ -12,10 +12,14 @@ import com.example.careplus.databinding.FragmentAllCaregiversBinding
 import com.example.careplus.utils.SnackbarUtils
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import androidx.core.widget.doOnTextChanged
+import com.example.careplus.R
+import com.example.careplus.data.filter_model.FilterCareProviders
 
 class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterListener {
     private var _binding: FragmentAllCaregiversBinding? = null
@@ -53,38 +57,25 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
             layoutManager = LinearLayoutManager(context)
             adapter = healthProvidersAdapter
         }
+        viewModel.fetchAllCaregivers()
     }
 
     private fun setupSearch() {
-        binding.searchEditText.doOnTextChanged { text, _, _, _ ->
-            viewModel.searchCaregivers(text?.toString() ?: "")
+        binding.searchFilterLayout.searchEditText.doOnTextChanged { text, _, _, _ ->
+            viewModel.fetchAllCaregivers(FilterCareProviders(null,null,null,text.toString(),null,null,null))
         }
     }
 
     private fun setupFilterButton() {
-        binding.filterButton.setOnClickListener {
+        binding.searchFilterLayout.filterButton.setOnClickListener {
             val filterBottomSheet = FilterBottomSheetFragment.newInstance()
             filterBottomSheet.setFilterListener(this)
             filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
         }
     }
 
-    override fun onFiltersApplied(
-        specialization: String?,
-        clinicName: String?,
-        agencyName: String?
-    ) {
-        if (specialization == null && clinicName == null && agencyName == null) {
-            // All filters were cleared
-            binding.searchEditText.text?.clear()
-            viewModel.clearFilters()
-        } else {
-            viewModel.applyFilters(specialization, clinicName, agencyName)
-        }
-    }
-
     private fun observeViewModel() {
-        viewModel.filteredCaregivers.observe(viewLifecycleOwner) { result ->
+        viewModel.caregivers.observe(viewLifecycleOwner) { result ->
             binding.loadingIndicator.visibility = View.GONE
             
             result.onSuccess { caregivers ->
@@ -108,5 +99,9 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onFiltersApplied(filter: FilterCareProviders) {
+        viewModel.fetchAllCaregivers(filter)
     }
 } 

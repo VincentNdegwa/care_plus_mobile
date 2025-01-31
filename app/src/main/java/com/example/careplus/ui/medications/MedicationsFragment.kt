@@ -15,6 +15,7 @@ import com.example.careplus.databinding.FragmentMedicationsBinding
 import com.example.careplus.utils.SnackbarUtils
 import com.example.careplus.data.model.MedicationDetails
 import androidx.navigation.fragment.findNavController
+import com.example.careplus.data.filter_model.FilterCareProviders
 import com.example.careplus.ui.health_providers.FilterBottomSheetFragment
 
 class MedicationsFragment : Fragment(), FilterBottomSheetFragment.FilterListener {
@@ -98,11 +99,7 @@ class MedicationsFragment : Fragment(), FilterBottomSheetFragment.FilterListener
 
     }
 
-    override fun onFiltersApplied(
-        specialization: String?,
-        clinicName: String?,
-        agencyName: String?
-    ) {
+    override fun onFiltersApplied(filter: FilterCareProviders) {
         TODO("Not yet implemented")
     }
 }

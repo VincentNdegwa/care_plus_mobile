@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import com.example.careplus.data.filter_model.FilterCareProviders
 import com.example.careplus.databinding.FragmentFilterBottomSheetBinding
 import com.example.careplus.utils.BottomSheetUtils
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -18,11 +19,7 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
     private var filterListener: FilterListener? = null
 
     interface FilterListener {
-        fun onFiltersApplied(
-            specialization: String?,
-            clinicName: String?,
-            agencyName: String?
-        )
+        fun onFiltersApplied(filter: FilterCareProviders)
     }
 
     override fun onCreateView(
@@ -37,51 +34,46 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupSpecializationDropdown()
-        setupFilterButton()
-        setupClearButton()
+        setupButtons()
     }
 
     private fun setupSpecializationDropdown() {
-        val specializations = listOf(
-            "All Specializations",
+        val specializations = arrayOf(
             "General Practice",
-            "Pediatrics",
             "Cardiology",
             "Neurology",
-            "Orthopedics",
-            "Dermatology"
+            "Pediatrics",
+            "Oncology",
+            "Other"
         )
-        
         val adapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_dropdown_item_1line,
             specializations
         )
-        
         binding.specializationDropdown.setAdapter(adapter)
     }
 
-    private fun setupFilterButton() {
+    private fun setupButtons() {
         binding.applyFilterButton.setOnClickListener {
-            val specialization = binding.specializationDropdown.text.toString()
-                .takeIf { it != "All Specializations" }
-            val clinicName = binding.clinicInput.text.toString().takeIf { it.isNotBlank() }
-            val agencyName = binding.agencyInput.text.toString().takeIf { it.isNotBlank() }
-
-            filterListener?.onFiltersApplied(specialization, clinicName, agencyName)
+            val filter = FilterCareProviders(
+                specialization = binding.specializationDropdown.text.toString().takeIf { it.isNotEmpty() },
+                agency_name = binding.agencyInput.text.toString().takeIf { it.isNotEmpty() },
+                role = null, // You can add a role dropdown if needed
+                search = null // This will be handled by the search box in the main UI
+            )
+            
+            filterListener?.onFiltersApplied(filter)
             dismiss()
         }
-    }
 
-    private fun setupClearButton() {
         binding.clearFilterButton.setOnClickListener {
-            // Clear all inputs
             binding.specializationDropdown.setText("", false)
             binding.clinicInput.text?.clear()
             binding.agencyInput.text?.clear()
             
             // Apply empty filters (effectively clearing them)
-            filterListener?.onFiltersApplied(null, null, null)
+            filterListener?.onFiltersApplied(FilterCareProviders())
             dismiss()
         }
     }
