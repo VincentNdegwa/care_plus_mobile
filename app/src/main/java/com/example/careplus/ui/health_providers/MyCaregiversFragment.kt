@@ -42,6 +42,11 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener {
         // Fetch and observe caregivers data here
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.fetchMyDoctors()
+    }
+
     private fun setupRecyclerView() {
         healthProvidersAdapter = HealthProvidersAdapter { caregiver ->
             val bottomSheet = CaregiverBottomSheetFragment.newInstance(caregiver)

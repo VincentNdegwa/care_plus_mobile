@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base CircleImageView style -->
+    <style name="CircleImageView">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.CircleImageView</item>
+    </style>
+
+    <style name="ShapeAppearance.CircleImageView" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+<!--    &lt;!&ndash; Custom Button Style &ndash;&gt;-->
+<!--    <style name="Widget.CarePlus.Button" parent="Widget.MaterialComponents.Button">-->
+<!--        <item name="android:paddingTop">12dp</item>-->
+<!--        <item name="android:paddingBottom">12dp</item>-->
+<!--        <item name="android:textSize">16sp</item>-->
+<!--        <item name="cornerRadius">12dp</item>-->
+<!--        <item name="elevation">4dp</item>-->
+<!--    </style>-->
+
+<!--    &lt;!&ndash; Custom TextInputLayout Style &ndash;&gt;-->
+<!--    <style name="Widget.CarePlus.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">-->
+<!--        <item name="boxCornerRadiusTopStart">12dp</item>-->
+<!--        <item name="boxCornerRadiusTopEnd">12dp</item>-->
+<!--        <item name="boxCornerRadiusBottomStart">12dp</item>-->
+<!--        <item name="boxCornerRadiusBottomEnd">12dp</item>-->
+<!--        <item name="boxStrokeWidth">1.5dp</item>-->
+<!--    </style>-->
+
+<!--    <style name="Widget.CarePlus.TextInputLayout.Glassmorphism" parent="Widget.CarePlus.TextInputLayout">-->
+<!--        <item name="boxBackgroundColor">#00FFFFFF</item>-->
+<!--        <item name="boxStrokeColor">@color/primary</item>-->
+<!--        <item name="hintTextColor">@color/primary</item>-->
+<!--        <item name="android:textColorHint">@color/primary</item>-->
+<!--    </style>-->
+
+<!--    <style name="Widget.CarePlus.Button.Glassmorphism" parent="Widget.CarePlus.Button">-->
+<!--        <item name="backgroundTint">@color/primary</item>-->
+<!--        <item name="rippleColor">#40FFFFFF</item>-->
+<!--    </style>-->
+</resources> 

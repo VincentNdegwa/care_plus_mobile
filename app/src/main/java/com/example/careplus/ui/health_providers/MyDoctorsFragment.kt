@@ -41,6 +41,11 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener {
         viewModel.fetchMyDoctors()
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.fetchMyDoctors()
+    }
+
     private fun setupRecyclerView() {
         healthProvidersAdapter = HealthProvidersAdapter { caregiver ->
             Log.d("MyDoctorsFragment", "Opening bottom sheet for caregiver: ${caregiver.id}")
