@@ -1,6 +1,7 @@
 package com.example.careplus.ui.health_providers
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +16,7 @@ import com.example.careplus.utils.SnackbarUtils
 import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
 
-class MyDoctorsFragment : Fragment() {
+class MyDoctorsFragment : Fragment(), CaregiverActionListener {
     private var _binding: FragmentMyDoctorsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: HealthProvidersViewModel by viewModels()
@@ -42,8 +43,9 @@ class MyDoctorsFragment : Fragment() {
 
     private fun setupRecyclerView() {
         healthProvidersAdapter = HealthProvidersAdapter { caregiver ->
+            Log.d("MyDoctorsFragment", "Opening bottom sheet for caregiver: ${caregiver.id}")
             val bottomSheet = CaregiverBottomSheetFragment.newInstance(caregiver)
-            bottomSheet.show(parentFragmentManager, bottomSheet.tag)
+            bottomSheet.show(childFragmentManager, bottomSheet.tag)
         }
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
@@ -73,5 +75,19 @@ class MyDoctorsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onCaregiverRemoved(roleId: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onDoctorRemoved(roleId: Int) {
+        val currentList = healthProvidersAdapter.currentList.toMutableList()
+        currentList.removeAll { it.user_role.id == roleId }
+        if (currentList.isEmpty()) {
+            emptyStateText.visibility = VISIBLE
+            binding.recyclerView.visibility = GONE
+        }
+        healthProvidersAdapter.submitList(currentList)
     }
 } 

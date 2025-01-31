@@ -50,6 +50,7 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         actionListener = parentFragment as? CaregiverActionListener
+        Log.d("BottomSheet", "onAttach: actionListener is ${if (actionListener == null) "null" else "not null"}")
     }
 
     override fun onCreateView(
@@ -154,6 +155,7 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
                         if (response.error) {
                             showSnackbar(response.message)
                         } else {
+                            Log.d("BottomSheet", "Calling onDoctorRemoved with roleId: ${caregiverData.user_role.id}")
                             actionListener?.onDoctorRemoved(caregiverData.user_role.id)
                             showSnackbar("Successfully removed doctor", false)
                         }

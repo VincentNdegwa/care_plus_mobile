@@ -16,7 +16,7 @@ import android.widget.ProgressBar
 import com.google.android.material.snackbar.Snackbar
 import androidx.core.content.ContextCompat
 
-class MyCaregiversFragment : Fragment() {
+class MyCaregiversFragment : Fragment(), CaregiverActionListener {
     private var _binding: FragmentMyCaregiversBinding? = null
     private val binding get() = _binding!!
     private val viewModel: HealthProvidersViewModel by viewModels()
@@ -45,7 +45,7 @@ class MyCaregiversFragment : Fragment() {
     private fun setupRecyclerView() {
         healthProvidersAdapter = HealthProvidersAdapter { caregiver ->
             val bottomSheet = CaregiverBottomSheetFragment.newInstance(caregiver)
-            bottomSheet.show(parentFragmentManager, bottomSheet.tag)
+            bottomSheet.show(childFragmentManager, bottomSheet.tag)
         }
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
@@ -70,6 +70,23 @@ class MyCaregiversFragment : Fragment() {
                 SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error fetching caregivers")
             }
         }
+    }
+
+    override fun onCaregiverRemoved(roleId: Int) {
+        // Get current list from adapter, remove item, and submit updated list
+        val currentList = healthProvidersAdapter.currentList.toMutableList()
+        currentList.removeAll { it.user_role.id == roleId }
+        
+        if (currentList.isEmpty()) {
+            emptyStateText.visibility = VISIBLE
+            binding.recyclerView.visibility = GONE
+        }
+        
+        healthProvidersAdapter.submitList(currentList)
+    }
+
+    override fun onDoctorRemoved(roleId: Int) {
+        TODO("Not yet implemented")
     }
 
     override fun onDestroyView() {
