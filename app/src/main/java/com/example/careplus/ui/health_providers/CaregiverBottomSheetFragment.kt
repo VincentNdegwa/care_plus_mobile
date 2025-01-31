@@ -1,5 +1,7 @@
 package com.example.careplus.ui.health_providers
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,6 +32,10 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCaregiverBottomSheetBinding.inflate(inflater, container, false)
+        
+        // Set the background of the bottom sheet to transparent
+        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        
         return binding.root
     }
 
