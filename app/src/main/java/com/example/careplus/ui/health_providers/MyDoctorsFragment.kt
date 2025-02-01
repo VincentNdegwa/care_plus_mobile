@@ -46,17 +46,24 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheet
         setupRecyclerView()
         setupObservers()
         viewModel.fetchMyDoctors()
+        showLoadingState()
     }
 
     override fun onResume() {
         super.onResume()
         viewModel.fetchMyDoctors()
+        showLoadingState()
     }
 
     private fun setupSearch() {
         binding.searchFilterLayout.searchEditText.doOnTextChanged { text, _, _, _ ->
             viewModel.fetchAllCaregivers(FilterCareProviders(null,null,null,text.toString(),null,null,null))
         }
+    }
+    private fun showLoadingState(){
+        loadingIndicator.visibility = VISIBLE
+        binding.recyclerView.visibility = GONE
+        emptyStateText.visibility = GONE
     }
 
     private fun setupFilterButton() {
@@ -118,6 +125,7 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheet
     }
 
     override fun onFiltersApplied(filter: FilterCareProviders) {
-            viewModel.fetchMyDoctors(filter)
+        viewModel.fetchMyDoctors(filter)
+        showLoadingState()
     }
 } 

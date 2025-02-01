@@ -3,6 +3,8 @@ package com.example.careplus.ui.health_providers
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -10,15 +12,8 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.careplus.databinding.FragmentAllCaregiversBinding
 import com.example.careplus.utils.SnackbarUtils
-import android.view.View.GONE
-import android.view.View.VISIBLE
-import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.ProgressBar
-import androidx.core.content.ContextCompat
-import com.google.android.material.snackbar.Snackbar
 import androidx.core.widget.doOnTextChanged
-import com.example.careplus.R
 import com.example.careplus.data.filter_model.FilterCareProviders
 
 class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterListener {
@@ -58,6 +53,7 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
             adapter = healthProvidersAdapter
         }
         viewModel.fetchAllCaregivers()
+        showLoadingState()
     }
 
     private fun setupSearch() {
@@ -65,7 +61,11 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
             viewModel.fetchAllCaregivers(FilterCareProviders(null,null,null,text.toString(),null,null,null))
         }
     }
-
+    private fun showLoadingState(){
+        loadingIndicator.visibility = VISIBLE
+        binding.recyclerView.visibility = GONE
+        emptyStateText.visibility = GONE
+    }
     private fun setupFilterButton() {
         binding.searchFilterLayout.filterButton.setOnClickListener {
             val filterBottomSheet = FilterBottomSheetFragment.newInstance()
@@ -103,5 +103,6 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
 
     override fun onFiltersApplied(filter: FilterCareProviders) {
         viewModel.fetchAllCaregivers(filter)
+        showLoadingState()
     }
 } 

@@ -13,8 +13,6 @@ import com.example.careplus.utils.SnackbarUtils
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.ProgressBar
-import com.google.android.material.snackbar.Snackbar
-import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import com.example.careplus.data.filter_model.FilterMedications
 import com.google.android.material.textfield.TextInputEditText
@@ -47,11 +45,18 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener, FilterBottomSh
         setupRecyclerView()
         setupObservers()
         viewModel.fetchMyCaregivers()
+        showLoadingState()
     }
 
     override fun onResume() {
         super.onResume()
         viewModel.fetchMyCaregivers()
+        showLoadingState()
+    }
+    private fun showLoadingState(){
+        loadingIndicator.visibility = VISIBLE
+        binding.recyclerView.visibility = GONE
+        emptyStateText.visibility = GONE
     }
 
     private fun setupSearch() {
@@ -122,5 +127,6 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener, FilterBottomSh
 
     override fun onFiltersApplied(filter: FilterCareProviders) {
         viewModel.fetchMyCaregivers(filter)
+        showLoadingState()
     }
 } 
