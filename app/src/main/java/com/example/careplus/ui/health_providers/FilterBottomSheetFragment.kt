@@ -48,6 +48,7 @@ class FilterBottomSheetFragment(
         binding.specializationDropdown.setText(filter.specialization)
         binding.agencyInput.setText(filter.agency_name)
         binding.roleDropdown.setText(filter.role,false)
+        binding.genderDropDown.setText(filter.gender,false)
     }
 
     private fun setupSpecializationDropdown() {
@@ -70,6 +71,13 @@ class FilterBottomSheetFragment(
             android.R.layout.simple_dropdown_item_1line,
             role
         )
+        val genders = arrayOf("male", "female", "other")
+        val genderAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            genders
+        )
+        binding.genderDropDown.setAdapter(genderAdapter)
         binding.specializationDropdown.setAdapter(specializationAdapter)
         binding.roleDropdown.setAdapter(roleAdapter)
     }
@@ -79,7 +87,8 @@ class FilterBottomSheetFragment(
             val filter = FilterCareProviders(
                 specialization = binding.specializationDropdown.text?.toString()?.takeIf { it.isNotEmpty() },
                 agency_name = binding.agencyInput.text?.toString()?.takeIf { it.isNotEmpty() },
-                role = binding.roleDropdown.text?.toString()?.takeIf { it.isNotEmpty() }
+                role = binding.roleDropdown.text?.toString()?.takeIf { it.isNotEmpty() },
+                gender = binding.genderDropDown.text?.toString()?.takeIf { it.isNotEmpty() }
             )
             filterListener?.onFiltersApplied(filter)
             dismiss()
@@ -87,8 +96,9 @@ class FilterBottomSheetFragment(
 
         binding.clearFilterButton?.setOnClickListener {
             binding.specializationDropdown.text?.clear()
-            binding.clinicInput.text?.clear()
+            binding.genderDropDown.text?.clear()
             binding.agencyInput.text?.clear()
+            binding.genderDropDown.text?.clear()
             
             filterListener?.onFiltersApplied(FilterCareProviders())
             dismiss()
