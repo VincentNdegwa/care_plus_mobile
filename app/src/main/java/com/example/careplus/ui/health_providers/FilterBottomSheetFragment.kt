@@ -43,15 +43,22 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
             "Cardiology",
             "Neurology",
             "Pediatrics",
-            "Oncology",
-            "Other"
+            "Oncology"
         )
-        val adapter = ArrayAdapter(
+        val specializationAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_dropdown_item_1line,
             specializations
         )
-        binding.specializationDropdown.setAdapter(adapter)
+
+        val role = arrayOf("Doctor","Caregiver")
+        val roleAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            role
+        )
+        binding.specializationDropdown.setAdapter(specializationAdapter)
+        binding.roleDropdown.setAdapter(roleAdapter)
     }
 
     private fun setupButtons() {
@@ -59,7 +66,7 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
             val filter = FilterCareProviders(
                 specialization = binding.specializationDropdown.text.toString().takeIf { it.isNotEmpty() },
                 agency_name = binding.agencyInput.text.toString().takeIf { it.isNotEmpty() },
-                role = null, // You can add a role dropdown if needed
+                role = binding.roleDropdown.text.toString().takeIf { it.isNotEmpty() },
                 search = null // This will be handled by the search box in the main UI
             )
             
@@ -72,7 +79,6 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
             binding.clinicInput.text?.clear()
             binding.agencyInput.text?.clear()
             
-            // Apply empty filters (effectively clearing them)
             filterListener?.onFiltersApplied(FilterCareProviders())
             dismiss()
         }

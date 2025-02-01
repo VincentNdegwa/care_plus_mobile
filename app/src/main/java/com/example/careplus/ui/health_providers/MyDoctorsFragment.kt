@@ -15,6 +15,7 @@ import com.example.careplus.databinding.FragmentMyDoctorsBinding
 import com.example.careplus.utils.SnackbarUtils
 import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doOnTextChanged
 import com.example.careplus.data.filter_model.FilterCareProviders
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -53,17 +54,17 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheet
     }
 
     private fun setupSearch() {
-//        binding.searchEditText.doOnTextChanged { text, _, _, _ ->
-//            // TODO: Implement search functionality
-//        }
+        binding.searchFilterLayout.searchEditText.doOnTextChanged { text, _, _, _ ->
+            viewModel.fetchAllCaregivers(FilterCareProviders(null,null,null,text.toString(),null,null,null))
+        }
     }
 
     private fun setupFilterButton() {
-//        binding.filterButton.setOnClickListener {
-//            val filterBottomSheet = FilterBottomSheetFragment.newInstance()
-//            filterBottomSheet.setFilterListener(this)
-//            filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
-//        }
+        binding.searchFilterLayout.filterButton.setOnClickListener {
+            val filterBottomSheet = FilterBottomSheetFragment.newInstance()
+            filterBottomSheet.setFilterListener(this)
+            filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
+        }
     }
 
     private fun setupRecyclerView() {

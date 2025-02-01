@@ -35,6 +35,23 @@
 
         </LinearLayout>
 
+        <!-- Role Filter -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/roleLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Role">
+
+            <AutoCompleteTextView
+                android:id="@+id/roleDropdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
         <!-- Specialization Filter -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/specializationLayout"
@@ -90,7 +107,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Apply Filters"
-            android:padding="12dp"/>
+            android:padding="12dp"
+            style="@style/Widget.MaterialComponents.Button"/>
 
     </LinearLayout>
 
