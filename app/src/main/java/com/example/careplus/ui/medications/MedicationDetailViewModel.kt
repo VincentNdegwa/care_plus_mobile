@@ -17,6 +17,7 @@ class MedicationDetailViewModel(application: Application) : AndroidViewModel(app
     private val _medication = MutableLiveData<Result<MedicationDetails>>()
     val medication: LiveData<Result<MedicationDetails>> = _medication
 
+
     fun fetchMedicationDetails(medicationId: Long) {
         viewModelScope.launch {
             try {

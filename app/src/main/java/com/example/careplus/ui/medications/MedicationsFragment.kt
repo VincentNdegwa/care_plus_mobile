@@ -15,10 +15,14 @@ import com.example.careplus.databinding.FragmentMedicationsBinding
 import com.example.careplus.utils.SnackbarUtils
 import com.example.careplus.data.model.MedicationDetails
 import androidx.navigation.fragment.findNavController
-import com.example.careplus.data.filter_model.FilterCareProviders
-import com.example.careplus.ui.health_providers.FilterBottomSheetFragment
+import com.example.careplus.data.filter_model.FilterMedications
+import com.example.careplus.data.model.CaregiverInfo
+import com.example.careplus.data.model.DoctorInfo
+import com.example.careplus.data.model.MedicationForm
+import com.example.careplus.data.model.MedicationRoute
 
-class MedicationsFragment : Fragment(), FilterBottomSheetFragment.FilterListener {
+
+class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListener {
     private var _binding: FragmentMedicationsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: MedicationsViewModel by viewModels {
@@ -28,6 +32,11 @@ class MedicationsFragment : Fragment(), FilterBottomSheetFragment.FilterListener
             }
         }
     }
+    private var forms: List<MedicationForm> = emptyList()
+    private var routes: List<MedicationRoute> = emptyList()
+    private var caregivers: List<CaregiverInfo> = emptyList()
+    private var doctors: List<DoctorInfo> = emptyList()
+
     private val medicationsAdapter = MedicationsAdapter { medication ->
         // Log the medication details before navigating
         Log.d("MedicationsFragment", "Navigating to EditMedicationFragment with: $medication")
@@ -59,8 +68,7 @@ class MedicationsFragment : Fragment(), FilterBottomSheetFragment.FilterListener
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.toolbar.setPageTitle("Medications")
-//        setupSearch()
-//        setupFilterButton()
+        setupSearchAndFilter()
     }
 
     private fun setupViews() {
@@ -88,6 +96,7 @@ class MedicationsFragment : Fragment(), FilterBottomSheetFragment.FilterListener
             result.onSuccess { medications ->
                 Log.d("MedicationsFragment", "Medications received: ${medications.size}")
                 medicationsAdapter.submitList(medications)
+                setupDateForFilters(medications)
             }.onFailure { exception ->
                 Log.e("MedicationsFragment", "Error loading medications", exception)
                 SnackbarUtils.showSnackbar(
@@ -99,8 +108,23 @@ class MedicationsFragment : Fragment(), FilterBottomSheetFragment.FilterListener
 
     }
 
-    override fun onFiltersApplied(filter: FilterCareProviders) {
-        TODO("Not yet implemented")
+    private fun setupSearchAndFilter() {
+        binding.searchFilterLayout.filterButton.setOnClickListener {
+            val filterBottomSheet = MedicationFilterBottomSheet.newInstance(forms, routes, caregivers, doctors)
+            filterBottomSheet.setFilterListener(this)
+            filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
+        }
+    }
+    private fun setupDateForFilters(medications: List<MedicationDetails>) {
+         forms = medications.mapNotNull { it.form }.distinct()
+         routes = medications.mapNotNull { it.route }.distinct()
+         caregivers = medications.mapNotNull { it.caregiver }.distinct()
+         doctors = medications.mapNotNull { it.doctor }.distinct()
+    }
+
+    override fun onFiltersApplied(filter: FilterMedications,) {
+        // TODO: Apply the filters to your ViewModel
+//        viewModel.applyFilters(filter)
     }
 }
    

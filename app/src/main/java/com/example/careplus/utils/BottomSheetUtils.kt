@@ -18,7 +18,7 @@ object BottomSheetUtils {
             bottomSheet?.let {
                 val behavior = BottomSheetBehavior.from(it)
                 it.setBackgroundResource(R.drawable.bottom_sheet_background)
-                behavior.peekHeight = fragment.resources.displayMetrics.heightPixels / 2
+//                behavior.peekHeight = fragment.resources.displayMetrics.heightPixels / 2
             }
         }
         
