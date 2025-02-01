@@ -36,7 +36,7 @@
                 android:id="@+id/emptyStateText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="No caregivers found"
+                android:text="No medication found"
                 android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

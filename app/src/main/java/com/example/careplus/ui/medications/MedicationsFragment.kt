@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
@@ -15,6 +16,7 @@ import com.example.careplus.databinding.FragmentMedicationsBinding
 import com.example.careplus.utils.SnackbarUtils
 import com.example.careplus.data.model.MedicationDetails
 import androidx.navigation.fragment.findNavController
+import com.example.careplus.data.filter_model.FilterCareProviders
 import com.example.careplus.data.filter_model.FilterMedications
 import com.example.careplus.data.model.CaregiverInfo
 import com.example.careplus.data.model.DoctorInfo
@@ -120,6 +122,11 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
             )
             filterBottomSheet.setFilterListener(this)
             filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
+        }
+        binding.searchFilterLayout.searchEditText.doOnTextChanged { text, _, _, _ ->
+            viewModel.fetchMedications(FilterMedications(
+                null,null,null,null,null,null,null,null,text.toString(),null,null,null))
+            showLoadingState()
         }
         
         updateFilterIndicator()
