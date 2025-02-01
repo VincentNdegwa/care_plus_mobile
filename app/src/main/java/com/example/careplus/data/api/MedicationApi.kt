@@ -1,5 +1,6 @@
 package com.example.careplus.data.api
 
+import com.example.careplus.data.filter_model.FilterMedications
 import com.example.careplus.data.model.MedicationListResponse
 import com.example.careplus.data.model.MedicationRequest
 import com.example.careplus.data.model.MedicationDetailResponse
@@ -19,7 +20,7 @@ import retrofit2.http.PATCH
 
 interface MedicationApi {
     @POST("medications/fetch/by-patient")
-    suspend fun getMedications(@Body request: MedicationRequest): MedicationListResponse
+    suspend fun getMedications(@Body request: FilterMedications): MedicationListResponse
 
     @GET("medications/{id}")
     suspend fun getMedicationById(@Path("id") id: Int): MedicationDetails

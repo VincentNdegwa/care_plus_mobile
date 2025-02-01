@@ -38,10 +38,6 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
     private var doctors: List<DoctorInfo> = emptyList()
 
     private val medicationsAdapter = MedicationsAdapter { medication ->
-        // Log the medication details before navigating
-        Log.d("MedicationsFragment", "Navigating to EditMedicationFragment with: $medication")
-
-        // Ensure medication is not null
         if (medication != null) {
             findNavController().navigate(
                 MedicationsFragmentDirections.actionMedicationsToMedicationDetail(medication)
@@ -61,6 +57,7 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
         setupViews()
         setupRecyclerView()
         setupObservers()
+        showLoadingState()
 
         return binding.root
     }
@@ -76,9 +73,6 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
 //            // TODO: Navigate to add medication screen
 //        }
 
-        // Show loading state
-        binding.progressBar.visibility = View.VISIBLE
-        binding.medicationsList.visibility = View.GONE
     }
 
     private fun setupRecyclerView() {
@@ -91,12 +85,18 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
     private fun setupObservers() {
         viewModel.medications.observe(viewLifecycleOwner) { result: Result<List<MedicationDetails>> ->
             binding.progressBar.visibility = View.GONE
-            binding.medicationsList.visibility = View.VISIBLE
 
             result.onSuccess { medications ->
                 Log.d("MedicationsFragment", "Medications received: ${medications.size}")
-                medicationsAdapter.submitList(medications)
-                setupDateForFilters(medications)
+                if (medications.isEmpty()){
+                    binding.emptyStateText.visibility = View.VISIBLE
+                    binding.medicationsList.visibility = View.GONE
+                }else{
+                    binding.emptyStateText.visibility = View.GONE
+                    binding.medicationsList.visibility = View.VISIBLE
+                    medicationsAdapter.submitList(medications)
+                }
+                setupDataForFilters(medications)
             }.onFailure { exception ->
                 Log.e("MedicationsFragment", "Error loading medications", exception)
                 SnackbarUtils.showSnackbar(
@@ -115,7 +115,7 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
             filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
         }
     }
-    private fun setupDateForFilters(medications: List<MedicationDetails>) {
+    private fun setupDataForFilters(medications: List<MedicationDetails>) {
          forms = medications.mapNotNull { it.form }.distinct()
          routes = medications.mapNotNull { it.route }.distinct()
          caregivers = medications.mapNotNull { it.caregiver }.distinct()
@@ -123,8 +123,14 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
     }
 
     override fun onFiltersApplied(filter: FilterMedications,) {
-        // TODO: Apply the filters to your ViewModel
-//        viewModel.applyFilters(filter)
+        viewModel.fetchMedications(filter)
+        showLoadingState()
+    }
+
+    private fun showLoadingState(){
+        binding.progressBar.visibility = View.VISIBLE
+        binding.medicationsList.visibility = View.GONE
+        binding.emptyStateText.visibility = View.GONE
     }
 }
    

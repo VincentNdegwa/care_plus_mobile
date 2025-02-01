@@ -3,6 +3,7 @@ package com.example.careplus.data.repository
 import com.example.careplus.data.api.ApiClient
 import com.example.careplus.data.SessionManager
 import android.util.Log
+import com.example.careplus.data.filter_model.FilterMedications
 import retrofit2.HttpException
 import com.example.careplus.data.model.MedicationRequest
 import com.example.careplus.data.model.MedicationDetails
@@ -25,10 +26,11 @@ class MedicationRepository(private val sessionManager: SessionManager) {
         ApiClient.create(sessionManager)
     }
 
-    suspend fun getMedications(patientId: Int, perPage: Int? = null, pageNumber: Int? = null): List<MedicationDetails> {
+    suspend fun getMedications(patientId: Int, filter:FilterMedications? ): List<MedicationDetails> {
         try {
             Log.d("MedicationRepository", "Getting medications for patient $patientId")
-            val request = MedicationRequest(patientId, perPage, pageNumber)
+            val request = filter?.copy(patient_id = patientId.toLong())
+                ?: FilterMedications(patient_id = patientId.toLong())
             val response = ApiClient.medicationApi.getMedications(request)
             
             if (!response.error) {

@@ -9,11 +9,13 @@ import com.example.careplus.data.model.SimpleProfile
 import com.example.careplus.data.repository.MedicationRepository
 import com.example.careplus.data.repository.ProfileRepository
 import com.example.careplus.data.SessionManager
+import com.example.careplus.data.filter_model.FilterMedications
 import com.example.careplus.data.model.MedicationDetails
 import kotlinx.coroutines.launch
 
 class MedicationsViewModel(
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    filter: FilterMedications? = null
 ) : ViewModel() {
     private val medicationRepository = MedicationRepository(sessionManager)
     private val profileRepository = ProfileRepository(sessionManager)
@@ -25,18 +27,16 @@ class MedicationsViewModel(
     val profile: LiveData<Result<SimpleProfile>> = _profile
 
     init {
-        Log.d("MedicationsViewModel", "Initializing ViewModel")
-        fetchMedications()
-        fetchProfile()
+        fetchMedications(filter)
     }
 
-    private fun fetchMedications() {
+    public fun fetchMedications(filter: FilterMedications?) {
         viewModelScope.launch {
             try {
                 val patientId = sessionManager.getUser()?.patient?.id
                 if (patientId != null) {
                     Log.d("MedicationsViewModel", "Fetching medications")
-                    val medications = medicationRepository.getMedications(patientId)
+                    val medications = medicationRepository.getMedications(patientId,filter)
                     _medications.value = Result.success(medications)
                     Log.d("MedicationsViewModel", "Medications fetched: ${medications.size}")
                 } else {

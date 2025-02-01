@@ -120,8 +120,8 @@ class MedicationFilterBottomSheet(
                 caregiver_id = caregivers.find { it.name == binding.caregiverDropdown.text.toString() }?.id,
                 form_id = forms.find { it.name == binding.formDropdown.text.toString() }?.id,
                 route_id = routes.find { it.name == binding.routeDropdown.text.toString() }?.id,
-                start_date = binding.startDateInput.text?.toString(),
-                end_date = binding.endDateInput.text?.toString()
+                start_date = binding.startDateInput.text?.toString()?.takeIf { it.isNotEmpty() },
+                end_date = binding.endDateInput.text?.toString()?.takeIf { it.isNotEmpty() }
             )
             filterListener?.onFiltersApplied(filter)
             dismiss()
