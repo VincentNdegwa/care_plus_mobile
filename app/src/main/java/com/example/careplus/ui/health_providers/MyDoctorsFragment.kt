@@ -73,6 +73,7 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheet
             filterBottomSheet.setFilterListener(this)
             filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
         }
+        updateFilterIndicator()
     }
 
     private fun setupRecyclerView() {
@@ -118,6 +119,10 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheet
     override fun onCaregiverRemoved(roleId: Int) {
         TODO("Not yet implemented")
     }
+    private fun updateFilterIndicator() {
+        binding.searchFilterLayout.filterIndicator.visibility =
+            if (currentFilter != null) View.VISIBLE else View.GONE
+    }
 
     override fun onDoctorRemoved(roleId: Int) {
         val currentList = healthProvidersAdapter.currentList.toMutableList()
@@ -129,9 +134,10 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheet
         healthProvidersAdapter.submitList(currentList)
     }
 
-    override fun onFiltersApplied(filter: FilterCareProviders) {
+    override fun onFiltersApplied(filter: FilterCareProviders?) {
         currentFilter = filter // Save the current filter
         viewModel.fetchMyDoctors(filter)
         showLoadingState()
+        updateFilterIndicator()
     }
 } 

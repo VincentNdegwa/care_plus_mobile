@@ -20,7 +20,7 @@ class FilterBottomSheetFragment(
     private var filterListener: FilterListener? = null
 
     interface FilterListener {
-        fun onFiltersApplied(filter: FilterCareProviders)
+        fun onFiltersApplied(filter: FilterCareProviders?)
     }
 
     override fun onCreateView(
@@ -100,7 +100,7 @@ class FilterBottomSheetFragment(
             binding.agencyInput.text?.clear()
             binding.genderDropDown.text?.clear()
             
-            filterListener?.onFiltersApplied(FilterCareProviders())
+            filterListener?.onFiltersApplied(null)
             dismiss()
         }
     }

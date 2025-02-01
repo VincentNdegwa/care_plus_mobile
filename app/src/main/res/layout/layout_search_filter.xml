@@ -12,7 +12,7 @@
         app:cardCornerRadius="12dp"
         app:cardElevation="2dp"
         android:theme="@style/SearchContainerStyle"
-        app:layout_constraintEnd_toStartOf="@+id/filterButton"
+        app:layout_constraintEnd_toStartOf="@+id/filterButtonContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -44,16 +44,32 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <ImageButton
-        android:id="@+id/filterButton"
+    <FrameLayout
+        android:id="@+id/filterButtonContainer"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginStart="8dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_filter"
-        app:tint="?android:attr/textColorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/searchContainer"
-        app:layout_constraintBottom_toBottomOf="@id/searchContainer" />
+        app:layout_constraintBottom_toBottomOf="@id/searchContainer">
+
+        <ImageButton
+            android:id="@+id/filterButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_filter"
+            app:tint="?android:attr/textColorPrimary" />
+
+        <View
+            android:id="@+id/filterIndicator"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="8dp"
+            android:background="@drawable/filter_indicator"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout> 

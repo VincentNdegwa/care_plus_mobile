@@ -121,7 +121,15 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
             filterBottomSheet.setFilterListener(this)
             filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
         }
+        
+        updateFilterIndicator()
     }
+
+    private fun updateFilterIndicator() {
+        binding.searchFilterLayout.filterIndicator.visibility = 
+            if (currentFilter != null) View.VISIBLE else View.GONE
+    }
+
     private fun setupDataForFilters(medications: List<MedicationDetails>) {
         val newForms = medications.mapNotNull { it.form }.distinct()
         val newRoutes = medications.mapNotNull { it.route }.distinct()
@@ -135,10 +143,11 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
         doctors = (doctors + newDoctors).distinct()
     }
 
-    override fun onFiltersApplied(filter: FilterMedications) {
+    override fun onFiltersApplied(filter: FilterMedications?) {
         currentFilter = filter
         viewModel.fetchMedications(filter)
         showLoadingState()
+        updateFilterIndicator() // Update indicator when filter is applied
     }
 
     private fun showLoadingState(){

@@ -31,7 +31,7 @@ class MedicationFilterBottomSheet(
     private var filterListener: FilterListener? = null
     
     interface FilterListener {
-        fun onFiltersApplied(filter: FilterMedications)
+        fun onFiltersApplied(filter: FilterMedications?)
     }
 
     override fun onCreateView(
@@ -183,7 +183,7 @@ class MedicationFilterBottomSheet(
             binding.startDateInput.text?.clear()
             binding.endDateInput.text?.clear()
             
-            filterListener?.onFiltersApplied(FilterMedications())
+            filterListener?.onFiltersApplied(null)
             dismiss()
         }
     }
