@@ -36,6 +36,7 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
     private var routes: List<MedicationRoute> = emptyList()
     private var caregivers: List<CaregiverInfo> = emptyList()
     private var doctors: List<DoctorInfo> = emptyList()
+    private var currentFilter: FilterMedications? = null
 
     private val medicationsAdapter = MedicationsAdapter { medication ->
         if (medication != null) {
@@ -110,19 +111,32 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
 
     private fun setupSearchAndFilter() {
         binding.searchFilterLayout.filterButton.setOnClickListener {
-            val filterBottomSheet = MedicationFilterBottomSheet.newInstance(forms, routes, caregivers, doctors)
+            val filterBottomSheet = MedicationFilterBottomSheet.newInstance(
+                forms, 
+                routes, 
+                caregivers, 
+                doctors,
+                currentFilter
+            )
             filterBottomSheet.setFilterListener(this)
             filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
         }
     }
     private fun setupDataForFilters(medications: List<MedicationDetails>) {
-         forms = medications.mapNotNull { it.form }.distinct()
-         routes = medications.mapNotNull { it.route }.distinct()
-         caregivers = medications.mapNotNull { it.caregiver }.distinct()
-         doctors = medications.mapNotNull { it.doctor }.distinct()
+        val newForms = medications.mapNotNull { it.form }.distinct()
+        val newRoutes = medications.mapNotNull { it.route }.distinct()
+        val newCaregivers = medications.mapNotNull { it.caregiver }.distinct()
+        val newDoctors = medications.mapNotNull { it.doctor }.distinct()
+
+        // Add new items to existing lists without duplicates
+        forms = (forms + newForms).distinct()
+        routes = (routes + newRoutes).distinct()
+        caregivers = (caregivers + newCaregivers).distinct()
+        doctors = (doctors + newDoctors).distinct()
     }
 
-    override fun onFiltersApplied(filter: FilterMedications,) {
+    override fun onFiltersApplied(filter: FilterMedications) {
+        currentFilter = filter
         viewModel.fetchMedications(filter)
         showLoadingState()
     }

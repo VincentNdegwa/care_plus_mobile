@@ -23,7 +23,8 @@ class MedicationFilterBottomSheet(
     private val forms: List<MedicationForm>,
     private val routes: List<MedicationRoute>,
     private val caregivers: List<CaregiverInfo>,
-    private val doctors: List<DoctorInfo>
+    private val doctors: List<DoctorInfo>,
+    private val currentFilter: FilterMedications? = null
 ) : BottomSheetDialogFragment() {
     private var _binding: FragmentMedicationFilterBottomSheetBinding? = null
     private val binding get() = _binding!!
@@ -44,41 +45,12 @@ class MedicationFilterBottomSheet(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupDatePickers()
-        setupButtons()
-        setupDropdowns()
+        setupViews()
+        // Restore state if we have a current filter
+        currentFilter?.let { restoreFilterState(it) }
     }
 
-    private fun setupDatePickers() {
-        val dateFormatter = DateTimeFormatter.ISO_DATE
-        
-        binding.startDateInput.setOnClickListener {
-            showDatePicker { date ->
-                binding.startDateInput.setText(date.format(dateFormatter))
-            }
-        }
-
-        binding.endDateInput.setOnClickListener {
-            showDatePicker { date ->
-                binding.endDateInput.setText(date.format(dateFormatter))
-            }
-        }
-    }
-
-    private fun showDatePicker(onDateSelected: (LocalDate) -> Unit) {
-        val now = LocalDate.now()
-        DatePickerDialog(
-            requireContext(),
-            { _, year, month, dayOfMonth ->
-                onDateSelected(LocalDate.of(year, month + 1, dayOfMonth))
-            },
-            now.year,
-            now.monthValue - 1,
-            now.dayOfMonth
-        ).show()
-    }
-
-    private fun setupDropdowns() {
+    private fun setupViews() {
         // Setup form dropdown
         val formAdapter = ArrayAdapter(
             requireContext(),
@@ -110,6 +82,81 @@ class MedicationFilterBottomSheet(
             caregivers.map { it.name }
         )
         binding.caregiverDropdown.setAdapter(caregiverAdapter)
+
+        setupDatePickers()
+        setupButtons()
+    }
+
+    private fun restoreFilterState(filter: FilterMedications) {
+        // Restore active switch
+        if (filter.active != null){
+            binding.activeSwitch.isChecked = filter.active
+        }
+
+        // Restore form selection
+        filter.form_id?.let { formId ->
+            val formIndex = forms.indexOfFirst { it.id == formId }
+            if (formIndex != -1) {
+                binding.formDropdown.setText(forms[formIndex].name, false)
+            }
+        }
+
+        // Restore route selection
+        filter.route_id?.let { routeId ->
+            val routeIndex = routes.indexOfFirst { it.id == routeId }
+            if (routeIndex != -1) {
+                binding.routeDropdown.setText(routes[routeIndex].name, false)
+            }
+        }
+
+        // Restore doctor selection
+        filter.doctor_id?.let { doctorId ->
+            val doctorIndex = doctors.indexOfFirst { it.id == doctorId }
+            if (doctorIndex != -1) {
+                binding.doctorDropdown.setText(doctors[doctorIndex].name, false)
+            }
+        }
+
+        // Restore caregiver selection
+        filter.caregiver_id?.let { caregiverId ->
+            val caregiverIndex = caregivers.indexOfFirst { it.id == caregiverId }
+            if (caregiverIndex != -1) {
+                binding.caregiverDropdown.setText(caregivers[caregiverIndex].name, false)
+            }
+        }
+
+        // Restore dates
+        binding.startDateInput.setText(filter.start_date ?: "")
+        binding.endDateInput.setText(filter.end_date ?: "")
+    }
+
+    private fun setupDatePickers() {
+        val dateFormatter = DateTimeFormatter.ISO_DATE
+        
+        binding.startDateInput.setOnClickListener {
+            showDatePicker { date ->
+                binding.startDateInput.setText(date.format(dateFormatter))
+            }
+        }
+
+        binding.endDateInput.setOnClickListener {
+            showDatePicker { date ->
+                binding.endDateInput.setText(date.format(dateFormatter))
+            }
+        }
+    }
+
+    private fun showDatePicker(onDateSelected: (LocalDate) -> Unit) {
+        val now = LocalDate.now()
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                onDateSelected(LocalDate.of(year, month + 1, dayOfMonth))
+            },
+            now.year,
+            now.monthValue - 1,
+            now.dayOfMonth
+        ).show()
     }
 
     private fun setupButtons() {
@@ -161,7 +208,8 @@ class MedicationFilterBottomSheet(
             forms: List<MedicationForm>,
             routes: List<MedicationRoute>,
             caregivers: List<CaregiverInfo>,
-            doctors: List<DoctorInfo>
-        ) = MedicationFilterBottomSheet(forms, routes, caregivers, doctors)
+            doctors: List<DoctorInfo>,
+            currentFilter: FilterMedications? = null
+        ) = MedicationFilterBottomSheet(forms, routes, caregivers, doctors, currentFilter)
     }
 } 

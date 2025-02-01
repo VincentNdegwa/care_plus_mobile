@@ -23,6 +23,7 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
     private lateinit var healthProvidersAdapter: HealthProvidersAdapter
     private lateinit var loadingIndicator: ProgressBar
     private lateinit var emptyStateText: TextView
+    private var currentFilter: FilterCareProviders? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,7 +69,7 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
     }
     private fun setupFilterButton() {
         binding.searchFilterLayout.filterButton.setOnClickListener {
-            val filterBottomSheet = FilterBottomSheetFragment.newInstance()
+            val filterBottomSheet = FilterBottomSheetFragment.newInstance(currentFilter)
             filterBottomSheet.setFilterListener(this)
             filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
         }
@@ -102,6 +103,7 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
     }
 
     override fun onFiltersApplied(filter: FilterCareProviders) {
+        currentFilter = filter
         viewModel.fetchAllCaregivers(filter)
         showLoadingState()
     }

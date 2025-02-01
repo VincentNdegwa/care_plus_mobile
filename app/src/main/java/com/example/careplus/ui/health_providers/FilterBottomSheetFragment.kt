@@ -12,10 +12,11 @@ import com.example.careplus.utils.BottomSheetUtils
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class FilterBottomSheetFragment : BottomSheetDialogFragment() {
+class FilterBottomSheetFragment(
+    private val currentFilter: FilterCareProviders? = null
+) : BottomSheetDialogFragment() {
     private var _binding: FragmentFilterBottomSheetBinding? = null
     private val binding get() = _binding!!
-
     private var filterListener: FilterListener? = null
 
     interface FilterListener {
@@ -33,8 +34,20 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupViews()
+        currentFilter?.let { restoreFilterState(it) }
+    }
+
+    private fun setupViews() {
         setupSpecializationDropdown()
         setupButtons()
+    }
+
+    private fun restoreFilterState(filter: FilterCareProviders) {
+        // Restore all filter values
+        binding.specializationDropdown.setText(filter.specialization)
+        binding.agencyInput.setText(filter.agency_name)
+        binding.roleDropdown.setText(filter.role,false)
     }
 
     private fun setupSpecializationDropdown() {
@@ -64,18 +77,16 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
     private fun setupButtons() {
         binding.applyFilterButton.setOnClickListener {
             val filter = FilterCareProviders(
-                specialization = binding.specializationDropdown.text.toString().takeIf { it.isNotEmpty() },
-                agency_name = binding.agencyInput.text.toString().takeIf { it.isNotEmpty() },
-                role = binding.roleDropdown.text.toString().takeIf { it.isNotEmpty() },
-                search = null // This will be handled by the search box in the main UI
+                specialization = binding.specializationDropdown.text?.toString()?.takeIf { it.isNotEmpty() },
+                agency_name = binding.agencyInput.text?.toString()?.takeIf { it.isNotEmpty() },
+                role = binding.roleDropdown.text?.toString()?.takeIf { it.isNotEmpty() }
             )
-            
             filterListener?.onFiltersApplied(filter)
             dismiss()
         }
 
-        binding.clearFilterButton.setOnClickListener {
-            binding.specializationDropdown.setText("", false)
+        binding.clearFilterButton?.setOnClickListener {
+            binding.specializationDropdown.text?.clear()
             binding.clinicInput.text?.clear()
             binding.agencyInput.text?.clear()
             
@@ -100,6 +111,7 @@ class FilterBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     companion object {
-        fun newInstance() = FilterBottomSheetFragment()
+        fun newInstance(currentFilter: FilterCareProviders? = null) = 
+            FilterBottomSheetFragment(currentFilter)
     }
 } 

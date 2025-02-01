@@ -26,6 +26,7 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener, FilterBottomSh
     private lateinit var healthProvidersAdapter: HealthProvidersAdapter
     private lateinit var loadingIndicator: ProgressBar
     private lateinit var emptyStateText: TextView
+    private var currentFilter: FilterCareProviders? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -66,7 +67,7 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener, FilterBottomSh
 
     private fun setupFilterButton() {
         binding.searchFilterLayout.filterButton.setOnClickListener {
-            val filterBottomSheet = FilterBottomSheetFragment.newInstance()
+            val filterBottomSheet = FilterBottomSheetFragment.newInstance(currentFilter)
             filterBottomSheet.setFilterListener(this)
             filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
         }
@@ -129,6 +130,7 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener, FilterBottomSh
     }
 
     override fun onFiltersApplied(filter: FilterCareProviders) {
+        currentFilter = filter // Save the current filter
         viewModel.fetchMyCaregivers(filter)
         showLoadingState()
     }
