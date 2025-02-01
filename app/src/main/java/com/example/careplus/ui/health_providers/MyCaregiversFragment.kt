@@ -40,12 +40,10 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener, FilterBottomSh
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupSearch()
-        setupFilterButton()
         setupRecyclerView()
-        setupObservers()
-        viewModel.fetchMyCaregivers()
-        showLoadingState()
+        setupSearchAndFilter()
+        setupFilterButton()
+        observeViewModel()
     }
 
     override fun onResume() {
@@ -59,9 +57,10 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener, FilterBottomSh
         emptyStateText.visibility = GONE
     }
 
-    private fun setupSearch() {
+    private fun setupSearchAndFilter() {
         binding.searchFilterLayout.searchEditText.doOnTextChanged { text, _, _, _ ->
-            viewModel.fetchAllCaregivers(FilterCareProviders(null,null,null,text.toString(),null,null,null))
+            viewModel.fetchMyCaregivers(FilterCareProviders(null,null,null,text.toString(), null,null,null))
+            showLoadingState()
         }
     }
 
@@ -84,20 +83,24 @@ class MyCaregiversFragment : Fragment(), CaregiverActionListener, FilterBottomSh
         }
     }
 
-    private fun setupObservers() {
+    private fun observeViewModel() {
         viewModel.myCaregivers.observe(viewLifecycleOwner) { result ->
-            loadingIndicator.visibility = GONE
-            result.onSuccess { response ->
-                if (response.data.isNullOrEmpty()) {
-                    emptyStateText.visibility = VISIBLE
-                    healthProvidersAdapter.submitList(emptyList())
+            binding.loadingIndicator.visibility = GONE
+            
+            result.onSuccess { caregivers ->
+                if (caregivers.data.isEmpty()) {
+                    binding.emptyStateText.visibility = VISIBLE
                     binding.recyclerView.visibility = GONE
+                    healthProvidersAdapter.submitList(emptyList())
                 } else {
-                    emptyStateText.visibility = GONE
-                    healthProvidersAdapter.submitList(response.data)
+                    binding.emptyStateText.visibility = GONE
                     binding.recyclerView.visibility = VISIBLE
+                    healthProvidersAdapter.submitList(caregivers.data)
                 }
             }.onFailure { exception ->
+                binding.emptyStateText.visibility = VISIBLE
+                binding.recyclerView.visibility = GONE
+                healthProvidersAdapter.submitList(emptyList())
                 SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error fetching caregivers")
             }
         }
