@@ -16,6 +16,7 @@ import com.example.careplus.databinding.FragmentMedicationsBinding
 import com.example.careplus.utils.SnackbarUtils
 import com.example.careplus.data.model.MedicationDetails
 import androidx.navigation.fragment.findNavController
+import com.example.careplus.R
 import com.example.careplus.data.filter_model.FilterCareProviders
 import com.example.careplus.data.filter_model.FilterMedications
 import com.example.careplus.data.model.CaregiverInfo
@@ -69,6 +70,9 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
         super.onViewCreated(view, savedInstanceState)
         binding.toolbar.setPageTitle("Medications")
         setupSearchAndFilter()
+        binding.addMedicationFab.setOnClickListener {
+            findNavController().navigate(R.id.action_medications_to_newMedication)
+        }
     }
 
     private fun setupViews() {

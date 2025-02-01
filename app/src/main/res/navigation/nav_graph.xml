@@ -50,6 +50,9 @@
         <action
             android:id="@+id/action_medications_to_medicationDetail"
             app:destination="@id/medicationDetailFragment" />
+        <action
+            android:id="@+id/action_medications_to_newMedication"
+            app:destination="@id/newMedicationFragment" />
     </fragment>
 
     <fragment
@@ -80,6 +83,12 @@
         android:id="@+id/caregiversFragment"
         android:name="com.example.careplus.ui.health_providers.HealthProvidersFragment"
         android:label="Caregivers" />
+
+    <fragment
+        android:id="@+id/newMedicationFragment"
+        android:name="com.example.careplus.ui.medications.NewMedicationFragment"
+        android:label="New Medication">
+    </fragment>
 
     <action
         android:id="@+id/action_homeFragment_to_medicationDetailFragment"
