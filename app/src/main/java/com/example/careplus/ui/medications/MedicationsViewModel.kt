@@ -72,7 +72,8 @@ class MedicationsViewModel(application: Application) : AndroidViewModel(applicat
             try {
                 val patientId = sessionManager.getUser()?.patient?.id
                 if (patientId != null) {
-                    val medicationsList = repository.getMedications(patientId, filter)
+                    val medicationDetails = repository.getMedications(patientId, filter)
+                    val medicationsList = medicationDetails.data ?: emptyList()
                     _medications.value = Result.success(medicationsList)
                 } else {
                     _medications.value = Result.failure(Exception("Patient ID not found"))

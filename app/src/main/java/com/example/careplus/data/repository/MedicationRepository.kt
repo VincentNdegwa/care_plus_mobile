@@ -19,6 +19,7 @@ import com.example.careplus.data.model.CreateMedicationRequest
 import com.example.careplus.data.model.CreateMedicationResponse
 import com.example.careplus.data.model.MedicationDetailResponse
 import com.example.careplus.data.model.MedicationForm
+import com.example.careplus.data.model.MedicationListResponse
 import com.example.careplus.data.model.MedicationRoute
 import com.example.careplus.data.model.MedicationUpdateResponse
 
@@ -28,7 +29,7 @@ class MedicationRepository(private val sessionManager: SessionManager) {
         ApiClient.create(sessionManager)
     }
 
-    suspend fun getMedications(patientId: Int, filter:FilterMedications? ): List<MedicationDetails> {
+    suspend fun getMedications(patientId: Int, filter:FilterMedications? ): MedicationListResponse {
         try {
             Log.d("MedicationRepository", "Getting medications for patient $patientId")
             val request = filter?.copy(patient_id = patientId.toLong())
@@ -36,9 +37,7 @@ class MedicationRepository(private val sessionManager: SessionManager) {
             val response = ApiClient.medicationApi.getMedications(request)
             
             if (!response.error) {
-                val medications = response.data ?: emptyList()
-                Log.d("MedicationRepository", "Medications received: ${medications.size}")
-                return medications
+                return response
             } else {
                 Log.e("MedicationRepository", "Error fetching medications")
                 throw Exception("Failed to fetch medications")
