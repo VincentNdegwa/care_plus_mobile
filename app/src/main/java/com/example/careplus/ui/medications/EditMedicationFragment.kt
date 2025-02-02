@@ -14,14 +14,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.careplus.MainActivity
 import com.example.careplus.R
-import com.example.careplus.data.model.MedicationDetails
 import com.example.careplus.data.model.MedicationFormResource
 import com.example.careplus.data.model.MedicationFrequencyResource
 import com.example.careplus.data.model.MedicationRouteResource
 import com.example.careplus.data.model.MedicationUpdateRequest
 import com.example.careplus.data.model.MedicationUnitResource
 import com.example.careplus.data.model.MedicationUpdateResponse
-import com.example.careplus.data.model.MedicationUpdated
 import com.example.careplus.databinding.FragmentEditMedicationBinding
 import com.example.careplus.utils.SnackbarUtils
 import com.google.android.material.snackbar.Snackbar
@@ -29,7 +27,7 @@ import com.google.android.material.snackbar.Snackbar
 class EditMedicationFragment : Fragment() {
     private var _binding: FragmentEditMedicationBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: EditMedicationViewModel by viewModels()
+    private val viewModel: MedicationsViewModel by viewModels()
     private val args: EditMedicationFragmentArgs by navArgs()
 
     private var selectedForm: MedicationFormResource? = null

@@ -21,3 +21,10 @@ data class MedicationDetailResponse(
     val active: Int,
     val diagnosis: Diagnosisinfo?
 ) : Parcelable
+
+@Parcelize
+data class CreateMedicationResponse(
+    val error: Boolean,
+    val message: String,
+    val data: MedicationDetailResponse
+): Parcelable

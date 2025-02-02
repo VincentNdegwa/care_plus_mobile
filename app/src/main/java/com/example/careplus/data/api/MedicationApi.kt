@@ -1,6 +1,8 @@
 package com.example.careplus.data.api
 
 import com.example.careplus.data.filter_model.FilterMedications
+import com.example.careplus.data.model.CreateMedicationRequest
+import com.example.careplus.data.model.CreateMedicationResponse
 import com.example.careplus.data.model.MedicationListResponse
 import com.example.careplus.data.model.MedicationRequest
 import com.example.careplus.data.model.MedicationDetailResponse
@@ -30,6 +32,11 @@ interface MedicationApi {
         @Path("id") id: Long,
         @Body updateRequest: MedicationUpdateRequest
     ): Response<MedicationUpdateResponse>
+
+    @POST("medications/create")
+    suspend fun createMedication(
+        @Body createMedicationRequest: CreateMedicationRequest
+    ): Response<CreateMedicationResponse>
 
     @GET("medications/medication-resources/forms")
     suspend fun getMedicationForms(): List<MedicationFormResource>

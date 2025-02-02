@@ -15,6 +15,8 @@ import com.example.careplus.data.model.MedicationFrequencyResource
 import com.example.careplus.data.model.PatientInfo
 import com.example.careplus.data.model.DoctorInfo
 import com.example.careplus.data.model.CaregiverInfo
+import com.example.careplus.data.model.CreateMedicationRequest
+import com.example.careplus.data.model.CreateMedicationResponse
 import com.example.careplus.data.model.MedicationDetailResponse
 import com.example.careplus.data.model.MedicationForm
 import com.example.careplus.data.model.MedicationRoute
@@ -171,6 +173,25 @@ class MedicationRepository(private val sessionManager: SessionManager) {
             }
         } catch (e: Exception) {
             throw Exception("Failed to load medication frequencies: ${e.message}")
+        }
+    }
+
+    suspend fun createMedication(request: CreateMedicationRequest):Result<CreateMedicationResponse>{
+        try {
+            val response =  ApiClient.medicationApi.createMedication(request)
+            return if (response.isSuccessful && response.body() != null){
+                Result.success(response.body()!!)
+            }else{
+                Result.failure(Exception("Unable to create medication"))
+            }
+        } catch (e: HttpException) {
+            when (e.code()) {
+                404 -> throw Exception("Medication not available")
+                401 -> throw Exception("Please login again")
+                else -> throw Exception("Network error: ${e.message()}")
+            }
+        } catch (e: Exception) {
+            throw Exception("Failed to create medication: ${e.message}")
         }
     }
 } 

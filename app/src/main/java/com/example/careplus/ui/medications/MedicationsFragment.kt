@@ -28,13 +28,7 @@ import com.example.careplus.data.model.MedicationRoute
 class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListener {
     private var _binding: FragmentMedicationsBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: MedicationsViewModel by viewModels {
-        object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return MedicationsViewModel(SessionManager(requireContext())) as T
-            }
-        }
-    }
+    private val viewModel: MedicationsViewModel by viewModels()
     private var forms: List<MedicationForm> = emptyList()
     private var routes: List<MedicationRoute> = emptyList()
     private var caregivers: List<CaregiverInfo> = emptyList()
@@ -62,6 +56,7 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
         setupRecyclerView()
         setupObservers()
         showLoadingState()
+        viewModel.fetchMedications(currentFilter)
 
         return binding.root
     }
