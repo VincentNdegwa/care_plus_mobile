@@ -203,6 +203,7 @@ class EditMedicationFragment : Fragment() {
 
     private fun setupUpdateButton() {
         binding.updateButton.setOnClickListener {
+
             if (validateAndUpdateMedication()) {
                 // No need to collect data again, as the viewModel handles the update
             }
@@ -244,6 +245,9 @@ class EditMedicationFragment : Fragment() {
             val strengthValue = binding.dosageStrengthValueInput.text.toString()
             val strengthUnit = binding.dosageStrengthUnitInput.text.toString()
             val combinedStrength = "$strengthValue $strengthUnit"
+
+            binding.updateButton.isEnabled=false
+            binding.updateButton.setText("Updating...")
 
             viewModel.updateMedication(
                 args.medicationId,
