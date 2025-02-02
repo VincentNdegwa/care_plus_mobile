@@ -15,6 +15,7 @@ import com.example.careplus.utils.SnackbarUtils
 import android.widget.ProgressBar
 import androidx.core.widget.doOnTextChanged
 import com.example.careplus.data.filter_model.FilterCareProviders
+import androidx.recyclerview.widget.RecyclerView
 
 class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterListener {
     private var _binding: FragmentAllCaregiversBinding? = null
@@ -41,7 +42,7 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
         setupRecyclerView()
         setupSearch()
         setupFilterButton()
-        observeViewModel()
+        setupObservers()
     }
 
     private fun setupRecyclerView() {
@@ -52,6 +53,23 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = healthProvidersAdapter
+            
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    
+                    val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                    val visibleItemCount = layoutManager.childCount
+                    val totalItemCount = layoutManager.itemCount
+                    val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 5
+                        && firstVisibleItemPosition >= 0
+                    ) {
+                        viewModel.loadNextPageAllCaregivers()
+                    }
+                }
+            })
         }
         viewModel.fetchAllCaregivers()
         showLoadingState()
@@ -76,7 +94,7 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
         updateFilterIndicator()
     }
 
-    private fun observeViewModel() {
+    private fun setupObservers() {
         viewModel.caregivers.observe(viewLifecycleOwner) { result ->
             binding.loadingIndicator.visibility = View.GONE
             
@@ -96,6 +114,10 @@ class AllCareProvidersFragment : Fragment(), FilterBottomSheetFragment.FilterLis
                 )
             }
         }
+
+//        viewModel.paginationLoading.observe(viewLifecycleOwner) { isLoading ->
+//            binding.paginationProgressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+//        }
     }
     private fun updateFilterIndicator() {
         binding.searchFilterLayout.filterIndicator.visibility =

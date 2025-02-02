@@ -16,6 +16,7 @@ import com.example.careplus.utils.SnackbarUtils
 import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
+import androidx.recyclerview.widget.RecyclerView
 import com.example.careplus.data.filter_model.FilterCareProviders
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -85,6 +86,23 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheet
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = healthProvidersAdapter
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+
+                    val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                    val visibleItemCount = layoutManager.childCount
+                    val totalItemCount = layoutManager.itemCount
+                    val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 5
+                        && firstVisibleItemPosition >= 0
+                    ) {
+                        viewModel.loadNextPageMyDoctors()
+                    }
+                }
+            })
         }
     }
 

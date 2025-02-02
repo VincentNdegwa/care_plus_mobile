@@ -28,47 +28,207 @@ class HealthProvidersViewModel(application: Application) : AndroidViewModel(appl
 
     private val sessionManager = SessionManager(application)
 
+    // Pagination state for each list
+    private data class PaginationState(
+        var currentPage: Int = 1,
+        var isLastPage: Boolean = false,
+        var isLoading: Boolean = false,
+        var currentFilter: FilterCareProviders? = null
+    )
 
-    fun fetchAllCaregivers(filter: FilterCareProviders? = null) {
+    private val allCaregiversPagination = PaginationState()
+    private val myDoctorsPagination = PaginationState()
+    private val myCaregiversPagination = PaginationState()
+
+    private val _paginationLoading = MutableLiveData<Boolean>()
+    val paginationLoading: LiveData<Boolean> = _paginationLoading
+
+    fun fetchAllCaregivers(filter: FilterCareProviders? = null, isFirstLoad: Boolean = true) {
+        if (isFirstLoad) {
+            resetPagination(allCaregiversPagination)
+            allCaregiversPagination.currentFilter = filter
+        }
+
+        if (allCaregiversPagination.isLoading || allCaregiversPagination.isLastPage) return
+
         viewModelScope.launch {
             try {
-                val response = repository.fetchAllCaregivers(filter)
-                _caregivers.value = Result.success(response.data)
+                allCaregiversPagination.isLoading = true
+                _paginationLoading.value = true
+
+                val paginatedFilter = allCaregiversPagination.currentFilter?.copy(
+                    page_number = allCaregiversPagination.currentPage,
+                    per_page = 20
+                ) ?: FilterCareProviders(
+                    page_number = allCaregiversPagination.currentPage,
+                    per_page = 20
+                )
+
+                val response = repository.fetchAllCaregivers(paginatedFilter)
+                val newCaregivers = response.data
+
+                allCaregiversPagination.isLastPage = allCaregiversPagination.currentPage >= response.last_page
+
+                if (isFirstLoad) {
+                    _caregivers.value = Result.success(newCaregivers)
+                } else {
+                    val currentList = _caregivers.value?.getOrNull() ?: emptyList()
+                    _caregivers.value = Result.success(currentList + newCaregivers)
+                }
+
+                if (!allCaregiversPagination.isLastPage) {
+                    allCaregiversPagination.currentPage++
+                }
             } catch (e: Exception) {
                 _caregivers.value = Result.failure(e)
+            } finally {
+                allCaregiversPagination.isLoading = false
+                _paginationLoading.value = false
             }
         }
     }
 
-    fun fetchMyDoctors(filter: FilterCareProviders? = null) {
+    fun fetchMyDoctors(filter: FilterCareProviders? = null, isFirstLoad: Boolean = true) {
+        if (isFirstLoad) {
+            resetPagination(myDoctorsPagination)
+            myDoctorsPagination.currentFilter = filter
+        }
+
+        if (myDoctorsPagination.isLoading || myDoctorsPagination.isLastPage) return
+
         viewModelScope.launch {
             try {
-                var patientId = getPatientId()
-                if (patientId != null){
-                    val response = repository.fetchMyDoctors(patientId,filter)
-                    _myDoctors.value = Result.success(response)
-                }else{
-                    _myDoctors.value = Result.failure(Exception("Patient Id not found"))
+                myDoctorsPagination.isLoading = true
+                _paginationLoading.value = true
+
+                val patientId = sessionManager.getUser()?.patient?.id
+                if (patientId != null) {
+                    val paginatedFilter = myDoctorsPagination.currentFilter?.copy(
+                        page_number = myDoctorsPagination.currentPage,
+                        per_page = 20
+                    ) ?: FilterCareProviders(
+                        page_number = myDoctorsPagination.currentPage,
+                        per_page = 20
+                    )
+
+                    val response = repository.fetchMyDoctors(patientId, paginatedFilter)
+                    val newDoctors = response
+
+                    myDoctorsPagination.isLastPage = myDoctorsPagination.currentPage >= response.last_page
+
+                    if (isFirstLoad) {
+                        _myDoctors.value = Result.success(newDoctors)
+                    } else {
+                        val currentList = _myDoctors.value?.getOrNull()
+                        val combinedResponse = if (currentList != null) {
+                            CaregiverResponse(
+                                current_page = response.current_page,
+                                data = currentList.data + newDoctors.data,
+                                last_page = response.last_page,
+                                per_page = response.per_page,
+                                total = response.total
+                            )
+                        } else {
+                            newDoctors
+                        }
+                        _myDoctors.value = Result.success(combinedResponse)
+                    }
+
+                    if (!myDoctorsPagination.isLastPage) {
+                        myDoctorsPagination.currentPage++
+                    }
                 }
             } catch (e: Exception) {
                 _myDoctors.value = Result.failure(e)
+            } finally {
+                myDoctorsPagination.isLoading = false
+                _paginationLoading.value = false
             }
         }
     }
 
-    fun fetchMyCaregivers(filter: FilterCareProviders? = null) {
+    fun fetchMyCaregivers(filter: FilterCareProviders? = null, isFirstLoad: Boolean = true) {
+        // Similar implementation as fetchMyDoctors but for caregivers
+        if (isFirstLoad) {
+            resetPagination(myCaregiversPagination)
+            myCaregiversPagination.currentFilter = filter
+        }
+
+        if (myCaregiversPagination.isLoading || myCaregiversPagination.isLastPage) return
+
         viewModelScope.launch {
             try {
-                var patientId = getPatientId()
-                if (patientId != null){
-                    val response = repository.fetchMyCaregivers(patientId,filter)
-                    _myCaregivers.value = Result.success(response)
-                }else{
-                    _myCaregivers.value = Result.failure(Exception("Patient Id not found"))
+                myCaregiversPagination.isLoading = true
+                _paginationLoading.value = true
+
+                val patientId = sessionManager.getUser()?.patient?.id
+                if (patientId != null) {
+                    val paginatedFilter = myCaregiversPagination.currentFilter?.copy(
+                        page_number = myCaregiversPagination.currentPage,
+                        per_page = 20
+                    ) ?: FilterCareProviders(
+                        page_number = myCaregiversPagination.currentPage,
+                        per_page = 20
+                    )
+
+                    val response = repository.fetchMyCaregivers(patientId,paginatedFilter)
+                    val newCaregivers = response
+
+                    myCaregiversPagination.isLastPage = myCaregiversPagination.currentPage >= response.last_page
+
+                    if (isFirstLoad) {
+                        _myCaregivers.value = Result.success(newCaregivers)
+                    } else {
+                        val currentList = _myCaregivers.value?.getOrNull()
+                        val combinedResponse = if (currentList != null) {
+                            CaregiverResponse(
+                                current_page = response.current_page,
+                                data = currentList.data + newCaregivers.data,
+                                last_page = response.last_page,
+                                per_page = response.per_page,
+                                total = response.total
+                            )
+                        } else {
+                            newCaregivers
+                        }
+                        _myCaregivers.value = Result.success(combinedResponse)
+                    }
+
+                    if (!myCaregiversPagination.isLastPage) {
+                        myCaregiversPagination.currentPage++
+                    }
                 }
             } catch (e: Exception) {
                 _myCaregivers.value = Result.failure(e)
+            } finally {
+                myCaregiversPagination.isLoading = false
+                _paginationLoading.value = false
             }
+        }
+    }
+
+    private fun resetPagination(state: PaginationState) {
+        state.currentPage = 1
+        state.isLastPage = false
+        state.isLoading = false
+    }
+
+    // Functions to load next page for each list
+    fun loadNextPageAllCaregivers() {
+        if (!allCaregiversPagination.isLoading && !allCaregiversPagination.isLastPage) {
+            fetchAllCaregivers(allCaregiversPagination.currentFilter, isFirstLoad = false)
+        }
+    }
+
+    fun loadNextPageMyDoctors() {
+        if (!myDoctorsPagination.isLoading && !myDoctorsPagination.isLastPage) {
+            fetchMyDoctors(myDoctorsPagination.currentFilter, isFirstLoad = false)
+        }
+    }
+
+    fun loadNextPageMyCaregivers() {
+        if (!myCaregiversPagination.isLoading && !myCaregiversPagination.isLastPage) {
+            fetchMyCaregivers(myCaregiversPagination.currentFilter, isFirstLoad = false)
         }
     }
 
