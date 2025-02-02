@@ -62,24 +62,74 @@ class MedicationsViewModel(application: Application) : AndroidViewModel(applicat
     private val _profile = MutableLiveData<Result<SimpleProfile>>()
     val profile: LiveData<Result<SimpleProfile>> = _profile
 
+    // Add new properties for pagination
+    private var currentPage = 1
+    private var isLastPage = false
+    private var isLoading = false
+    private var currentFilter: FilterMedications? = null
+
+    // Add loading state for pagination
+    private val _paginationLoading = MutableLiveData<Boolean>()
+    val paginationLoading: LiveData<Boolean> = _paginationLoading
+
     init {
         observeLocalDatabase()
         loadResources()
     }
 
-    fun fetchMedications(filter: FilterMedications? = null) {
+    fun fetchMedications(filter: FilterMedications? = null, isFirstLoad: Boolean = true) {
+        if (isFirstLoad) {
+            resetPagination()
+            currentFilter = filter
+        }
+
+        if (isLoading || isLastPage) return
+
         viewModelScope.launch {
             try {
+                isLoading = true
+                _paginationLoading.value = true
+                
                 val patientId = sessionManager.getUser()?.patient?.id
                 if (patientId != null) {
-                    val medicationDetails = repository.getMedications(patientId, filter)
-                    val medicationsList = medicationDetails.data ?: emptyList()
-                    _medications.value = Result.success(medicationsList)
+                    val paginatedFilter = currentFilter?.copy(
+                        patient_id = patientId.toLong(),
+                        page_number = currentPage,
+                        per_page = 20
+                    ) ?: FilterMedications(
+                        patient_id = patientId.toLong(),
+                        page_number = currentPage,
+                        per_page = 20
+                    )
+
+                    val response = repository.getMedications(patientId, paginatedFilter)
+                    val newMedications = response.data ?: emptyList()
+
+                    // Update pagination state
+                    isLastPage = response.pagination?.let { pagination ->
+                        currentPage >= pagination.total_pages
+                    } ?: true
+
+                    // Update medications list
+                    if (isFirstLoad) {
+                        _medications.value = Result.success(newMedications)
+                    } else {
+                        val currentMedications = _medications.value?.getOrNull() ?: emptyList()
+                        _medications.value = Result.success(currentMedications + newMedications)
+                    }
+
+                    // Increment page number for next load
+                    if (!isLastPage) {
+                        currentPage++
+                    }
                 } else {
                     _medications.value = Result.failure(Exception("Patient ID not found"))
                 }
             } catch (e: Exception) {
                 _medications.value = Result.failure(e)
+            } finally {
+                isLoading = false
+                _paginationLoading.value = false
             }
         }
     }
@@ -251,6 +301,20 @@ class MedicationsViewModel(application: Application) : AndroidViewModel(applicat
 
     fun setMedicationDetails(details: MedicationDetails) {
         _medicationDetails.value = Result.success(details)
+    }
+
+    // Function to reset pagination state
+    private fun resetPagination() {
+        currentPage = 1
+        isLastPage = false
+        isLoading = false
+    }
+
+    // Function to load next page
+    fun loadNextPage() {
+        if (!isLoading && !isLastPage) {
+            fetchMedications(currentFilter, isFirstLoad = false)
+        }
     }
 
     override fun onCleared() {

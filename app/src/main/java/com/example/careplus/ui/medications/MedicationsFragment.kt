@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.careplus.data.SessionManager
 import com.example.careplus.databinding.FragmentMedicationsBinding
 import com.example.careplus.utils.SnackbarUtils
@@ -81,6 +82,25 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
         binding.medicationsList.apply {
             adapter = medicationsAdapter
             layoutManager = LinearLayoutManager(context)
+            
+            // Add scroll listener for pagination
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    
+                    val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                    val visibleItemCount = layoutManager.childCount
+                    val totalItemCount = layoutManager.itemCount
+                    val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                    // Load more when user scrolls near the end
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 5
+                        && firstVisibleItemPosition >= 0
+                    ) {
+                        viewModel.loadNextPage()
+                    }
+                }
+            })
         }
     }
 
@@ -108,6 +128,11 @@ class MedicationsFragment : Fragment(), MedicationFilterBottomSheet.FilterListen
             }
         }
 
+        // Observe pagination loading state
+//        viewModel.paginationLoading.observe(viewLifecycleOwner) { isLoading ->
+//            // Show/hide loading indicator at the bottom of the list
+//            binding.paginationProgressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+//        }
     }
 
     private fun setupSearchAndFilter() {
