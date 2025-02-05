@@ -1,11 +1,13 @@
 package com.example.careplus.data
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import com.example.careplus.data.model.User
+import com.example.careplus.services.PusherService
 import com.google.gson.Gson
 
-class SessionManager(context: Context) {
+class SessionManager(private val context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private val gson = Gson()
 
@@ -42,7 +44,21 @@ class SessionManager(context: Context) {
         return getAuthToken() != null && getUser() != null
     }
 
+    fun startPusherService() {
+        getUser()?.let { user ->
+            Intent(context, PusherService::class.java).also { intent ->
+                intent.putExtra(PusherService.EXTRA_PATIENT_ID, user.id.toString())
+                context.startService(intent)
+            }
+        }
+    }
+
+    fun stopPusherService() {
+        context.stopService(Intent(context, PusherService::class.java))
+    }
+
     fun clearSession() {
+        stopPusherService()
         val editor = prefs.edit()
         editor.clear()
         editor.apply()
