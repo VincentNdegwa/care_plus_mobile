@@ -25,7 +25,7 @@ data class MedicationDetails(
     val caregiver: CaregiverInfo?,
     val stock: Int?,
     val active: Int,
-    val diagnosis: Diagnosisinfo?
+    val diagnosis: DiagnosisInformation?
 ) : Parcelable
 //MedicationDetails(id=2, patient=PatientInfo(patient_id=1, name=Test User, email=test@example.com, avatar=null), medication_name=Sertraline, dosage_quantity=1, dosage_strength=500mg, form=null, route=null, frequency=2 times per day, duration=7 days, prescribed_date=2025-01-11 00:00:00, doctor=DoctorInfo(id=0, name=Ellis.Marquardt90), caregiver=null, stock=20, active=1, diagnosis=Diagnosisinfo(date_diagnosed=2024-11-21, description=null, diagnosis_name=Malaria, doctor_id=3, id=1, patient_id=1, symptoms=null))
 

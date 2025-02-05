@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Medicationform(
+data class MedicationFormData(
     val id: Long,
     val name: String,
     val patient_id: Long?

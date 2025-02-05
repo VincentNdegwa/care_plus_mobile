@@ -28,13 +28,6 @@
 <!--        <item name="boxStrokeWidth">1.5dp</item>-->
 <!--    </style>-->
 
-<!--    <style name="Widget.CarePlus.TextInputLayout.Glassmorphism" parent="Widget.CarePlus.TextInputLayout">-->
-<!--        <item name="boxBackgroundColor">#00FFFFFF</item>-->
-<!--        <item name="boxStrokeColor">@color/primary</item>-->
-<!--        <item name="hintTextColor">@color/primary</item>-->
-<!--        <item name="android:textColorHint">@color/primary</item>-->
-<!--    </style>-->
-
 <!--    <style name="Widget.CarePlus.Button.Glassmorphism" parent="Widget.CarePlus.Button">-->
 <!--        <item name="backgroundTint">@color/primary</item>-->
 <!--        <item name="rippleColor">#40FFFFFF</item>-->

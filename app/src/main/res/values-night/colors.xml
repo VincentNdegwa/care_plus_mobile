@@ -6,4 +6,5 @@
     <color name="text_primary_dark">#FFFFFF</color>
     <color name="text_secondary_dark">#CBD5E1</color>  <!-- slate-300 -->
     <color name="glass_morphism_background_dark">#1A1A1A</color>
+    <color name="input_background_light">#1AFFFFFF</color>
 </resources>

@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Diagnosisinfo(
+data class DiagnosisInformation(
     val date_diagnosed: String,
     val description: String?,
     val diagnosis_name: String,

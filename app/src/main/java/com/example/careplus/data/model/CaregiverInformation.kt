@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Caregiverinfo(
+data class CaregiverInformation(
     val id: Long,
     val name: String
 ) : Parcelable

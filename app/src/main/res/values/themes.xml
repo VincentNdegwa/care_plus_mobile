@@ -47,6 +47,9 @@
         <item name="boxCornerRadiusBottomStart">12dp</item>
         <item name="boxCornerRadiusBottomEnd">12dp</item>
         <item name="boxStrokeWidth">1.5dp</item>
+        <item name="boxBackgroundColor">#0DFFFFFF</item>
+        <item name="android:textColorHint">@color/text_secondary_light</item>
+        <item name="hintTextColor">@color/primary</item>
     </style>
 
     <style name="Widget.CarePlus.TextInputLayout.Glassmorphism" parent="Widget.CarePlus.TextInputLayout">

@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Patientinfo(
+data class PatientInformation(
     val patient_id: Long,
     val name: String,
     val email: String,

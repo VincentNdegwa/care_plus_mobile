@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Medicationroute(
+data class MedicationRouteData(
     val id: Long,
     val name: String,
     val description: String
