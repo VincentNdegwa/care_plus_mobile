@@ -16,6 +16,7 @@ import com.pusher.client.channel.PusherEvent
 import com.pusher.client.connection.ConnectionEventListener
 import com.pusher.client.connection.ConnectionState
 import com.pusher.client.connection.ConnectionStateChange
+import com.example.careplus.BuildConfig
 
 class PusherService : Service() {
     private lateinit var pusher: Pusher
@@ -53,18 +54,18 @@ class PusherService : Service() {
 
     private fun setupPusher() {
         val options = PusherOptions().apply {
-            setCluster("mt1")
+            setCluster(BuildConfig.PUSHER_CLUSTER)
             setChannelAuthorizer(createAuthorizer())
         }
 
-        pusher = Pusher("b526271d9952b0873f03", options)
+        pusher = Pusher(BuildConfig.PUSHER_APP_KEY, options)
         
         pusher.connect(createConnectionListener())
     }
 
     private fun createAuthorizer() = ChannelAuthorizer { channelName, socketId ->
-        val key = "b526271d9952b0873f03"
-        val secret = "d4aa5ee8ab9dcc92930c"
+        val key = BuildConfig.PUSHER_APP_KEY
+        val secret = BuildConfig.PUSHER_APP_SECRET
         val stringToSign = "$socketId:$channelName"
         val signature = createHmacSha256(stringToSign, secret)
         "{\"auth\":\"$key:$signature\"}"

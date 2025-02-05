@@ -1,0 +1,4 @@
+# Pusher Configuration
+PUSHER_APP_KEY=your_app_key_here
+PUSHER_APP_SECRET=your_app_secret_here
+PUSHER_CLUSTER=your_cluster_here 
