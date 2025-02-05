@@ -1,5 +1,7 @@
 package com.example.careplus
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -141,6 +143,15 @@ class MainActivity : AppCompatActivity() {
             }
 
             WindowInsetsCompat.CONSUMED
+        }
+
+        requestNotificationPermission()
+    }
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
+            }
         }
     }
 

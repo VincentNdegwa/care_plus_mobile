@@ -1,7 +1,10 @@
 package com.example.careplus
 
+import android.Manifest
 import android.app.Application
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import com.example.careplus.data.SessionManager
 import com.example.careplus.services.PusherService
@@ -13,7 +16,7 @@ class CarePlusApp : Application() {
     override fun onCreate() {
         super.onCreate()
         sessionManager = SessionManager(this)
-        
+
         NotificationHelper.createNotificationChannel(this)
         
         // Only start Pusher service if user is logged in
@@ -28,9 +31,14 @@ class CarePlusApp : Application() {
     private fun startPusherService(patientId: String) {
         Intent(this, PusherService::class.java).also { intent ->
             intent.putExtra(PusherService.EXTRA_PATIENT_ID, patientId)
-            startService(intent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
         }
     }
+
 
     companion object {
         private var instance: CarePlusApp? = null

@@ -3,14 +3,14 @@ package com.example.careplus.services
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import com.example.careplus.data.SessionManager
 import com.example.careplus.utils.NotificationHelper
+import com.google.gson.Gson
 import com.pusher.client.ChannelAuthorizer
 import com.pusher.client.Pusher
 import com.pusher.client.PusherOptions
+import com.pusher.client.channel.Channel
 import com.pusher.client.channel.PrivateChannelEventListener
 import com.pusher.client.channel.PusherEvent
 import com.pusher.client.connection.ConnectionEventListener
@@ -21,6 +21,13 @@ class PusherService : Service() {
     private lateinit var pusher: Pusher
     private lateinit var sessionManager: SessionManager
     private var patientId: String? = null
+    private val gson = Gson()
+    private val channels = mutableMapOf<String, Channel>()
+    private val channelEvents = mutableMapOf<String, List<String>>()
+    private val channelListeners = mutableMapOf<String, PrivateChannelEventListener>()
+
+    private var isConnected = false
+    private var isSubscribed = false
 
     override fun onCreate() {
         super.onCreate()
@@ -41,121 +48,198 @@ class PusherService : Service() {
             return START_NOT_STICKY
         }
 
-        return START_STICKY
+        return START_REDELIVER_INTENT
     }
 
     private fun setupPusher() {
-        val authorizer = ChannelAuthorizer { channelName, socketId ->
-            // Create proper auth signature for private channels
-            val key = "b526271d9952b0873f03" // Your Pusher key
-            val secret = "d4aa5ee8ab9dcc92930c" // Your Pusher secret
-
-            // Create the string to sign: "socket_id:channel_name"
-            val stringToSign = "$socketId:$channelName"
-
-            // Create HMAC SHA256 signature
-            val signature = createHmacSha256(stringToSign, secret)
-
-            // Return proper auth format
-            "{\"auth\":\"$key:$signature\"}"
-        }
-
         val options = PusherOptions().apply {
             setCluster("mt1")
-            setChannelAuthorizer(authorizer)
+            setChannelAuthorizer(createAuthorizer())
         }
 
         pusher = Pusher("b526271d9952b0873f03", options)
         
-        pusher.connect(object : ConnectionEventListener {
-            override fun onConnectionStateChange(change: ConnectionStateChange) {
-                Log.d("Pusher", "State changed from ${change.previousState} to ${change.currentState}")
-                if (change.currentState == ConnectionState.CONNECTED) {
-                    patientId?.let { id ->
-                        Log.d("Pusher", "Connection established, attempting to subscribe with patient ID: $id")
-                        subscribeToMedicationChannel(id)
-                    }
-                }
-            }
-
-            override fun onError(message: String, code: String?, e: Exception?) {
-                Log.e("Pusher", "Connection Error: $message, code: $code", e)
-                e?.printStackTrace()
-            }
-        }, ConnectionState.ALL)
+        pusher.connect(createConnectionListener())
     }
 
-    private fun subscribeToMedicationChannel(patientId: String) {
-        val channelName = "private-medication.take.$patientId"
-        Log.d("Pusher", "Attempting to subscribe to channel: $channelName")
-        
-        try {
-            val eventListener = object : PrivateChannelEventListener {
-                override fun onEvent(event: PusherEvent?) {
-                    Log.d("Pusher", "Received event: ${event?.data}")
-                    Log.d("Pusher", "Event name: ${event?.eventName}")
-                    if (sessionManager.isLoggedIn()) {
-                        event?.data?.let { sendNotification(it) }
+    private fun createAuthorizer() = ChannelAuthorizer { channelName, socketId ->
+        val key = "b526271d9952b0873f03"
+        val secret = "d4aa5ee8ab9dcc92930c"
+        val stringToSign = "$socketId:$channelName"
+        val signature = createHmacSha256(stringToSign, secret)
+        "{\"auth\":\"$key:$signature\"}"
+    }
+
+    private fun createConnectionListener() = object : ConnectionEventListener {
+        override fun onConnectionStateChange(change: ConnectionStateChange) {
+            Log.d(TAG, "State changed from ${change.previousState} to ${change.currentState}")
+            when (change.currentState) {
+                ConnectionState.CONNECTED -> {
+                    if (!isConnected || !isSubscribed) {
+                        isConnected = true
+                        patientId?.let { id -> 
+                            subscribeToChannels(id)
+                            isSubscribed = true
+                        }
                     }
                 }
-
-                override fun onSubscriptionSucceeded(channelName: String) {
-                    Log.d("Pusher", "✅ Subscription succeeded for channel: $channelName")
+                ConnectionState.DISCONNECTED -> {
+                    isConnected = false
+                    isSubscribed = false
+                    clearSubscriptions()
                 }
+                else -> { /* Handle other states if needed */ }
+            }
+        }
 
-                override fun onAuthenticationFailure(message: String, e: Exception) {
-                    Log.e("Pusher", "❌ Authentication failed: $message", e)
-                    e.printStackTrace()
-                }
+        override fun onError(message: String, code: String?, e: Exception?) {
+            Log.e(TAG, "Connection Error: $message, code: $code", e)
+            if (message.contains("Existing subscription")) {
+                Log.d(TAG, "Ignoring existing subscription message")
+                isSubscribed = true
+                return
+            }
+            e?.printStackTrace()
+        }
+    }
+
+    private fun subscribeToChannels(patientId: String) {
+        if (isSubscribed) {
+            Log.d(TAG, "Already subscribed to channels")
+            return
+        }
+
+        // Subscribe to medication channel
+        subscribeToPrivateChannel(
+            channelName = "private-medication.take.$patientId",
+            events = listOf("medication.take"),
+            onEvent = { handleMedicationEvent(it) }
+        )
+        
+        // Add more channel subscriptions here as needed
+        // Example:
+        // subscribeToPrivateChannel(
+        //     channelName = "private-appointments.$patientId",
+        //     events = listOf("appointment.created", "appointment.updated"),
+        //     onEvent = { handleAppointmentEvent(it) }
+        // )
+    }
+
+    private fun subscribeToPrivateChannel(
+        channelName: String,
+        events: List<String>,
+        onEvent: (PusherEvent) -> Unit
+    ) {
+        try {
+            if (channels.containsKey(channelName)) {
+                Log.d(TAG, "Already subscribed to channel: $channelName")
+                return
             }
 
+            val eventListener = createChannelListener(channelName, onEvent)
             val channel = pusher.subscribePrivate(channelName, eventListener)
             
-            // Use the same eventListener for binding
-            channel.bind("medication.take", eventListener)
-
+            events.forEach { event ->
+                channel.bind(event, eventListener)
+            }
+            
+            channels[channelName] = channel
+            channelEvents[channelName] = events
+            channelListeners[channelName] = eventListener
+            
         } catch (e: Exception) {
-            Log.e("Pusher", "Error subscribing to channel", e)
-            e.printStackTrace()
+            Log.e(TAG, "Error subscribing to channel: $channelName", e)
+        }
+    }
+
+    private fun createChannelListener(
+        channelName: String,
+        onEvent: (PusherEvent) -> Unit
+    ) = object : PrivateChannelEventListener {
+        override fun onEvent(event: PusherEvent?) {
+            event?.let {
+                Log.d(TAG, "Received event: ${it.data}")
+                Log.d(TAG, "Event name: ${it.eventName}")
+                if (sessionManager.isLoggedIn()) {
+                    onEvent(it)
+                }
+            }
+        }
+
+        override fun onSubscriptionSucceeded(channelName: String) {
+            Log.d(TAG, "✅ Subscription succeeded for channel: $channelName")
+        }
+
+        override fun onAuthenticationFailure(message: String, e: Exception) {
+            Log.e(TAG, "❌ Authentication failed: $message", e)
+        }
+    }
+
+    private fun handleMedicationEvent(event: PusherEvent) {
+        Log.d(TAG, "Handling medication event: ${event.data}")
+        try {
+            NotificationHelper.showMedicationNotification(applicationContext, event.data)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error handling medication event", e)
         }
     }
 
     private fun createHmacSha256(data: String, secret: String): String {
-        try {
+        return try {
             val algorithm = "HmacSHA256"
             val key = javax.crypto.spec.SecretKeySpec(secret.toByteArray(), algorithm)
             val mac = javax.crypto.Mac.getInstance(algorithm)
             mac.init(key)
-            return bytesToHex(mac.doFinal(data.toByteArray()))
+            bytesToHex(mac.doFinal(data.toByteArray()))
         } catch (e: Exception) {
-            Log.e("Pusher", "Error creating HMAC", e)
+            Log.e(TAG, "Error creating HMAC", e)
             throw e
         }
     }
 
     private fun bytesToHex(bytes: ByteArray): String {
         val hexChars = "0123456789abcdef"
-        val result = StringBuilder(bytes.size * 2)
-        bytes.forEach { byte ->
+        return bytes.joinToString("") { byte ->
             val i = byte.toInt()
-            result.append(hexChars[i shr 4 and 0x0f])
-            result.append(hexChars[i and 0x0f])
+            "${hexChars[i shr 4 and 0x0f]}${hexChars[i and 0x0f]}"
         }
-        return result.toString()
     }
 
-    private fun sendNotification(data: String) {
-        NotificationHelper.showMedicationNotification(this, data)
+    private fun clearSubscriptions() {
+        if (!isSubscribed) {
+            return
+        }
+
+        channels.forEach { (channelName, channel) ->
+            try {
+                val listener = channelListeners[channelName]
+                if (listener != null) {
+                    channelEvents[channelName]?.forEach { event ->
+                        channel.unbind(event, listener)
+                    }
+                }
+                pusher.unsubscribe(channelName)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error unsubscribing from channel: $channelName", e)
+            }
+        }
+        channels.clear()
+        channelEvents.clear()
+        channelListeners.clear()
+        isSubscribed = false
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
         super.onDestroy()
+        isSubscribed = false
+        clearSubscriptions()
         pusher.disconnect()
     }
 
     companion object {
         const val EXTRA_PATIENT_ID = "extra_patient_id"
+        private const val TAG = "Pusher"
     }
 } 
