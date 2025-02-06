@@ -13,6 +13,8 @@ import com.example.careplus.data.model.MedicationRouteResource
 import com.example.careplus.data.model.MedicationUnitResource
 import com.example.careplus.data.model.MedicationFrequencyResource
 import com.example.careplus.data.model.MedicationUpdateResponse
+import com.example.careplus.ui.medications.CreateScheduleRequest
+import com.example.careplus.ui.medications.GenerateScheduleTimesRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -49,4 +51,10 @@ interface MedicationApi {
 
     @GET("medications/medication-resources/frequencies")
     suspend fun getMedicationFrequencies(): List<MedicationFrequencyResource>
+
+    @POST("medications/schedule/generate-time")
+    suspend fun generateScheduleTimes(@Body request: GenerateScheduleTimesRequest): Response<List<String>>
+
+    @POST("/medications/schedule/custom")
+    suspend fun createSchedule(@Body request: CreateScheduleRequest): Response<Unit>
 } 

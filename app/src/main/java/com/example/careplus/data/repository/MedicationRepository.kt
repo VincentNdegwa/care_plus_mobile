@@ -22,6 +22,8 @@ import com.example.careplus.data.model.MedicationForm
 import com.example.careplus.data.model.MedicationListResponse
 import com.example.careplus.data.model.MedicationRoute
 import com.example.careplus.data.model.MedicationUpdateResponse
+import com.example.careplus.ui.medications.CreateScheduleRequest
+import com.example.careplus.ui.medications.GenerateScheduleTimesRequest
 
 class MedicationRepository(private val sessionManager: SessionManager) {
     init {
@@ -194,10 +196,42 @@ class MedicationRepository(private val sessionManager: SessionManager) {
         }
     }
 
-    suspend fun generateScheduleTimes(){
+    suspend fun generateScheduleTimes(request: GenerateScheduleTimesRequest): Result<List<String>> {
 
+        try {
+            val response = ApiClient.medicationApi.generateScheduleTimes(request)
+            return if (response.isSuccessful && response.body() != null){
+                Result.success(response.body()!!)
+            }else{
+                Result.failure(Exception("Unable to generate schedule"))
+            }
+        } catch (e: HttpException) {
+            when (e.code()) {
+                404 -> throw Exception("404 not available")
+                401 -> throw Exception("Please login again")
+                else -> throw Exception("Network error: ${e.message()}")
+            }
+        } catch (e: Exception) {
+            throw Exception("Failed to generate schedule time: ${e.message}")
+        }
     }
-    suspend fun createSchedule(){
 
+    suspend fun createSchedule(request: CreateScheduleRequest): Result<Unit> {
+        try {
+            val response = ApiClient.medicationApi.createSchedule(request)
+            return if (response.isSuccessful && response.body() != null){
+                Result.success(response.body()!!)
+            }else{
+                Result.failure(Exception("Unable to create schedule"))
+            }
+        } catch (e: HttpException) {
+            when (e.code()) {
+                404 -> throw Exception("404 not available")
+                401 -> throw Exception("Please login again")
+                else -> throw Exception("Network error: ${e.message()}")
+            }
+        } catch (e: Exception) {
+            throw Exception("Failed to generate schedule: ${e.message}")
+        }
     }
 } 

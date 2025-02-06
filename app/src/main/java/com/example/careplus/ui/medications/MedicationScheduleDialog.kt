@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.appcompat.app.AlertDialog
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -13,6 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.careplus.R
 import com.example.careplus.data.model.MedicationDetails
 import com.example.careplus.databinding.DialogMedicationScheduleBinding
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -21,14 +24,15 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 // Data class for the schedule request
 data class CreateScheduleRequest(
-    val medicationId: Int,
+    val medication_id: Int,
     val schedules: List<String>,
-    val startDatetime: String
+    val start_datetime: String
 )
 
 class MedicationScheduleDialog(
@@ -58,10 +62,15 @@ class MedicationScheduleDialog(
         binding = DialogMedicationScheduleBinding.inflate(LayoutInflater.from(context))
         setupViews()
         setupListeners()
+        setupObservers()
 
         dialog = MaterialAlertDialogBuilder(context)
             .setView(binding.root)
+            .setCancelable(false)
             .create()
+            .apply {
+                setCanceledOnTouchOutside(false)
+            }
 
         dialog.show()
     }
@@ -125,36 +134,125 @@ class MedicationScheduleDialog(
         }
     }
 
+    private fun setupObservers() {
+        viewModel.scheduleTimeSlots.observe(lifecycleOwner) { result ->
+            result.onSuccess { times ->
+                Log.d("MedicationScheduleDialog", "Received time slots: $times")
+                timeSlotAdapter.setTimeSlots(times)
+                selectedTimeSlots = times.toMutableList()
+            }.onFailure { exception ->
+                Log.e("MedicationScheduleDialog", "Error fetching time slots", exception)
+                // Show error message to user
+            }
+        }
+
+        viewModel.scheduleCreated.observe(lifecycleOwner) { result ->
+            result.onSuccess {
+                if (isNearNowSchedule) {
+                    showTakeMedicationNowDialog()
+                } else {
+                    dialog.dismiss()
+                    onScheduleCreated(false)
+                }
+            }.onFailure { exception ->
+                Log.e("MedicationScheduleDialog", "Error creating schedule", exception)
+                // Show error message to user
+            }
+        }
+    }
+
     private fun showDatePicker() {
-        val currentDate = LocalDate.now()
+        val today = LocalDate.now()
+        val todayMillis = System.currentTimeMillis() // This will give current date/time in milliseconds
+
         MaterialDatePicker.Builder.datePicker()
-            .setSelection(System.currentTimeMillis())
+            .setSelection(todayMillis)
+            .setTitleText("Select Start Date")
+            .setCalendarConstraints(
+                CalendarConstraints.Builder()
+                    .setStart(todayMillis)
+                    .setValidator(DateValidatorPointForward.now())
+                    .build()
+            )
             .build()
             .apply {
                 addOnPositiveButtonClickListener { selection ->
                     val selectedDate = Instant.ofEpochMilli(selection)
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate()
-                    selectedDateTime = selectedDateTime.with(selectedDate)
+                    
+                    if (selectedDate.isEqual(today)) {
+                        val currentTime = LocalDateTime.now()
+                        selectedDateTime = LocalDateTime.of(selectedDate, currentTime.toLocalTime())
+                    } else {
+                        selectedDateTime = LocalDateTime.of(selectedDate, LocalTime.of(0, 0))
+                    }
                     updateDateTimeButtons()
+                    if(binding.defaultScheduleRadio.isChecked){
+                        fetchDefaultSchedule()
+                    }
+
+
+                    // If today is selected, immediately show time picker
+                    if (selectedDate.isEqual(today)) {
+                        showTimePicker()
+                    }
                 }
             }
             .show((context as FragmentActivity).supportFragmentManager, "datePicker")
     }
 
     private fun showTimePicker() {
+        val now = LocalDateTime.now()
+        val isToday = selectedDateTime.toLocalDate().isEqual(LocalDate.now())
+        
+        // Set initial hour and minute for today
+        val initialHour = if (isToday) {
+            now.hour
+        } else {
+            selectedDateTime.hour
+        }
+        
+        val initialMinute = if (isToday) {
+            now.minute + 1
+        } else {
+            selectedDateTime.minute
+        }
+
         MaterialTimePicker.Builder()
             .setTimeFormat(TimeFormat.CLOCK_24H)
-            .setHour(selectedDateTime.hour)
-            .setMinute(selectedDateTime.minute)
+            .setHour(initialHour)
+            .setMinute(initialMinute)
             .build()
             .apply {
                 addOnPositiveButtonClickListener {
-                    selectedDateTime = selectedDateTime
+                    val selectedTime = LocalTime.of(hour, minute)
+                    
+                    if (isToday) {
+                        val selectedDateTime = LocalDateTime.of(LocalDate.now(), selectedTime)
+                        val currentDateTime = LocalDateTime.now()
+                        
+                        if (selectedDateTime.isBefore(currentDateTime)) {
+                            MaterialAlertDialogBuilder(this@MedicationScheduleDialog.context)
+                                .setTitle("Invalid Time")
+                                .setMessage("Please select a future time")
+                                .setPositiveButton("OK") { _, _ ->
+                                    // Show time picker again
+                                    showTimePicker()
+                                }
+                                .show()
+                            return@addOnPositiveButtonClickListener
+                        }
+                    }
+                    
+                    // If we get here, the time is valid
+                    this@MedicationScheduleDialog.selectedDateTime = this@MedicationScheduleDialog.selectedDateTime
                         .withHour(hour)
                         .withMinute(minute)
                     updateDateTimeButtons()
-                }
+                    if(binding.defaultScheduleRadio.isChecked){
+                        fetchDefaultSchedule()
+                    }                }
             }
             .show((context as FragmentActivity).supportFragmentManager, "timePicker")
     }
@@ -169,15 +267,17 @@ class MedicationScheduleDialog(
     }
 
     private fun fetchDefaultSchedule() {
-        // Make API call to get default schedule
-        viewModel.generateScheduleTimes(medicationDetails.id.toInt()).observe(lifecycleOwner) { result ->
-            result.onSuccess { times ->
-                timeSlotAdapter.setTimeSlots(times)
-                selectedTimeSlots = times.toMutableList()
-            }.onFailure {
-                // Handle error
-            }
+        Log.d("MedicationScheduleDialog", "Fetching default schedule")
+        val startDateTime = if (binding.nowRadioButton.isChecked) {
+            LocalDateTime.now()
+        } else {
+            selectedDateTime
         }
+
+        viewModel.generateScheduleTimes(
+            medicationId = medicationDetails.id.toInt(),
+            startDateTime = startDateTime
+        )
     }
 
     private fun showTimeSlotPicker() {
@@ -210,7 +310,31 @@ class MedicationScheduleDialog(
         return selectedTimeSlots.size < maxSlots
     }
 
+    private fun validateDateTime(): Boolean {
+        val now = LocalDateTime.now()
+        val selectedDT = if (binding.nowRadioButton.isChecked) {
+            now
+        } else {
+            selectedDateTime
+        }
+        
+        if (selectedDT.isBefore(now)) {
+            MaterialAlertDialogBuilder(context)
+                .setTitle("Invalid Date/Time")
+                .setMessage("Please select a future date and time")
+                .setPositiveButton("OK") { _, _ ->
+                    // Show date picker again
+                    showDatePicker()
+                }
+                .show()
+            return false
+        }
+        return true
+    }
+
     private fun createSchedule() {
+        if (!validateDateTime()) return
+
         val startDateTime = if (binding.nowRadioButton.isChecked) {
             LocalDateTime.now()
         } else {
@@ -220,23 +344,13 @@ class MedicationScheduleDialog(
         isNearNowSchedule = isTimeNearNow(startDateTime)
 
         val request = CreateScheduleRequest(
-            medicationId = medicationDetails.id.toInt(),
+            medication_id = medicationDetails.id.toInt(),
             schedules = selectedTimeSlots,
-            startDatetime = startDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            start_datetime = startDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         )
+        Log.d("MedicationScheduleDialog", request.toString())
 
-        viewModel.createSchedule(request).observe(lifecycleOwner) { result ->
-            result.onSuccess {
-                if (isNearNowSchedule) {
-                    showTakeMedicationNowDialog()
-                } else {
-                    dialog.dismiss()
-                    onScheduleCreated(false)
-                }
-            }.onFailure {
-                // Handle error
-            }
-        }
+//        viewModel.createSchedule(request)
     }
 
     private fun isTimeNearNow(dateTime: LocalDateTime): Boolean {
