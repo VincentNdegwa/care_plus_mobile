@@ -314,4 +314,17 @@
         android:visibility="gone"
         app:backgroundTint="@color/secondary"/>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/startMedicationFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="200dp"
+        android:src="@drawable/ic_start_medication"
+        app:tint="@color/surface_light"
+        android:visibility="gone"
+        android:contentDescription="Start medication schedule"
+        app:backgroundTint="@color/primary_variant"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout> 

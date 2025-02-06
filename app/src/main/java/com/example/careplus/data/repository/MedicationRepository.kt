@@ -193,4 +193,11 @@ class MedicationRepository(private val sessionManager: SessionManager) {
             throw Exception("Failed to create medication: ${e.message}")
         }
     }
+
+    suspend fun generateScheduleTimes(){
+
+    }
+    suspend fun createSchedule(){
+
+    }
 } 

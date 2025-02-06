@@ -53,7 +53,6 @@ class MedicationDetailFragment : Fragment() {
         setupObservers()
 
     }
-
     private fun displayMedicationDetails(medication: MedicationDetails) {
         binding.apply {
             toolbar.setPageTitle(medication.medication_name ?: "Unknown Medication")
@@ -63,7 +62,7 @@ class MedicationDetailFragment : Fragment() {
             frequencyText.text = medication.frequency ?: "- - -"
             durationText.text = medication.duration ?: "- - -"
             stockText.text = "${medication.stock ?: 0} units remaining"
-            
+
             // Format prescribed date
             val prescribedDate = LocalDateTime.parse(
                 medication.prescribed_date?.replace(" ", "T")
@@ -92,7 +91,7 @@ class MedicationDetailFragment : Fragment() {
         binding.editFab.setOnClickListener {
             if (isFabExpanded) collapseFabs() else expandFabs()
         }
-        
+
         binding.editDetailsFab.setOnClickListener {
             findNavController().navigate(
                 MedicationDetailFragmentDirections.actionMedicationDetailToEdit(
@@ -101,10 +100,14 @@ class MedicationDetailFragment : Fragment() {
                 )
             )
         }
-        
+
         binding.deleteFab.setOnClickListener {
             // Handle delete action
             collapseFabs()
+        }
+
+        binding.startMedicationFab.setOnClickListener {
+            showScheduleDialog()
         }
     }
 
@@ -131,6 +134,18 @@ class MedicationDetailFragment : Fragment() {
                 .translationY(0f)
                 .setDuration(200)
                 .setStartDelay(50)
+                .start()
+        }
+
+        binding.startMedicationFab.apply {
+            visibility = View.VISIBLE
+            alpha = 0f
+            translationY = 100f
+            animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(200)
+                .setStartDelay(100)
                 .start()
         }
         
@@ -166,6 +181,17 @@ class MedicationDetailFragment : Fragment() {
                 }
             }
             .start()
+
+        binding.startMedicationFab.animate()
+            .alpha(0f)
+            .translationY(100f)
+            .setDuration(200)
+            .withEndAction {
+                if (_binding != null) {
+                    binding.startMedicationFab.visibility = View.GONE
+                }
+            }
+            .start()
         
         binding.editFab.animate()
             .rotation(0f)
@@ -183,6 +209,21 @@ class MedicationDetailFragment : Fragment() {
                 SnackbarUtils.showSnackbar(binding.root, "Failed to load medication details")
             }
         }
+    }
+
+    private fun showScheduleDialog() {
+        val scheduleViewModel: MedicationScheduleViewModel by viewModels()
+        MedicationScheduleDialog(
+            requireContext(),
+            updatedMedicationDetails,
+            scheduleViewModel,
+            viewLifecycleOwner
+        ) { shouldTakeMedication ->
+            if (shouldTakeMedication) {
+                // Navigate to take medication screen or show take medication dialog
+//                showTakeMedicationDialog()
+            }
+        }.show()
     }
 
     override fun onDestroyView() {
