@@ -1,16 +1,19 @@
 package com.example.careplus.ui.medications
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.careplus.data.SessionManager
+import com.example.careplus.data.model.CreateMedicationScheduleResponse
 import com.example.careplus.data.repository.MedicationRepository
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import com.example.careplus.data.model.MedicationScheduleResponse
 
 data class GenerateScheduleTimesRequest(
     val medication_id: Int,
@@ -25,8 +28,8 @@ class MedicationScheduleViewModel(application: Application) : AndroidViewModel(a
     private val _scheduleTimeSlots = MutableLiveData<Result<List<String>>>()
     val scheduleTimeSlots: LiveData<Result<List<String>>> = _scheduleTimeSlots
 
-    private val _scheduleCreated = MutableLiveData<Result<Unit>>()
-    val scheduleCreated: LiveData<Result<Unit>> = _scheduleCreated
+    private val _scheduleCreated = MutableLiveData<Result<CreateMedicationScheduleResponse>>()
+    val scheduleCreated: LiveData<Result<CreateMedicationScheduleResponse>> = _scheduleCreated
 
     fun generateScheduleTimes(medicationId: Int, startDateTime: LocalDateTime) {
         viewModelScope.launch {
@@ -49,8 +52,18 @@ class MedicationScheduleViewModel(application: Application) : AndroidViewModel(a
         viewModelScope.launch {
             try {
                 val result = repository.createSchedule(request)
-                _scheduleCreated.value = result
+                result.onSuccess { res ->
+                    if (res.error) {
+                        _scheduleCreated.value = Result.failure(Exception(res.message))
+                    } else {
+                        _scheduleCreated.value = Result.success(res)
+                    }
+                }.onFailure { exception ->
+                    Log.e("MedicationScheduleViewModel", "Failed to create schedule", exception)
+                    _scheduleCreated.value = Result.failure(exception)
+                }
             } catch (e: Exception) {
+                Log.e("MedicationScheduleViewModel", "Exception in createSchedule", e)
                 _scheduleCreated.value = Result.failure(e)
             }
         }

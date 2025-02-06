@@ -17,6 +17,7 @@ import com.example.careplus.data.model.DoctorInfo
 import com.example.careplus.data.model.CaregiverInfo
 import com.example.careplus.data.model.CreateMedicationRequest
 import com.example.careplus.data.model.CreateMedicationResponse
+import com.example.careplus.data.model.CreateMedicationScheduleResponse
 import com.example.careplus.data.model.MedicationDetailResponse
 import com.example.careplus.data.model.MedicationForm
 import com.example.careplus.data.model.MedicationListResponse
@@ -24,6 +25,9 @@ import com.example.careplus.data.model.MedicationRoute
 import com.example.careplus.data.model.MedicationUpdateResponse
 import com.example.careplus.ui.medications.CreateScheduleRequest
 import com.example.careplus.ui.medications.GenerateScheduleTimesRequest
+import com.example.careplus.data.model.MedicationScheduleResponse
+import com.google.gson.Gson
+import com.example.careplus.data.model.ErrorResponse
 
 class MedicationRepository(private val sessionManager: SessionManager) {
     init {
@@ -216,22 +220,29 @@ class MedicationRepository(private val sessionManager: SessionManager) {
         }
     }
 
-    suspend fun createSchedule(request: CreateScheduleRequest): Result<Unit> {
+    suspend fun createSchedule(request: CreateScheduleRequest): Result<CreateMedicationScheduleResponse> {
         try {
             val response = ApiClient.medicationApi.createSchedule(request)
-            return if (response.isSuccessful && response.body() != null){
-                Result.success(response.body()!!)
-            }else{
-                Result.failure(Exception("Unable to create schedule"))
+            Log.d("MedicationRepository", "Response: ${response.code()}")
+            
+            if (response.isSuccessful && response.body() != null) {
+                return Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("MedicationRepository", "Error body: $errorBody")
+                val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+                return Result.failure(Exception(errorResponse?.message ?: "Unable to create schedule"))
             }
         } catch (e: HttpException) {
-            when (e.code()) {
-                404 -> throw Exception("404 not available")
-                401 -> throw Exception("Please login again")
-                else -> throw Exception("Network error: ${e.message()}")
+            val errorBody = e.response()?.errorBody()?.string()
+            return try {
+                val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+                Result.failure(Exception(errorResponse.message))
+            } catch (e: Exception) {
+                Result.failure(Exception("Failed to create schedule: ${e.message}"))
             }
         } catch (e: Exception) {
-            throw Exception("Failed to generate schedule: ${e.message}")
+            return Result.failure(e)
         }
     }
 } 

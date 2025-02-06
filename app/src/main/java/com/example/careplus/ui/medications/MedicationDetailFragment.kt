@@ -217,11 +217,18 @@ class MedicationDetailFragment : Fragment() {
             requireContext(),
             updatedMedicationDetails,
             scheduleViewModel,
-            viewLifecycleOwner
+            viewLifecycleOwner,
+            onError = { message ->
+                // Show error at the top of the screen
+                SnackbarUtils.showTopSnackbar(
+                    view = requireActivity().findViewById(android.R.id.content),
+                    message = message,
+                    isError = true
+                )
+            }
         ) { shouldTakeMedication ->
             if (shouldTakeMedication) {
-                // Navigate to take medication screen or show take medication dialog
-//                showTakeMedicationDialog()
+                // showTakeMedicationDialog()
             }
         }.show()
     }

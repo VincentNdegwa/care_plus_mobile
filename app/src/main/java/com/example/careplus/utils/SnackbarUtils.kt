@@ -2,11 +2,41 @@ package com.example.careplus.utils
 
 import android.view.View
 import android.view.ViewGroup
+import android.view.Gravity
+import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import com.example.careplus.R
 import com.google.android.material.snackbar.Snackbar
 
 object SnackbarUtils {
+    fun showTopSnackbar(
+        view: View,
+        message: String,
+        isError: Boolean = false,
+        duration: Int = Snackbar.LENGTH_LONG
+    ) {
+        val snackbar = Snackbar.make(view, message, duration)
+        
+        // Get the Snackbar's layout params
+        val params = snackbar.view.layoutParams as FrameLayout.LayoutParams
+        
+        // Set the layout params to show at top
+        params.gravity = Gravity.TOP
+        params.topMargin = 64 // Add some margin from top
+        snackbar.view.layoutParams = params
+        
+        snackbar.setTextColor(ContextCompat.getColor(view.context, R.color.white))
+
+        // Set background color based on error state
+        if (isError) {
+            snackbar.setBackgroundTint(view.context.getColor(R.color.error))
+        } else {
+            snackbar.setBackgroundTint(view.context.getColor(R.color.success))
+        }
+
+        snackbar.show()
+    }
+
     fun showSnackbar(
         view: View,
         message: String,

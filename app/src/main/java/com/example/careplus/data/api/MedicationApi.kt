@@ -3,6 +3,7 @@ package com.example.careplus.data.api
 import com.example.careplus.data.filter_model.FilterMedications
 import com.example.careplus.data.model.CreateMedicationRequest
 import com.example.careplus.data.model.CreateMedicationResponse
+import com.example.careplus.data.model.CreateMedicationScheduleResponse
 import com.example.careplus.data.model.MedicationListResponse
 import com.example.careplus.data.model.MedicationRequest
 import com.example.careplus.data.model.MedicationDetailResponse
@@ -12,6 +13,7 @@ import com.example.careplus.data.model.MedicationFormResource
 import com.example.careplus.data.model.MedicationRouteResource
 import com.example.careplus.data.model.MedicationUnitResource
 import com.example.careplus.data.model.MedicationFrequencyResource
+import com.example.careplus.data.model.MedicationScheduleResponse
 import com.example.careplus.data.model.MedicationUpdateResponse
 import com.example.careplus.ui.medications.CreateScheduleRequest
 import com.example.careplus.ui.medications.GenerateScheduleTimesRequest
@@ -56,5 +58,5 @@ interface MedicationApi {
     suspend fun generateScheduleTimes(@Body request: GenerateScheduleTimesRequest): Response<List<String>>
 
     @POST("/medications/schedule/custom")
-    suspend fun createSchedule(@Body request: CreateScheduleRequest): Response<Unit>
+    suspend fun createSchedule(@Body request: CreateScheduleRequest): Response<CreateMedicationScheduleResponse>
 } 

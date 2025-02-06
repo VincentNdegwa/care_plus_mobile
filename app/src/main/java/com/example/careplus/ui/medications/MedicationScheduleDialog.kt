@@ -1,12 +1,9 @@
 package com.example.careplus.ui.medications
 
-import android.annotation.SuppressLint
 import androidx.appcompat.app.AlertDialog
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
@@ -40,6 +37,7 @@ class MedicationScheduleDialog(
     private val medicationDetails: MedicationDetails,
     private val viewModel: MedicationScheduleViewModel,
     private val lifecycleOwner: LifecycleOwner,
+    private val onError: (String) -> Unit,
     private val onScheduleCreated: (Boolean) -> Unit
 ) {
     private lateinit var binding: DialogMedicationScheduleBinding
@@ -111,11 +109,13 @@ class MedicationScheduleDialog(
                     binding.customTimeSlotsLayout.isVisible = false
                 }
                 R.id.customScheduleRadio -> {
+                    selectedTimeSlots = emptyList<String>().toMutableList()
                     binding.timeSlotsList.isVisible = false
                     binding.customTimeSlotsLayout.isVisible = true
                 }
             }
         }
+
 
         binding.addTimeSlotButton.setOnClickListener {
             if (canAddMoreTimeSlots()) {
@@ -142,12 +142,12 @@ class MedicationScheduleDialog(
                 selectedTimeSlots = times.toMutableList()
             }.onFailure { exception ->
                 Log.e("MedicationScheduleDialog", "Error fetching time slots", exception)
-                // Show error message to user
+                onError(exception.message ?: "Failed to fetch time slots")
             }
         }
 
         viewModel.scheduleCreated.observe(lifecycleOwner) { result ->
-            result.onSuccess {
+            result.onSuccess { res ->
                 if (isNearNowSchedule) {
                     showTakeMedicationNowDialog()
                 } else {
@@ -156,7 +156,7 @@ class MedicationScheduleDialog(
                 }
             }.onFailure { exception ->
                 Log.e("MedicationScheduleDialog", "Error creating schedule", exception)
-                // Show error message to user
+                onError(exception.localizedMessage ?: exception.message ?: "Failed to create schedule")
             }
         }
     }
@@ -332,6 +332,89 @@ class MedicationScheduleDialog(
         return true
     }
 
+    private fun validateData(request: CreateScheduleRequest): Boolean {
+        // Check if schedules list is empty
+        if (request.schedules.isEmpty()) {
+            MaterialAlertDialogBuilder(context)
+                .setTitle("Invalid Schedule")
+                .setMessage("Please add at least one time slot for the medication schedule")
+                .setPositiveButton("OK", null)
+                .show()
+            return false
+        }
+
+        // Check if number of schedules matches the frequency
+        val expectedSlots = when (medicationDetails.frequency) {
+            "Once a day" -> 1
+            "Twice a day" -> 2
+            "Three times a day" -> 3
+            "Four times a day" -> 4
+            "Once every other day" -> 1
+            else -> 0
+        }
+
+        if (request.schedules.size != expectedSlots) {
+            MaterialAlertDialogBuilder(context)
+                .setTitle("Invalid Schedule")
+                .setMessage("Please add ${expectedSlots} time slot${if (expectedSlots > 1) "s" else ""} for ${medicationDetails.frequency?.lowercase()}")
+                .setPositiveButton("OK", null)
+                .show()
+            return false
+        }
+
+        // For custom schedules, validate time slots are not too close together
+        if (binding.customScheduleRadio.isChecked) {
+            val sortedTimes = request.schedules.map { 
+                LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm"))
+            }.sorted()
+
+            // Check for minimum gap between doses (e.g., 2 hours)
+            for (i in 0 until sortedTimes.size - 1) {
+                val duration = Duration.between(sortedTimes[i], sortedTimes[i + 1])
+                if (duration.toHours() < 2) {
+                    MaterialAlertDialogBuilder(context)
+                        .setTitle("Invalid Time Slots")
+                        .setMessage("Please ensure there is at least 2 hours between medication times")
+                        .setPositiveButton("OK", null)
+                        .show()
+                    return false
+                }
+            }
+
+            // For medications taken multiple times a day, check if times are well distributed
+            if (sortedTimes.size > 1) {
+                val firstToLast = Duration.between(sortedTimes.first(), sortedTimes.last()).toHours()
+                if (firstToLast < 6) {
+                    MaterialAlertDialogBuilder(context)
+                        .setTitle("Invalid Distribution")
+                        .setMessage("Please distribute medication times more evenly throughout the day")
+                        .setPositiveButton("OK", null)
+                        .show()
+                    return false
+                }
+            }
+        }
+
+        // Validate medication_id
+        if (request.medication_id <= 0) {
+            onError("Invalid medication ID")
+            return false
+        }
+
+        // Validate start_datetime format
+        try {
+            LocalDateTime.parse(
+                request.start_datetime,
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            )
+        } catch (e: Exception) {
+            onError("Invalid date format")
+            return false
+        }
+
+        return true
+    }
+
     private fun createSchedule() {
         if (!validateDateTime()) return
 
@@ -348,9 +431,10 @@ class MedicationScheduleDialog(
             schedules = selectedTimeSlots,
             start_datetime = startDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         )
-        Log.d("MedicationScheduleDialog", request.toString())
+        if (!validateData(request)) return
+        Log.d("MedicationScheduleDialog", "Creating schedule with request: $request")
 
-//        viewModel.createSchedule(request)
+        viewModel.createSchedule(request)
     }
 
     private fun isTimeNearNow(dateTime: LocalDateTime): Boolean {
