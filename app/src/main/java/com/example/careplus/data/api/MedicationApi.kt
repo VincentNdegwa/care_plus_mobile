@@ -57,6 +57,6 @@ interface MedicationApi {
     @POST("medications/schedule/generate-time")
     suspend fun generateScheduleTimes(@Body request: GenerateScheduleTimesRequest): Response<List<String>>
 
-    @POST("/medications/schedule/custom")
+    @POST("medications/schedule/custom")
     suspend fun createSchedule(@Body request: CreateScheduleRequest): Response<CreateMedicationScheduleResponse>
 } 

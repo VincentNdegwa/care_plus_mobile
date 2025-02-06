@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
@@ -135,6 +136,10 @@ class MedicationScheduleDialog(
     }
 
     private fun setupObservers() {
+        viewModel.isLoading.observe(lifecycleOwner) { isLoading ->
+            showLoading(isLoading)
+        }
+
         viewModel.scheduleTimeSlots.observe(lifecycleOwner) { result ->
             result.onSuccess { times ->
                 Log.d("MedicationScheduleDialog", "Received time slots: $times")
@@ -456,5 +461,11 @@ class MedicationScheduleDialog(
                 onScheduleCreated(false)
             }
             .show()
+    }
+
+    private fun showLoading(show: Boolean) {
+        binding.loadingOverlay.visibility = if (show) View.VISIBLE else View.GONE
+        binding.startButton.isEnabled = !show
+        binding.cancelButton.isEnabled = !show
     }
 } 

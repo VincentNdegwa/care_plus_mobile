@@ -31,9 +31,13 @@ class MedicationScheduleViewModel(application: Application) : AndroidViewModel(a
     private val _scheduleCreated = MutableLiveData<Result<CreateMedicationScheduleResponse>>()
     val scheduleCreated: LiveData<Result<CreateMedicationScheduleResponse>> = _scheduleCreated
 
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading
+
     fun generateScheduleTimes(medicationId: Int, startDateTime: LocalDateTime) {
         viewModelScope.launch {
             try {
+                _isLoading.value = true
                 val request = GenerateScheduleTimesRequest(
                     medication_id = medicationId,
                     start_datetime = startDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
@@ -44,6 +48,8 @@ class MedicationScheduleViewModel(application: Application) : AndroidViewModel(a
                 _scheduleTimeSlots.value = result
             } catch (e: Exception) {
                 _scheduleTimeSlots.value = Result.failure(e)
+            } finally {
+                _isLoading.value = false
             }
         }
     }
@@ -51,6 +57,7 @@ class MedicationScheduleViewModel(application: Application) : AndroidViewModel(a
     fun createSchedule(request: CreateScheduleRequest) {
         viewModelScope.launch {
             try {
+                _isLoading.value = true
                 val result = repository.createSchedule(request)
                 result.onSuccess { res ->
                     if (res.error) {
@@ -65,6 +72,8 @@ class MedicationScheduleViewModel(application: Application) : AndroidViewModel(a
             } catch (e: Exception) {
                 Log.e("MedicationScheduleViewModel", "Exception in createSchedule", e)
                 _scheduleCreated.value = Result.failure(e)
+            } finally {
+                _isLoading.value = false
             }
         }
     }

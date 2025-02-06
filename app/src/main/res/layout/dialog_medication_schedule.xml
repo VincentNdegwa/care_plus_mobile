@@ -1,181 +1,202 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Start Medication Schedule"
-            android:textAppearance="?attr/textAppearanceHeadline6"
-            android:layout_marginBottom="16dp"/>
-
-        <!-- Start Date/Time Section -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="1dp"
-            app:strokeColor="?attr/colorPrimary">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="When do you want to start?"
-                    android:textAppearance="?attr/textAppearanceSubtitle1"/>
-
-                <RadioGroup
-                    android:id="@+id/startTimeRadioGroup"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp">
-
-                    <RadioButton
-                        android:id="@+id/nowRadioButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Start Now"/>
-
-                    <RadioButton
-                        android:id="@+id/customTimeRadioButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Select Date and Time"/>
-                </RadioGroup>
-
-                <LinearLayout
-                    android:id="@+id/customTimeLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:visibility="gone"
-                    android:layout_marginTop="8dp">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/dateButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:text="Select Date"/>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/timeButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:text="Select Time"/>
-                </LinearLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Schedule Mode Section -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="1dp"
-            app:strokeColor="?attr/colorPrimary">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Schedule Mode"
-                    android:textAppearance="?attr/textAppearanceSubtitle1"/>
-
-                <RadioGroup
-                    android:id="@+id/scheduleModeRadioGroup"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp">
-
-                    <RadioButton
-                        android:id="@+id/defaultScheduleRadio"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Default Schedule"/>
-
-                    <RadioButton
-                        android:id="@+id/customScheduleRadio"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Custom Schedule"/>
-                </RadioGroup>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Time Slots Section -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/timeSlotsList"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:visibility="gone"/>
-
-        <!-- Custom Time Slots Section -->
         <LinearLayout
-            android:id="@+id/customTimeSlotsLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone">
+            android:padding="16dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/addTimeSlotButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Add Time Slot"
-                style="@style/Widget.MaterialComponents.Button.TextButton"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/customTimeSlotsList"
+            <TextView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="Start Medication Schedule"
+                android:textAppearance="?attr/textAppearanceHeadline6"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Start Date/Time Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorPrimary">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="When do you want to start?"
+                        android:textAppearance="?attr/textAppearanceSubtitle1"/>
+
+                    <RadioGroup
+                        android:id="@+id/startTimeRadioGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp">
+
+                        <RadioButton
+                            android:id="@+id/nowRadioButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Start Now"/>
+
+                        <RadioButton
+                            android:id="@+id/customTimeRadioButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Select Date and Time"/>
+                    </RadioGroup>
+
+                    <LinearLayout
+                        android:id="@+id/customTimeLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:visibility="gone"
+                        android:layout_marginTop="8dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/dateButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:text="Select Date"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/timeButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:text="Select Time"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Schedule Mode Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorPrimary">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Schedule Mode"
+                        android:textAppearance="?attr/textAppearanceSubtitle1"/>
+
+                    <RadioGroup
+                        android:id="@+id/scheduleModeRadioGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp">
+
+                        <RadioButton
+                            android:id="@+id/defaultScheduleRadio"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Default Schedule"/>
+
+                        <RadioButton
+                            android:id="@+id/customScheduleRadio"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Custom Schedule"/>
+                    </RadioGroup>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Time Slots Section -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/timeSlotsList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"/>
+
+            <!-- Custom Time Slots Section -->
+            <LinearLayout
+                android:id="@+id/customTimeSlotsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/addTimeSlotButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add Time Slot"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/customTimeSlotsList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/cancelButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cancel"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/startButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Start Medication"
+                    android:layout_marginStart="8dp"/>
+            </LinearLayout>
         </LinearLayout>
 
-        <!-- Action Buttons -->
-        <LinearLayout
-            android:layout_width="match_parent"
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Loading overlay on top of everything -->
+    <FrameLayout
+        android:id="@+id/loadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="#80000000">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end">
+            android:layout_gravity="center"/>
+    </FrameLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/cancelButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cancel"
-                style="@style/Widget.MaterialComponents.Button.TextButton"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/startButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Start Medication"
-                android:layout_marginStart="8dp"/>
-        </LinearLayout>
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView> 
+</FrameLayout>
