@@ -9,28 +9,19 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.viewModelScope
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.careplus.R
 import com.example.careplus.data.SessionManager
 import com.example.careplus.databinding.FragmentHomeBinding
 import com.example.careplus.databinding.ItemCalendarDateBinding
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.snackbar.Snackbar
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 import com.example.careplus.utils.SnackbarUtils
-import com.example.careplus.MainActivity
-import com.example.careplus.data.api.ApiClient
-import com.example.careplus.data.model.DashboardResponse
 import com.example.careplus.data.model.HealthVital
-import com.example.careplus.data.model.MedicationDetails
 import com.example.careplus.data.model.PatientStats
-import retrofit2.HttpException
-import kotlinx.coroutines.launch
 import com.google.gson.Gson
 import android.util.Log
 import com.example.careplus.data.model.MedicationNotificationData
@@ -96,8 +87,19 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        scheduleAdapter = MedicationScheduleAdapter { medicationId:Int ->
-            fetchMedicationDetails(medicationId)
+        scheduleAdapter = MedicationScheduleAdapter { schedule ->
+            showMedicationActionDialog(MedicationNotificationData(
+                id = schedule.id,
+                medication_id = schedule.medication_id,
+                patient_id = schedule.patient_id,
+                dose_time = schedule.dose_time,
+                processed_at = schedule.processed_at,
+                status = schedule.status,
+                taken_at = schedule.taken_at,
+                second_notification_sent = schedule.second_notification_sent,
+                created_at = schedule.created_at,
+                updated_at = schedule.updated_at
+            ))
         }
         binding.medicationsList.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -254,30 +256,14 @@ class HomeFragment : Fragment() {
         )
     }
 
-    // Function to fetch medication details and navigate
-    private fun fetchMedicationDetails(medicationId: Int) {
-        // Use the viewModel to launch a coroutine
-        viewModel.viewModelScope.launch {
-            try {
-                // Call the repository method to fetch medication details
-                val result = viewModel.repository.getMedicationById(medicationId)
-                // Navigate to MedicationDetailFragment with the medication details
-                val action = HomeFragmentDirections.actionHomeFragmentToMedicationDetailFragment(result)
-                findNavController().navigate(action)
-            } catch (e: Exception) {
-                SnackbarUtils.showSnackbar(binding.root, e.message ?: "Error fetching medication details", true)
-            }
-        }
-    }
-
     private fun handlePendingNotification() {
         pendingNotificationData?.let { jsonData ->
             try {
                 Log.d("HomeFragment", "Processing notification data")
                 val notificationData = Gson().fromJson(jsonData, MedicationNotificationData::class.java)
                 
-                // Convert notification data to Schedule object
-                val schedule = MedicationNotificationData(
+                Log.d("HomeFragment", "Showing medication action dialog")
+                showMedicationActionDialog(MedicationNotificationData(
                     id = notificationData.id,
                     medication_id = notificationData.medication_id,
                     patient_id = notificationData.patient_id,
@@ -287,11 +273,8 @@ class HomeFragment : Fragment() {
                     taken_at = notificationData.taken_at,
                     second_notification_sent = notificationData.second_notification_sent,
                     created_at = notificationData.created_at,
-                    updated_at = notificationData.updated_at
-                )
-                
-                Log.d("HomeFragment", "Showing medication action dialog")
-                showMedicationActionDialog(schedule)
+                    updated_at = notificationData.updated_at,
+                ))
                 
                 // Clear the pending notification after showing dialog
                 pendingNotificationData = null
@@ -304,9 +287,23 @@ class HomeFragment : Fragment() {
     }
 
     private fun showMedicationActionDialog(schedule: MedicationNotificationData) {
+        // Convert Schedule to MedicationNotificationData
+        val notificationData = MedicationNotificationData(
+            id = schedule.id,
+            medication_id = schedule.medication_id,
+            patient_id = schedule.patient_id,
+            dose_time = schedule.dose_time,
+            processed_at = schedule.processed_at,
+            status = schedule.status,
+            taken_at = schedule.taken_at,
+            second_notification_sent = schedule.second_notification_sent,
+            created_at = schedule.created_at,
+            updated_at = schedule.updated_at
+        )
+
         MedicationActionDialog(
             context = requireContext(),
-            schedule = schedule,
+            schedule = notificationData,
             viewModel = MedicationDetailViewModel(requireActivity().application),
             lifecycleOwner = viewLifecycleOwner
         ).show()

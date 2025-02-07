@@ -1,7 +1,5 @@
 package com.example.careplus.data.model
 
-import java.time.LocalDateTime
-
 data class MedicationScheduleResponse(
     val error: Boolean,
     val schedules: ScheduleData?

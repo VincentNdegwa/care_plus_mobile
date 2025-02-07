@@ -18,7 +18,7 @@ import com.example.careplus.data.model.MedicationDetails
 import com.example.careplus.data.model.ScheduledMedication
 
 class MedicationScheduleAdapter(
-    private val onMedicationClick: (Int) -> Unit
+    private val onScheduleClick: (Schedule) -> Unit
 ) : ListAdapter<Schedule, MedicationScheduleAdapter.ScheduleViewHolder>(ScheduleDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScheduleViewHolder {
@@ -40,7 +40,7 @@ class MedicationScheduleAdapter(
             binding.root.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    onMedicationClick(getItem(position).medication_id)
+                    onScheduleClick(getItem(position))
                 }
             }
         }

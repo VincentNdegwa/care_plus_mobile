@@ -16,7 +16,7 @@ data class MedicationNotificationData(
     @SerializedName("taken_at")
     val taken_at: String?,
     @SerializedName("second_notification_sent")
-    val second_notification_sent: Int,
+    val second_notification_sent: Int?,
     @SerializedName("created_at")
     val created_at: String,
     @SerializedName("updated_at")
