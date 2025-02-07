@@ -19,6 +19,8 @@ import androidx.navigation.ui.navigateUp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.view.ViewGroup
+import android.content.Intent
+import android.util.Log
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -146,7 +148,37 @@ class MainActivity : AppCompatActivity() {
         }
 
         requestNotificationPermission()
+
+        handleNotificationIntent(intent)
     }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: Intent?) {
+        if (intent?.action == "MEDICATION_NOTIFICATION") {
+            Log.d("MainActivity", "Handling notification intent")
+            intent.getStringExtra("notification_data")?.let { notificationData ->
+                Log.d("MainActivity", "Notification data: $notificationData")
+                
+                // Ensure NavController is initialized
+                val navHostFragment = supportFragmentManager
+                    .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+                val navController = navHostFragment.navController
+
+                // Create bundle with notification data
+                val bundle = Bundle().apply {
+                    putString("notification_data", notificationData)
+                }
+
+                // Navigate to home fragment with data
+                navController.navigate(R.id.homeFragment, bundle)
+            }
+        }
+    }
+
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {

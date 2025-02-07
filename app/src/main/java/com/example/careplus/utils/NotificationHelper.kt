@@ -68,15 +68,20 @@ object NotificationHelper {
 
             // Parse the JSON message to get meaningful data
             val medicationData = Gson().fromJson(jsonMessage, MedicationNotificationData::class.java)
-            val notificationText = "Time to take your medication: ${medicationData.dose_time}"
+            val notificationText = "Time to take your medication"
 
+            // Create an explicit intent for MainActivity
             val intent = Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 putExtra("notification_data", jsonMessage)
+                // Add action to identify notification click
+                action = "MEDICATION_NOTIFICATION"
             }
             
             val pendingIntent = PendingIntent.getActivity(
-                context, 0, intent,
+                context, 
+                medicationData.id, // Use unique ID for each notification
+                intent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
 
@@ -106,6 +111,11 @@ object NotificationHelper {
         val medication_id: Int,
         val patient_id: Int,
         val dose_time: String,
-        val status: String
+        val status: String,
+        val medication: Medication
+    )
+
+    private data class Medication(
+        val medication_name: String
     )
 } 

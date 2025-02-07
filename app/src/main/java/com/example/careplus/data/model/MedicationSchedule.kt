@@ -24,7 +24,9 @@ data class Schedule(
     val status: String,
     val created_at: String,
     val updated_at: String,
-    val medication: ScheduledMedication
+    val medication: ScheduledMedication,
+    val taken_at: String?,
+    val second_notification_sent: Int?
 )
 
 data class ScheduledMedication(

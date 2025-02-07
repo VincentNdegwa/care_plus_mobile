@@ -129,8 +129,8 @@ class MedicationDetailFragment : Fragment() {
         val isMedicationActive = updatedMedicationDetails.active == 1
         
         // Show/hide menu items based on conditions
-        menu.findItem(R.id.action_take_medication)?.isVisible = isMedicationActive
-        menu.findItem(R.id.action_snooze_medication)?.isVisible = isMedicationActive
+//        menu.findItem(R.id.action_take_medication)?.isVisible = isMedicationActive
+//        menu.findItem(R.id.action_snooze_medication)?.isVisible = isMedicationActive
         menu.findItem(R.id.action_stop_medication)?.isVisible = isMedicationActive
         menu.findItem(R.id.action_resume_medication)?.isVisible = !isMedicationActive
     }

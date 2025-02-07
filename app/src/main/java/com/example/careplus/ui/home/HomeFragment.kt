@@ -31,6 +31,12 @@ import com.example.careplus.data.model.MedicationDetails
 import com.example.careplus.data.model.PatientStats
 import retrofit2.HttpException
 import kotlinx.coroutines.launch
+import com.google.gson.Gson
+import android.util.Log
+import com.example.careplus.data.model.MedicationNotificationData
+import com.example.careplus.data.model.Schedule
+import com.example.careplus.ui.components.MedicationActionDialog
+import com.example.careplus.ui.medications.MedicationDetailViewModel
 
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
@@ -38,6 +44,16 @@ class HomeFragment : Fragment() {
     private val viewModel: HomeViewModel by viewModels()
     private lateinit var sessionManager: SessionManager
     private lateinit var scheduleAdapter: MedicationScheduleAdapter
+    private var pendingNotificationData: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Check for notification data in arguments
+        arguments?.getString("notification_data")?.let { jsonData ->
+            Log.d("HomeFragment", "Received notification data: $jsonData")
+            pendingNotificationData = jsonData
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -66,6 +82,17 @@ class HomeFragment : Fragment() {
         viewModel.fetchStats()
 
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        setupRecyclerView()
+        setupObservers()
+        setupCalendar()
+        
+        // Handle notification after view setup
+        handlePendingNotification()
     }
 
     private fun setupRecyclerView() {
@@ -241,6 +268,48 @@ class HomeFragment : Fragment() {
                 SnackbarUtils.showSnackbar(binding.root, e.message ?: "Error fetching medication details", true)
             }
         }
+    }
+
+    private fun handlePendingNotification() {
+        pendingNotificationData?.let { jsonData ->
+            try {
+                Log.d("HomeFragment", "Processing notification data")
+                val notificationData = Gson().fromJson(jsonData, MedicationNotificationData::class.java)
+                
+                // Convert notification data to Schedule object
+                val schedule = MedicationNotificationData(
+                    id = notificationData.id,
+                    medication_id = notificationData.medication_id,
+                    patient_id = notificationData.patient_id,
+                    dose_time = notificationData.dose_time,
+                    processed_at = notificationData.processed_at,
+                    status = notificationData.status,
+                    taken_at = notificationData.taken_at,
+                    second_notification_sent = notificationData.second_notification_sent,
+                    created_at = notificationData.created_at,
+                    updated_at = notificationData.updated_at
+                )
+                
+                Log.d("HomeFragment", "Showing medication action dialog")
+                showMedicationActionDialog(schedule)
+                
+                // Clear the pending notification after showing dialog
+                pendingNotificationData = null
+            } catch (e: Exception) {
+                Log.e("HomeFragment", "Error parsing notification data", e)
+                Log.e("HomeFragment", "Notification data: $jsonData") // Add this to see the actual data
+                SnackbarUtils.showSnackbar(binding.root, "Error processing notification")
+            }
+        }
+    }
+
+    private fun showMedicationActionDialog(schedule: MedicationNotificationData) {
+        MedicationActionDialog(
+            context = requireContext(),
+            schedule = schedule,
+            viewModel = MedicationDetailViewModel(requireActivity().application),
+            lifecycleOwner = viewLifecycleOwner
+        ).show()
     }
 
     override fun onDestroyView() {
