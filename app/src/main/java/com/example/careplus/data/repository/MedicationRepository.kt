@@ -25,9 +25,11 @@ import com.example.careplus.data.model.MedicationRoute
 import com.example.careplus.data.model.MedicationUpdateResponse
 import com.example.careplus.ui.medications.CreateScheduleRequest
 import com.example.careplus.ui.medications.GenerateScheduleTimesRequest
-import com.example.careplus.data.model.MedicationScheduleResponse
-import com.google.gson.Gson
 import com.example.careplus.data.model.ErrorResponse
+import com.example.careplus.data.model.*
+import com.google.gson.Gson
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class MedicationRepository(private val sessionManager: SessionManager) {
     init {
@@ -242,6 +244,116 @@ class MedicationRepository(private val sessionManager: SessionManager) {
                 Result.failure(Exception("Failed to create schedule: ${e.message}"))
             }
         } catch (e: Exception) {
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun takeMedication(scheduleId: Int, takenAt: LocalDateTime? = null): Result<TakeMedicationResponse> {
+        try {
+            val request = TakeMedicationRequest(
+                medication_schedule_id = scheduleId,
+                taken_at = (takenAt ?: LocalDateTime.now())
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            )
+            
+            val response = ApiClient.medicationApi.takeMedication(request)
+            return if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+                Result.failure(Exception(errorResponse?.message ?: "Failed to mark medication as taken"))
+            }
+        } catch (e: HttpException) {
+            Log.e("MedicationRepository", "HTTP Error taking medication", e)
+            return Result.failure(Exception(when (e.code()) {
+                404 -> "Schedule not found"
+                401 -> "Please login again"
+                else -> "Network error: ${e.message()}"
+            }))
+        } catch (e: Exception) {
+            Log.e("MedicationRepository", "Error taking medication", e)
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun stopMedication(medicationId: Int): Result<StopMedicationResponse> {
+        try {
+            val request = StopMedicationRequest(medication_id = medicationId)
+            val response = ApiClient.medicationApi.stopMedication(request)
+            
+            return if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+                Result.failure(Exception(errorResponse?.message ?: "Failed to stop medication"))
+            }
+        } catch (e: HttpException) {
+            Log.e("MedicationRepository", "HTTP Error stopping medication", e)
+            return Result.failure(Exception(when (e.code()) {
+                404 -> "Medication not found"
+                401 -> "Please login again"
+                else -> "Network error: ${e.message()}"
+            }))
+        } catch (e: Exception) {
+            Log.e("MedicationRepository", "Error stopping medication", e)
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun snoozeMedication(scheduleId: Int, minutes: Int): Result<SnoozeMedicationResponse> {
+        try {
+            val request = SnoozeMedicationRequest(
+                medication_schedule_id = scheduleId,
+                snooze_minutes = minutes
+            )
+            
+            val response = ApiClient.medicationApi.snoozeMedication(request)
+            return if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+                Result.failure(Exception(errorResponse?.message ?: "Failed to snooze medication"))
+            }
+        } catch (e: HttpException) {
+            Log.e("MedicationRepository", "HTTP Error snoozing medication", e)
+            return Result.failure(Exception(when (e.code()) {
+                404 -> "Schedule not found"
+                401 -> "Please login again"
+                else -> "Network error: ${e.message()}"
+            }))
+        } catch (e: Exception) {
+            Log.e("MedicationRepository", "Error snoozing medication", e)
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun resumeMedication(medicationId: Int, extendDays: Boolean = false): Result<ResumeMedicationResponse> {
+        try {
+            val request = ResumeMedicationRequest(
+                medication_id = medicationId,
+                extend_days = extendDays
+            )
+            
+            val response = ApiClient.medicationApi.resumeMedication(request)
+            return if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+                Result.failure(Exception(errorResponse?.message ?: "Failed to resume medication"))
+            }
+        } catch (e: HttpException) {
+            Log.e("MedicationRepository", "HTTP Error resuming medication", e)
+            return Result.failure(Exception(when (e.code()) {
+                404 -> "Medication not found"
+                401 -> "Please login again"
+                else -> "Network error: ${e.message()}"
+            }))
+        } catch (e: Exception) {
+            Log.e("MedicationRepository", "Error resuming medication", e)
             return Result.failure(e)
         }
     }

@@ -17,6 +17,14 @@ import com.example.careplus.data.model.MedicationScheduleResponse
 import com.example.careplus.data.model.MedicationUpdateResponse
 import com.example.careplus.ui.medications.CreateScheduleRequest
 import com.example.careplus.ui.medications.GenerateScheduleTimesRequest
+import com.example.careplus.data.model.TakeMedicationRequest
+import com.example.careplus.data.model.TakeMedicationResponse
+import com.example.careplus.data.model.StopMedicationRequest
+import com.example.careplus.data.model.StopMedicationResponse
+import com.example.careplus.data.model.SnoozeMedicationRequest
+import com.example.careplus.data.model.SnoozeMedicationResponse
+import com.example.careplus.data.model.ResumeMedicationRequest
+import com.example.careplus.data.model.ResumeMedicationResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -59,4 +67,16 @@ interface MedicationApi {
 
     @POST("medications/schedule/custom")
     suspend fun createSchedule(@Body request: CreateScheduleRequest): Response<CreateMedicationScheduleResponse>
+
+    @POST("medications/schedule/take")
+    suspend fun takeMedication(@Body request: TakeMedicationRequest): Response<TakeMedicationResponse>
+
+    @POST("medications/schedule/stop")
+    suspend fun stopMedication(@Body request: StopMedicationRequest): Response<StopMedicationResponse>
+
+    @POST("medications/schedule/snooze")
+    suspend fun snoozeMedication(@Body request: SnoozeMedicationRequest): Response<SnoozeMedicationResponse>
+
+    @POST("medications/schedule/resume")
+    suspend fun resumeMedication(@Body request: ResumeMedicationRequest): Response<ResumeMedicationResponse>
 } 

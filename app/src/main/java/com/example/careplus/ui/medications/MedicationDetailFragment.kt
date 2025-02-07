@@ -9,12 +9,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.careplus.R
 import com.example.careplus.databinding.FragmentMedicationDetailBinding
 import com.example.careplus.utils.SnackbarUtils
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import com.example.careplus.data.model.MedicationDetails
-import com.example.careplus.data.model.MedicationDetailResponse
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MedicationDetailFragment : Fragment() {
     private var _binding: FragmentMedicationDetailBinding? = null
@@ -35,13 +36,15 @@ class MedicationDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupFabs()
         
+
         val medicationDetails = args.medicationDetails
-        updatedMedicationDetails =medicationDetails
+        updatedMedicationDetails = medicationDetails
         displayMedicationDetails(updatedMedicationDetails)
         viewModel.setMedicationDetails(medicationDetails)
 
+        setupToolbar()
+        updateMenuItems()
         setupObservers()
     }
 
@@ -87,116 +90,102 @@ class MedicationDetailFragment : Fragment() {
         }
     }
 
-    private fun setupFabs() {
-        binding.editFab.setOnClickListener {
-            if (isFabExpanded) collapseFabs() else expandFabs()
+    private fun setupToolbar() {
+        binding.toolbar.inflateMenu(R.menu.medication_detail_menu)
+//        binding.toolbar.setIconTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white)))
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_take_medication -> {
+                    showTakeMedicationDialog()
+                    true
+                }
+                R.id.action_snooze_medication -> {
+                    showSnoozeMedicationDialog()
+                    true
+                }
+                R.id.action_stop_medication -> {
+                    showStopMedicationDialog()
+                    true
+                }
+                R.id.action_resume_medication -> {
+                    showResumeMedicationDialog()
+                    true
+                }
+                R.id.action_edit_medication -> {
+                    navigateToEdit()
+                    true
+                }
+                R.id.action_delete_medication -> {
+                    showDeleteConfirmation()
+                    true
+                }
+                else -> false
+            }
         }
+    }
 
-        binding.editDetailsFab.setOnClickListener {
-            findNavController().navigate(
-                MedicationDetailFragmentDirections.actionMedicationDetailToEdit(
-                    args.medicationDetails.id.toInt(),
-                    updatedMedicationDetails
-                )
+    private fun updateMenuItems() {
+        val menu = binding.toolbar.menu
+        val isMedicationActive = updatedMedicationDetails.active == 1
+        
+        // Show/hide menu items based on conditions
+        menu.findItem(R.id.action_take_medication)?.isVisible = isMedicationActive
+        menu.findItem(R.id.action_snooze_medication)?.isVisible = isMedicationActive
+        menu.findItem(R.id.action_stop_medication)?.isVisible = isMedicationActive
+        menu.findItem(R.id.action_resume_medication)?.isVisible = !isMedicationActive
+    }
+
+    private fun showTakeMedicationDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Take Medication")
+            .setMessage("Mark this medication as taken?")
+            .setPositiveButton("Take") { _, _ ->
+                viewModel.takeMedication(updatedMedicationDetails.id.toInt())
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showSnoozeMedicationDialog() {
+        // Show dialog with time picker or predefined intervals
+        // Then call viewModel.snoozeMedication()
+    }
+
+    private fun showStopMedicationDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Stop Medication")
+            .setMessage("Are you sure you want to stop this medication schedule?")
+            .setPositiveButton("Stop") { _, _ ->
+                viewModel.stopMedication(updatedMedicationDetails.id.toInt())
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showResumeMedicationDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Resume Medication")
+            .setMessage("Do you want to extend the schedule duration?")
+            .setPositiveButton("Yes") { _, _ ->
+                viewModel.resumeMedication(updatedMedicationDetails.id.toInt(), true)
+            }
+            .setNegativeButton("No") { _, _ ->
+                viewModel.resumeMedication(updatedMedicationDetails.id.toInt(), false)
+            }
+            .show()
+    }
+
+    private fun navigateToEdit() {
+        findNavController().navigate(
+            MedicationDetailFragmentDirections.actionMedicationDetailToEdit(
+                args.medicationDetails.id.toInt(),
+                updatedMedicationDetails
             )
-        }
-
-        binding.deleteFab.setOnClickListener {
-            // Handle delete action
-            collapseFabs()
-        }
-
-        binding.startMedicationFab.setOnClickListener {
-            showScheduleDialog()
-        }
+        )
     }
 
-    private fun expandFabs() {
-        isFabExpanded = true
-        
-        binding.editDetailsFab.apply {
-            visibility = View.VISIBLE
-            alpha = 0f
-            translationY = 100f
-            animate()
-                .alpha(1f)
-                .translationY(0f)
-                .setDuration(200)
-                .start()
-        }
-        
-        binding.deleteFab.apply {
-            visibility = View.VISIBLE
-            alpha = 0f
-            translationY = 100f
-            animate()
-                .alpha(1f)
-                .translationY(0f)
-                .setDuration(200)
-                .setStartDelay(50)
-                .start()
-        }
-
-        binding.startMedicationFab.apply {
-            visibility = View.VISIBLE
-            alpha = 0f
-            translationY = 100f
-            animate()
-                .alpha(1f)
-                .translationY(0f)
-                .setDuration(200)
-                .setStartDelay(100)
-                .start()
-        }
-        
-        binding.editFab.animate()
-            .rotation(45f)
-            .setDuration(200)
-            .start()
-    }
-
-    private fun collapseFabs() {
-        if (_binding == null) return
-        
-        isFabExpanded = false
-        
-        binding.editDetailsFab.animate()
-            .alpha(0f)
-            .translationY(100f)
-            .setDuration(200)
-            .withEndAction {
-                if (_binding != null) {
-                    binding.editDetailsFab.visibility = View.GONE
-                }
-            }
-            .start()
-        
-        binding.deleteFab.animate()
-            .alpha(0f)
-            .translationY(100f)
-            .setDuration(200)
-            .withEndAction {
-                if (_binding != null) {
-                    binding.deleteFab.visibility = View.GONE
-                }
-            }
-            .start()
-
-        binding.startMedicationFab.animate()
-            .alpha(0f)
-            .translationY(100f)
-            .setDuration(200)
-            .withEndAction {
-                if (_binding != null) {
-                    binding.startMedicationFab.visibility = View.GONE
-                }
-            }
-            .start()
-        
-        binding.editFab.animate()
-            .rotation(0f)
-            .setDuration(200)
-            .start()
+    private fun showDeleteConfirmation() {
+        // Implement the logic to show a confirmation dialog before deleting
     }
 
     private fun setupObservers() {
@@ -209,34 +198,20 @@ class MedicationDetailFragment : Fragment() {
                 SnackbarUtils.showSnackbar(binding.root, "Failed to load medication details")
             }
         }
-    }
 
-    private fun showScheduleDialog() {
-        val scheduleViewModel: MedicationScheduleViewModel by viewModels()
-        MedicationScheduleDialog(
-            requireContext(),
-            updatedMedicationDetails,
-            scheduleViewModel,
-            viewLifecycleOwner,
-            onError = { message ->
-                // Show error at the top of the screen
-                SnackbarUtils.showTopSnackbar(
-                    view = requireActivity().findViewById(android.R.id.content),
-                    message = message,
-                    isError = true
-                )
+        viewModel.takeMedicationResult.observe(viewLifecycleOwner) { result ->
+            result?.onSuccess { response ->
+                SnackbarUtils.showSnackbar(binding.root, response.message, false)
+                viewModel.fetchMedicationDetails(updatedMedicationDetails.id)
+            }?.onFailure { exception ->
+                SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Failed to take medication")
             }
-        ) { shouldTakeMedication ->
-            if (shouldTakeMedication) {
-                // showTakeMedicationDialog()
-            }
-        }.show()
+        }
+
+        // Add similar observers for stop, snooze, and resume results
     }
 
     override fun onDestroyView() {
-        binding.editDetailsFab.animate().cancel()
-        binding.deleteFab.animate().cancel()
-        binding.editFab.animate().cancel()
         super.onDestroyView()
         _binding = null
     }

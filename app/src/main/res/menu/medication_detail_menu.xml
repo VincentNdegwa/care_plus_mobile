@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <item
+        android:id="@+id/action_take_medication"
+        android:title="Take Medication"
+        android:icon="@drawable/ic_medication"
+        app:showAsAction="ifRoom"
+        android:visible="false"/>
+
+    <item
+        android:id="@+id/action_snooze_medication"
+        android:title="Snooze Medication"
+        android:icon="@drawable/ic_snooze"
+        app:showAsAction="ifRoom"
+        android:visible="false"/>
+
+    <item
+        android:id="@+id/action_stop_medication"
+        android:title="Stop Schedule"
+        android:icon="@drawable/ic_stop"
+        app:showAsAction="ifRoom"
+        android:visible="false"/>
+
+    <item
+        android:id="@+id/action_resume_medication"
+        android:title="Resume Schedule"
+        android:icon="@drawable/ic_play"
+        app:showAsAction="ifRoom"
+        android:visible="false"/>
+
+    <item
+        android:id="@+id/action_edit_medication"
+        android:title="Edit Details"
+        android:icon="@drawable/ic_edit"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_delete_medication"
+        android:title="Delete Medication"
+        android:icon="@drawable/ic_delete"
+        app:showAsAction="never"/>
+</menu> 
