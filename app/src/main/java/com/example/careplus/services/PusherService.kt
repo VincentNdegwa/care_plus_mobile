@@ -87,7 +87,7 @@ class PusherService : Service() {
                 ConnectionState.DISCONNECTED -> {
                     isConnected = false
                     isSubscribed = false
-                    clearSubscriptions()
+//                    clearSubscriptions()
                 }
                 else -> { /* Handle other states if needed */ }
             }
@@ -234,9 +234,9 @@ class PusherService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        isSubscribed = false
-        clearSubscriptions()
-        pusher.disconnect()
+//        isSubscribed = false
+//        clearSubscriptions()
+//        pusher.disconnect()
     }
 
     companion object {
