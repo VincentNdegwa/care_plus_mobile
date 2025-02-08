@@ -170,7 +170,6 @@ class MedicationDetailFragment : Fragment() {
                 viewModel.resumeMedication(updatedMedicationDetails.id.toInt(), true)
             }
             .setNegativeButton("No") { _, _ ->
-                viewModel.resumeMedication(updatedMedicationDetails.id.toInt(), false)
             }
             .show()
     }
@@ -185,7 +184,15 @@ class MedicationDetailFragment : Fragment() {
     }
 
     private fun showDeleteConfirmation() {
-        // Implement the logic to show a confirmation dialog before deleting
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Delete Medication")
+            .setMessage("Are you sure want to delete this medication?")
+            .setPositiveButton("Yes") { _, _ ->
+                viewModel.deleteMedication(updatedMedicationDetails.id.toInt())
+            }
+            .setNegativeButton("No") { _, _ ->
+            }
+            .show()
     }
 
     private fun setupObservers() {
@@ -205,6 +212,45 @@ class MedicationDetailFragment : Fragment() {
                 viewModel.fetchMedicationDetails(updatedMedicationDetails.id)
             }?.onFailure { exception ->
                 SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Failed to take medication")
+            }
+        }
+        viewModel.deleteMedicationResult.observe(viewLifecycleOwner){ result->
+            result?.onSuccess { res->
+                if (res.error){
+                    SnackbarUtils.showSnackbar(binding.root, res.message)
+                }else{
+                    SnackbarUtils.showSnackbar(binding.root, res.message, false)
+                    findNavController().navigateUp()
+                }
+
+            }?.onFailure { exception ->
+                SnackbarUtils.showSnackbar(binding.root, exception.message.toString())
+            }
+
+        }
+
+        viewModel.stopMedicationResult.observe(viewLifecycleOwner){ result->
+            result?.onSuccess { res->
+                if (res.error){
+                    SnackbarUtils.showSnackbar(binding.root, res.message)
+                }else{
+                    SnackbarUtils.showSnackbar(binding.root, res.message, false)
+                }
+
+            }?.onFailure { exception ->
+                SnackbarUtils.showSnackbar(binding.root, exception.message.toString())
+            }
+        }
+        viewModel.resumeMedicationResult.observe(viewLifecycleOwner){result->
+            result?.onSuccess { res->
+                if (res.error){
+                    SnackbarUtils.showSnackbar(binding.root, res.message)
+                }else{
+                    SnackbarUtils.showSnackbar(binding.root, res.message, false)
+                }
+
+            }?.onFailure { exception ->
+                SnackbarUtils.showSnackbar(binding.root, exception.message.toString())
             }
         }
 

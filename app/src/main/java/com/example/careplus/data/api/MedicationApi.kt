@@ -4,6 +4,7 @@ import com.example.careplus.data.filter_model.FilterMedications
 import com.example.careplus.data.model.CreateMedicationRequest
 import com.example.careplus.data.model.CreateMedicationResponse
 import com.example.careplus.data.model.CreateMedicationScheduleResponse
+import com.example.careplus.data.model.DeleteResponse
 import com.example.careplus.data.model.MedicationListResponse
 import com.example.careplus.data.model.MedicationRequest
 import com.example.careplus.data.model.MedicationDetailResponse
@@ -27,6 +28,7 @@ import com.example.careplus.data.model.ResumeMedicationRequest
 import com.example.careplus.data.model.ResumeMedicationResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -79,4 +81,7 @@ interface MedicationApi {
 
     @POST("medications/schedule/resume")
     suspend fun resumeMedication(@Body request: ResumeMedicationRequest): Response<ResumeMedicationResponse>
+
+    @DELETE("medications/delete/{medicationId}")
+    suspend fun deleteMedication(@Path("medicationId") medicationId: Int): Response<DeleteResponse>
 } 

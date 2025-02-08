@@ -30,6 +30,9 @@ class MedicationDetailViewModel(application: Application) : AndroidViewModel(app
     private val _resumeMedicationResult = MutableLiveData<Result<ResumeMedicationResponse>>()
     val resumeMedicationResult: LiveData<Result<ResumeMedicationResponse>> = _resumeMedicationResult
 
+    private val _deleteMedicationResult = MutableLiveData<Result<DeleteResponse>?>()
+    val deleteMedicationResult: LiveData<Result<DeleteResponse>?> = _deleteMedicationResult
+
     fun fetchMedicationDetails(medicationId: Long) {
         viewModelScope.launch {
             try {
@@ -85,6 +88,27 @@ class MedicationDetailViewModel(application: Application) : AndroidViewModel(app
                 _resumeMedicationResult.value = result
             } catch (e: Exception) {
                 _resumeMedicationResult.value = Result.failure(e)
+            }
+        }
+    }
+
+    fun deleteMedication(medicationId: Int) {
+        viewModelScope.launch {
+            try {
+                val result = repository.deleteMedication(medicationId)
+
+                result.onSuccess { response ->
+                    if (response.error){
+                        _deleteMedicationResult.value = Result.failure(Exception(response.message))
+                    }else{
+                        _deleteMedicationResult.value = Result.success(response)
+                    }
+
+                }.onFailure { exception ->
+                    _deleteMedicationResult.value = Result.failure(exception)
+                }
+            } catch (e: Exception) {
+                _deleteMedicationResult.value = Result.failure(e)
             }
         }
     }

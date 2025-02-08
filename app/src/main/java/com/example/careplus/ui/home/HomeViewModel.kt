@@ -28,6 +28,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private  val _stats = MutableLiveData<Result<DashboardResponse>>()
     val stats: LiveData<Result<DashboardResponse>> = _stats
 
+
     fun fetchProfile() {
         viewModelScope.launch {
             _profile.value = repository.getProfile()
@@ -80,4 +81,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
         _schedules.value = Result.success(updatedSchedules)
     }
-} 
+
+}
+
+// Add this data class for the response

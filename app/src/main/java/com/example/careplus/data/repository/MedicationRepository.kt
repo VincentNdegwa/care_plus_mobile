@@ -357,4 +357,17 @@ class MedicationRepository(private val sessionManager: SessionManager) {
             return Result.failure(e)
         }
     }
+
+    suspend fun deleteMedication(medicationId: Int): Result<DeleteResponse> {
+        return try {
+            val response = ApiClient.medicationApi.deleteMedication(medicationId)
+            if (response.isSuccessful) {
+                Result.success(response.body() ?: throw Exception("Empty response body"))
+            } else {
+                Result.failure(Exception(response.errorBody()?.string() ?: "Unknown error"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 } 

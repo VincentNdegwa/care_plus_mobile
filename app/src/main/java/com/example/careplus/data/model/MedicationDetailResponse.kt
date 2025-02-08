@@ -28,3 +28,10 @@ data class CreateMedicationResponse(
     val message: String,
     val data: MedicationDetailResponse
 ): Parcelable
+
+
+@Parcelize
+data class DeleteResponse(
+    val error: Boolean,
+    val message: String
+):Parcelable
