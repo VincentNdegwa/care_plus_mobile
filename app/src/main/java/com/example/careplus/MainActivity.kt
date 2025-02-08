@@ -18,14 +18,14 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import android.view.ViewGroup
 import android.content.Intent
 import android.util.Log
+import com.example.careplus.services.PusherService
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var sessionManager: SessionManager
-    private lateinit var navController: NavController
+    private var currentNavController: NavController? = null
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         // Get NavController using NavHostFragment
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.navController
+        currentNavController = navHostFragment.navController
 
         appBarConfiguration = AppBarConfiguration(
             setOf(
@@ -52,19 +52,19 @@ class MainActivity : AppCompatActivity() {
         )
 
         // Setup bottom navigation with custom listener
-        binding.bottomNav.setupWithNavController(navController)
+        binding.bottomNav.setupWithNavController(currentNavController!!)
         binding.bottomNav.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.homeFragment -> {
-                    navController.navigate(R.id.homeFragment)
+                    currentNavController!!.navigate(R.id.homeFragment)
                     true
                 }
                 R.id.medicationsFragment -> {
-                    navController.navigate(R.id.medicationsFragment)
+                    currentNavController!!.navigate(R.id.medicationsFragment)
                     true
                 }
                 R.id.caregiversFragment -> {
-                    navController.navigate(R.id.caregiversFragment)
+                    currentNavController!!.navigate(R.id.caregiversFragment)
                     true
                 }
                 R.id.navigation_more -> {
@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Hide bottom navigation on auth screens
-        navController.addOnDestinationChangedListener { _, destination, _ ->
+        currentNavController!!.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.loginFragment,
                 R.id.registerFragment,
@@ -105,13 +105,13 @@ class MainActivity : AppCompatActivity() {
                     // Handle profile
                 }
                 R.id.menu_medications -> {
-                    navController.navigate(R.id.medicationsFragment)
+                    currentNavController!!.navigate(R.id.medicationsFragment)
                     binding.drawerLayout.closeDrawer(GravityCompat.END)
                     true
                 }
                 R.id.menu_logout -> {
                     sessionManager.clearSession()
-                    navController.navigate(R.id.loginFragment)
+                    currentNavController!!.navigate(R.id.loginFragment)
                 }
             }
             binding.drawerLayout.closeDrawer(GravityCompat.START)
@@ -120,9 +120,14 @@ class MainActivity : AppCompatActivity() {
 
         // Check if user is logged in and set start destination
         if (sessionManager.isLoggedIn()) {
-            val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
+            val navGraph = currentNavController!!.navInflater.inflate(R.navigation.nav_graph)
             navGraph.setStartDestination(R.id.homeFragment)
-            navController.graph = navGraph
+            currentNavController!!.graph = navGraph
+
+            // Start foreground service when activity is created
+            sessionManager.getUser()?.patient?.id?.toString()?.let { patientId ->
+                startPusherForegroundService(patientId)
+            }
         }
 
         // Replace the keyboard visibility listener with this simpler version
@@ -188,6 +193,35 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        return currentNavController!!.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    private fun startPusherForegroundService(patientId: String) {
+        try {
+            Intent(this, PusherService::class.java).also { intent ->
+                intent.putExtra(PusherService.EXTRA_PATIENT_ID, patientId)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting Pusher service", e)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Restart service if needed when activity comes to foreground
+        if (sessionManager.isLoggedIn()) {
+            sessionManager.getUser()?.patient?.id?.toString()?.let { patientId ->
+                startPusherForegroundService(patientId)
+            }
+        }
+    }
+
+    companion object {
+        private const val TAG = "MainActivity"
     }
 } 

@@ -1,9 +1,15 @@
 package com.example.careplus.services
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import com.example.careplus.R
 import com.example.careplus.data.SessionManager
 import com.example.careplus.utils.NotificationHelper
 import com.google.gson.Gson
@@ -29,10 +35,36 @@ class PusherService : Service() {
 
     private var isConnected = false
     private var isSubscribed = false
+    private val NOTIFICATION_ID = 1
 
     override fun onCreate() {
         super.onCreate()
         sessionManager = SessionManager(this)
+        startForeground(NOTIFICATION_ID, createNotification())
+    }
+
+    private fun createNotification(): Notification {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "pusher_service_channel",
+                "Background Service",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Keeps the app connected to receive notifications"
+                setShowBadge(false)
+            }
+            
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        return NotificationCompat.Builder(this, "pusher_service_channel")
+            .setContentTitle("CarePlus Active")
+            .setContentText("Listening for medication reminders")
+            .setSmallIcon(R.drawable.ic_medication)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .build()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
