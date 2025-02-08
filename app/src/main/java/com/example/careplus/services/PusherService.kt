@@ -73,15 +73,15 @@ class PusherService : Service() {
             return START_NOT_STICKY
         }
 
-        intent?.getStringExtra(EXTRA_PATIENT_ID)?.let { id ->
-            patientId = id
+        // Start foreground immediately
+        startForeground(NOTIFICATION_ID, createNotification())
+
+        // Reconnect if connection was lost
+        if (!isConnected) {
             setupPusher()
-        } ?: run {
-            stopSelf()
-            return START_NOT_STICKY
         }
 
-        return START_REDELIVER_INTENT
+        return START_REDELIVER_INTENT  // Changed from START_STICKY to ensure redelivery
     }
 
     private fun setupPusher() {
@@ -119,9 +119,10 @@ class PusherService : Service() {
                 ConnectionState.DISCONNECTED -> {
                     isConnected = false
                     isSubscribed = false
-//                    clearSubscriptions()
+                    // Try to reconnect
+                    setupPusher()
                 }
-                else -> { /* Handle other states if needed */ }
+                else -> { /* Handle other states */ }
             }
         }
 
@@ -132,7 +133,8 @@ class PusherService : Service() {
                 isSubscribed = true
                 return
             }
-            e?.printStackTrace()
+            // Try to reconnect on error
+            setupPusher()
         }
     }
 
@@ -264,11 +266,19 @@ class PusherService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        // Restart service when app is removed from recent apps
+        val restartServiceIntent = Intent(applicationContext, PusherService::class.java)
+        restartServiceIntent.putExtra(EXTRA_PATIENT_ID, patientId)
+        startService(restartServiceIntent)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-//        isSubscribed = false
-//        clearSubscriptions()
-//        pusher.disconnect()
+        // Restart service if it's destroyed
+        val broadcastIntent = Intent("com.example.careplus.RestartPusher")
+        sendBroadcast(broadcastIntent)
     }
 
     companion object {
