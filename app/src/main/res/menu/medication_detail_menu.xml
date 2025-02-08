@@ -20,21 +20,27 @@
         android:id="@+id/action_stop_medication"
         android:title="Stop Schedule"
         android:icon="@drawable/ic_stop"
-        app:showAsAction="ifRoom"
+        app:showAsAction="never"
         android:visible="false"/>
 
     <item
         android:id="@+id/action_resume_medication"
         android:title="Resume Schedule"
         android:icon="@drawable/ic_play"
-        app:showAsAction="ifRoom"
+        app:showAsAction="never"
         android:visible="false"/>
+
+    <item
+        android:id="@+id/action_register_side_effect"
+        android:title="Register Side Effect"
+        android:icon="@drawable/ic_side_effect"
+        app:showAsAction="never"/>
 
     <item
         android:id="@+id/action_edit_medication"
         android:title="Edit Details"
         android:icon="@drawable/ic_edit"
-        app:showAsAction="never"/>
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_delete_medication"

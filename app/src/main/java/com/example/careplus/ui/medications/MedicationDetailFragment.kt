@@ -119,6 +119,10 @@ class MedicationDetailFragment : Fragment() {
                     showDeleteConfirmation()
                     true
                 }
+                R.id.action_register_side_effect ->{
+                    navigateToSideEffectForm()
+                    true
+                }
                 else -> false
             }
         }
@@ -181,6 +185,9 @@ class MedicationDetailFragment : Fragment() {
                 updatedMedicationDetails
             )
         )
+    }
+    private fun navigateToSideEffectForm(){
+//        navigate to new ui
     }
 
     private fun showDeleteConfirmation() {
