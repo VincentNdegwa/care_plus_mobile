@@ -3,7 +3,6 @@ package com.example.careplus
 import android.Manifest
 import android.app.Application
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import com.example.careplus.data.SessionManager
