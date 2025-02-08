@@ -248,20 +248,43 @@ class MedicationDetailFragment : Fragment() {
                 SnackbarUtils.showSnackbar(binding.root, exception.message.toString())
             }
         }
-        viewModel.resumeMedicationResult.observe(viewLifecycleOwner){result->
-            result?.onSuccess { res->
-                if (res.error){
+        viewModel.resumeMedicationResult.observe(viewLifecycleOwner) { result ->
+            result?.onSuccess { res ->
+                if (res.error) {
                     SnackbarUtils.showSnackbar(binding.root, res.message)
-                }else{
+                } else {
                     SnackbarUtils.showSnackbar(binding.root, res.message, false)
                 }
-
             }?.onFailure { exception ->
                 SnackbarUtils.showSnackbar(binding.root, exception.message.toString())
+                // Use regex to match "No medication tracker found" with case insensitivity
+                if (exception.message?.matches(Regex("(?i).*no\\s+medication\\s+tracker\\s+found.*")) == true) {
+                    showSchedule()
+                }
             }
         }
 
         // Add similar observers for stop, snooze, and resume results
+    }
+    private fun showSchedule(){
+        MedicationScheduleDialog(
+            context = requireContext(),
+            medicationDetails = updatedMedicationDetails,
+            viewModel = MedicationScheduleViewModel(requireActivity().application),
+            lifecycleOwner = viewLifecycleOwner,
+            onError = { errorMessage ->
+                SnackbarUtils.showSnackbar(binding.root, errorMessage)
+            },
+            onScheduleCreated = { success ->
+                if (success) {
+                    SnackbarUtils.showSnackbar(
+                        binding.root,
+                        "Schedule created successfully",
+                        false
+                    )
+                }
+            }
+        ).show()
     }
 
     override fun onDestroyView() {
