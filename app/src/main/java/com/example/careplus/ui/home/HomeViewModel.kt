@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.careplus.data.SessionManager
 import com.example.careplus.data.model.DashboardResponse
 import com.example.careplus.data.model.Schedule
+import com.example.careplus.data.model.TakenMedicationData
 import com.example.careplus.data.model.UserProfile
 import com.example.careplus.data.repository.AuthRepository
 import kotlinx.coroutines.launch
@@ -61,5 +62,22 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
+    }
+
+    fun updateSceduleFromTakenMed(data: TakenMedicationData) {
+        val currentSchedules = _schedules.value?.getOrNull() ?: return
+        
+        val updatedSchedules = currentSchedules.map { schedule ->
+            if (schedule.id == data.id) {
+                schedule.copy(
+                    status = "Taken",
+                    taken_at = data.taken_at
+                )
+            } else {
+                schedule
+            }
+        }
+
+        _schedules.value = Result.success(updatedSchedules)
     }
 } 

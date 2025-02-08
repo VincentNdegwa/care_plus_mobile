@@ -1,5 +1,6 @@
 package com.example.careplus.ui.components
 
+import android.app.Application
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
@@ -9,9 +10,9 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.lifecycle.LifecycleOwner
 import com.example.careplus.R
-import com.example.careplus.data.model.MedicationNotificationData
 import com.example.careplus.data.model.Schedule
 import com.example.careplus.databinding.DialogMedicationActionBinding
+import com.example.careplus.ui.home.HomeViewModel
 import com.example.careplus.ui.medications.MedicationDetailViewModel
 import com.example.careplus.utils.SnackbarUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -23,7 +24,8 @@ class MedicationActionDialog(
     context: Context,
     private val schedule: Schedule,
     private val viewModel: MedicationDetailViewModel,
-    private val lifecycleOwner: LifecycleOwner
+    private val lifecycleOwner: LifecycleOwner,
+    private val application:Application
 ) : Dialog(context) {
 
     private lateinit var binding: DialogMedicationActionBinding
@@ -91,6 +93,7 @@ class MedicationActionDialog(
                 if (!isLoading) {
                     setLoading(true)
                     viewModel.takeMedication(schedule.id)
+
                 }
             }
 
@@ -140,6 +143,8 @@ class MedicationActionDialog(
                 }else{
                     showMessage(result.message, false)
                     dismiss()
+                    val homeViewModel = HomeViewModel(application)
+                    homeViewModel.updateSceduleFromTakenMed(result.data)
                 }
             }?.onFailure { exception ->
                 showMessage(exception.message.toString())

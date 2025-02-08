@@ -269,7 +269,8 @@ class HomeFragment : Fragment() {
             context = requireContext(),
             schedule = schedule,
             viewModel = MedicationDetailViewModel(requireActivity().application),
-            lifecycleOwner = viewLifecycleOwner
+            lifecycleOwner = viewLifecycleOwner,
+            application = this.requireActivity().application
         ).show()
     }
 
