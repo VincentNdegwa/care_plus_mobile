@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.careplus.MainActivity
 import com.example.careplus.R
+import com.example.careplus.data.model.Schedule
 import com.google.gson.Gson
 
 object NotificationHelper {
@@ -67,8 +68,8 @@ object NotificationHelper {
             Log.d(TAG, "Attempting to show notification with message: $jsonMessage")
 
             // Parse the JSON message to get meaningful data
-            val medicationData = Gson().fromJson(jsonMessage, MedicationNotificationData::class.java)
-            val notificationText = "Time to take your medication"
+            val medicationData = Gson().fromJson(jsonMessage, Schedule::class.java)
+            val notificationText = "Time to take your ${medicationData.medication.medication_name}"
 
             // Create an explicit intent for MainActivity
             val intent = Intent(context, MainActivity::class.java).apply {

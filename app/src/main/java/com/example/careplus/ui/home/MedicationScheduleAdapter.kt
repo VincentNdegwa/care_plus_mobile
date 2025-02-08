@@ -68,7 +68,7 @@ class MedicationScheduleAdapter(
                 // Set status color
                 status.setTextColor(when(schedule.status.lowercase()) {
                     "pending" -> ContextCompat.getColor(root.context, R.color.primary)
-                    "completed" -> ContextCompat.getColor(root.context, R.color.success)
+                    "taken" -> ContextCompat.getColor(root.context, R.color.success)
                     else -> ContextCompat.getColor(root.context, R.color.error)
                 })
 

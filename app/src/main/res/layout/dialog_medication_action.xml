@@ -11,34 +11,80 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header -->
+        <!-- Header with Status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:layout_marginBottom="16dp">
 
-            <TextView
-                android:id="@+id/medicationNameText"
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceHeadline6"
-                android:textStyle="bold"/>
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/dosageText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceBody1"
-                android:layout_marginTop="4dp"/>
+                <TextView
+                    android:id="@+id/medicationNameText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:textStyle="bold"/>
 
-            <TextView
-                android:id="@+id/scheduleTimeText"
-                android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/dosageText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceBody1"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/statusChip"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceBody2"
-                android:layout_marginTop="4dp"/>
+                android:layout_marginStart="8dp"
+                app:chipMinHeight="32dp"/>
         </LinearLayout>
+
+        <!-- Schedule Details -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?android:colorBackgroundFloating"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorPrimary">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:id="@+id/scheduleTimeText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:textColor="?attr/colorPrimary"/>
+
+                <TextView
+                    android:id="@+id/frequencyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textAppearance="?attr/textAppearanceBody2"/>
+
+                <TextView
+                    android:id="@+id/stockText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textAppearance="?attr/textAppearanceBody2"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Progress Bar -->
         <ProgressBar
@@ -53,15 +99,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="end">
+            android:gravity="center">
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cancelButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancel"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.Button.TextButton"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/snoozeButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
                 android:text="Snooze"
+                android:layout_marginEnd="8dp"
                 app:icon="@drawable/ic_snooze"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
@@ -69,18 +122,8 @@
                 android:id="@+id/takeButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="0dp"
                 android:text="Take"
-                app:icon="@drawable/ic_medication"
-                style="@style/Widget.MaterialComponents.Button"/>
+                app:icon="@drawable/ic_medication"/>
         </LinearLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/cancelButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cancel"
-            style="@style/Widget.MaterialComponents.Button.TextButton"/>
-
     </LinearLayout>
 </androidx.cardview.widget.CardView> 

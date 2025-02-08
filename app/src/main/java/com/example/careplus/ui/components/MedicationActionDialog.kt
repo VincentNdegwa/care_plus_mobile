@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import androidx.lifecycle.LifecycleOwner
+import com.example.careplus.R
 import com.example.careplus.data.model.MedicationNotificationData
 import com.example.careplus.data.model.Schedule
 import com.example.careplus.databinding.DialogMedicationActionBinding
@@ -20,7 +21,7 @@ import java.time.format.DateTimeFormatter
 
 class MedicationActionDialog(
     context: Context,
-    private val schedule: MedicationNotificationData,
+    private val schedule: Schedule,
     private val viewModel: MedicationDetailViewModel,
     private val lifecycleOwner: LifecycleOwner
 ) : Dialog(context) {
@@ -52,21 +53,35 @@ class MedicationActionDialog(
 
     private fun setupUI() {
         binding.apply {
-            medicationNameText.text = schedule.medication_id.toString()
-//            dosageText.text = "${schedule.medication.dosage_quantity} ${schedule.medication.dosage_strength}"
+            // Medication name and details
+            medicationNameText.text = schedule.medication.medication_name
+            dosageText.text = "${schedule.medication.dosage_quantity} ${schedule.medication.dosage_strength}"
             
-            // Convert UTC time to local time and format
-            val utcDateTime = LocalDateTime.parse(
-                schedule.dose_time.replace(" ", "T")
-            )
+            // Schedule time
+            val utcDateTime = LocalDateTime.parse(schedule.dose_time.replace(" ", "T"))
             val localDateTime = utcDateTime
                 .atZone(ZoneId.of("UTC"))
                 .withZoneSameInstant(ZoneId.systemDefault())
             
-            scheduleTimeText.text = localDateTime.format(
-                DateTimeFormatter.ofPattern("hh:mm a")
-            )
+            scheduleTimeText.text = localDateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
 
+            // Status chip
+            statusChip.text = schedule.status
+            val chipColor = when(schedule.status.lowercase()) {
+                "pending" -> R.color.primary
+                "taken" -> R.color.success
+                else -> R.color.error
+            }
+            statusChip.setChipBackgroundColorResource(chipColor)
+
+            // Additional details
+            frequencyText.text = schedule.medication.frequency
+            stockText.text = "Stock: ${schedule.medication.stock} units"
+
+            // Show/hide buttons based on status
+            val isPending = schedule.status.lowercase() == "pending"
+            takeButton.isEnabled = isPending
+            snoozeButton.isEnabled = isPending
         }
     }
 
