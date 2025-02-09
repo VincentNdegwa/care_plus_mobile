@@ -20,18 +20,19 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.content.Intent
 import android.util.Log
-import com.example.careplus.services.PusherService
 import android.net.Uri
 import android.provider.Settings
 import android.content.Context
 import android.os.PowerManager
 import com.example.careplus.utils.FCMManager
+import com.example.careplus.ui.notification.NotificationViewModel
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var sessionManager: SessionManager
     private var currentNavController: NavController? = null
     private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var notificationViewModel: NotificationViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,16 +124,14 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        // Check if user is logged in and set start destination
+        notificationViewModel = NotificationViewModel(application)
+        
         if (sessionManager.isLoggedIn()) {
             val navGraph = currentNavController!!.navInflater.inflate(R.navigation.nav_graph)
             navGraph.setStartDestination(R.id.homeFragment)
             currentNavController!!.graph = navGraph
 
-            // Start foreground service when activity is created
-            sessionManager.getUser()?.patient?.id?.toString()?.let { patientId ->
-                startPusherForegroundService(patientId)
-            }
+            registerFCMToken()
         }
 
         // Replace the keyboard visibility listener with this simpler version
@@ -218,35 +217,18 @@ class MainActivity : AppCompatActivity() {
         return currentNavController!!.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
-    private fun startPusherForegroundService(patientId: String) {
-        try {
-            Intent(this, PusherService::class.java).also { intent ->
-                intent.putExtra(PusherService.EXTRA_PATIENT_ID, patientId)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(intent)
-                } else {
-                    startService(intent)
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error starting Pusher service", e)
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // Restart service if needed when activity comes to foreground
-        if (sessionManager.isLoggedIn()) {
-            sessionManager.getUser()?.patient?.id?.toString()?.let { patientId ->
-                startPusherForegroundService(patientId)
-            }
-        }
-    }
-
     private fun testFCM() {
         FCMManager.getCurrentToken { token ->
             Log.d(TAG, "FCM Token for testing: $token")
             // You can copy this token and use it to send test notifications
+        }
+    }
+
+    private fun registerFCMToken() {
+        FCMManager.getCurrentToken { token ->
+            token?.let {
+                notificationViewModel.registerToken(it)
+            }
         }
     }
 

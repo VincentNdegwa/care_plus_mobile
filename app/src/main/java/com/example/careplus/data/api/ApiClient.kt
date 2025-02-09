@@ -53,9 +53,15 @@ object ApiClient {
     }
     val caregiverApi: CaregiverApi by lazy {
         if (!::retrofit.isInitialized) {
-            throw IllegalStateException("ApiClient must be initialized with create() before accessing dashboardApi")
+            throw IllegalStateException("ApiClient must be initialized with create() before accessing caregiverApi")
         }
         retrofit.create(CaregiverApi::class.java)
+    }
+    val notificationApi: NotificationApi by lazy {
+        if (!::retrofit.isInitialized) {
+            throw IllegalStateException("ApiClient must be initialized with create() before accessing notificationApi")
+        }
+        retrofit.create(NotificationApi::class.java)
     }
 
 }

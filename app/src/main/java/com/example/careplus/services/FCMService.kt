@@ -6,13 +6,16 @@ import com.google.firebase.messaging.RemoteMessage
 import com.example.careplus.utils.NotificationHelper
 import com.example.careplus.data.SessionManager
 import kotlinx.coroutines.launch
+import com.example.careplus.ui.notification.NotificationViewModel
 
 class FCMService : FirebaseMessagingService() {
     private lateinit var sessionManager: SessionManager
+    private lateinit var viewModel: NotificationViewModel
 
     override fun onCreate() {
         super.onCreate()
         sessionManager = SessionManager(this)
+        viewModel = NotificationViewModel(application)
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
@@ -53,23 +56,8 @@ class FCMService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(TAG, "New FCM Token: $token")
-        // Send token to your server
-        sendRegistrationToServer(token)
-    }
-
-    private fun sendRegistrationToServer(token: String) {
-        sessionManager.saveFcmToken(token)
-        
-        // Only send if user is logged in
         if (sessionManager.isLoggedIn()) {
-//            viewModelScope.launch {
-//                try {
-//                    // Call your API to update the token
-//                    repository.updateFcmToken(token)
-//                } catch (e: Exception) {
-//                    Log.e(TAG, "Failed to update FCM token on server", e)
-//                }
-//            }
+            viewModel.registerToken(token)
         }
     }
 
