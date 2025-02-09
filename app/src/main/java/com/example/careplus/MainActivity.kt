@@ -25,6 +25,7 @@ import android.net.Uri
 import android.provider.Settings
 import android.content.Context
 import android.os.PowerManager
+import com.example.careplus.utils.FCMManager
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -160,6 +161,9 @@ class MainActivity : AppCompatActivity() {
 //        requestBatteryOptimizationExemption()
 
         handleNotificationIntent(intent)
+
+        // Test FCM
+        testFCM()
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -236,6 +240,13 @@ class MainActivity : AppCompatActivity() {
             sessionManager.getUser()?.patient?.id?.toString()?.let { patientId ->
                 startPusherForegroundService(patientId)
             }
+        }
+    }
+
+    private fun testFCM() {
+        FCMManager.getCurrentToken { token ->
+            Log.d(TAG, "FCM Token for testing: $token")
+            // You can copy this token and use it to send test notifications
         }
     }
 

@@ -4,6 +4,7 @@ plugins {
     id 'com.google.devtools.ksp'
     id 'kotlin-parcelize'
     id 'androidx.navigation.safeargs.kotlin'
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -91,4 +92,9 @@ dependencies {
     
     // Add WorkManager dependency
     implementation "androidx.work:work-runtime-ktx:2.9.0"
+    
+    // Firebase Cloud Messaging
+    implementation platform('com.google.firebase:firebase-bom:32.7.2')
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3'
 } 
