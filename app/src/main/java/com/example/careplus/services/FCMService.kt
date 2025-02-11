@@ -5,8 +5,10 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.example.careplus.utils.NotificationHelper
 import com.example.careplus.data.SessionManager
+import com.example.careplus.data.model.fcm.FCMMedicationPayload
 import kotlinx.coroutines.launch
 import com.example.careplus.ui.notification.NotificationViewModel
+import com.google.gson.Gson
 
 class FCMService : FirebaseMessagingService() {
     private lateinit var sessionManager: SessionManager
@@ -22,12 +24,18 @@ class FCMService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         
         Log.d(TAG, "From: ${remoteMessage.from}")
-        Log.d(TAG, "Raw Message: $remoteMessage")
 
-        // Check if message contains data payload
         if (remoteMessage.data.isNotEmpty()) {
             Log.d(TAG, "Message data payload: ${remoteMessage.data}")
-            handleNow(remoteMessage.data)
+            
+            remoteMessage.data["data"]?.let { jsonData ->
+                try {
+                    val data = Gson().fromJson(jsonData, FCMMedicationPayload::class.java)
+                    handleNow(data)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing FCM data", e)
+                }
+            }
         }
 
         // Check if message contains notification payload
@@ -39,15 +47,19 @@ class FCMService : FirebaseMessagingService() {
         }
     }
 
-    private fun handleNow(data: Map<String, String>) {
+    private fun handleNow(payload: FCMMedicationPayload) {
         if (!sessionManager.isLoggedIn()) return
 
-        when (data["type"]) {
+        when (payload.type) {
             "medication_reminder" -> {
-                NotificationHelper.showMedicationNotification(
-                    applicationContext,
-                    data["payload"] ?: return
-                )
+                payload.payload?.let { medicationData ->
+                    // Convert the medication data to JSON string
+                    val jsonString = Gson().toJson(medicationData)
+                    NotificationHelper.showMedicationNotification(
+                        applicationContext,
+                        jsonString
+                    )
+                }
             }
             // Add other notification types here
         }
@@ -64,4 +76,5 @@ class FCMService : FirebaseMessagingService() {
     companion object {
         private const val TAG = "FCMService"
     }
-} 
+}
+
