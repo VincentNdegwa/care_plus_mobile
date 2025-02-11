@@ -24,6 +24,8 @@ import com.example.careplus.data.model.HealthVital
 import com.example.careplus.data.model.PatientStats
 import com.google.gson.Gson
 import android.util.Log
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.example.careplus.data.model.MedicationNotificationData
 import com.example.careplus.data.model.Schedule
 import com.example.careplus.ui.components.MedicationActionDialog
@@ -81,14 +83,11 @@ class HomeFragment : Fragment() {
         setupRecyclerView()
         setupObservers()
         setupCalendar()
-        
-        // Handle notification after view setup
-        handlePendingNotification()
     }
 
     private fun setupRecyclerView() {
         scheduleAdapter = MedicationScheduleAdapter { schedule ->
-            showMedicationActionDialog(schedule)
+            handleNavigationToReminder(schedule)
         }
         binding.medicationsList.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -245,34 +244,17 @@ class HomeFragment : Fragment() {
         )
     }
 
-    private fun handlePendingNotification() {
-        pendingNotificationData?.let { jsonData ->
-            try {
-                Log.d("HomeFragment", "Processing notification data")
-                val scheduleData = Gson().fromJson(jsonData, Schedule::class.java)
-                
-                Log.d("HomeFragment", "Showing medication action dialog")
-                showMedicationActionDialog(scheduleData)
-                
-                // Clear the pending notification after showing dialog
-                pendingNotificationData = null
-            } catch (e: Exception) {
-                Log.e("HomeFragment", "Error parsing notification data", e)
-                Log.e("HomeFragment", "Notification data: $jsonData") // Add this to see the actual data
-                SnackbarUtils.showSnackbar(binding.root, "Error processing notification")
+    private fun handleNavigationToReminder(schedule: Schedule) {
+        val data = Gson().toJson(schedule)
+        data?.let { jsonData ->
+            val navController = requireActivity().findNavController(R.id.nav_host_fragment)
+            val bundle = Bundle().apply {
+                putString("notification_data", jsonData)
             }
+            navController.navigate(R.id.medicationReminderFragment, bundle)
         }
     }
 
-    private fun showMedicationActionDialog(schedule: Schedule) {
-        MedicationActionDialog(
-            context = requireContext(),
-            schedule = schedule,
-            viewModel = MedicationDetailViewModel(requireActivity().application),
-            lifecycleOwner = viewLifecycleOwner,
-            application = this.requireActivity().application
-        ).show()
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()

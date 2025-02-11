@@ -24,6 +24,7 @@ import android.net.Uri
 import android.provider.Settings
 import android.content.Context
 import android.os.PowerManager
+import androidx.navigation.findNavController
 import com.example.careplus.utils.FCMManager
 import com.example.careplus.ui.notification.NotificationViewModel
 
@@ -172,22 +173,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleNotificationIntent(intent: Intent?) {
         if (intent?.action == "MEDICATION_NOTIFICATION") {
-            Log.d("MainActivity", "Handling notification intent")
             intent.getStringExtra("notification_data")?.let { notificationData ->
-                Log.d("MainActivity", "Notification data: $notificationData")
-                
-                // Ensure NavController is initialized
-                val navHostFragment = supportFragmentManager
-                    .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-                val navController = navHostFragment.navController
-
-                // Create bundle with notification data
+                val navController = findNavController(R.id.nav_host_fragment)
                 val bundle = Bundle().apply {
                     putString("notification_data", notificationData)
                 }
-
-                // Navigate to home fragment with data
-                navController.navigate(R.id.homeFragment, bundle)
+                navController.navigate(R.id.medicationReminderFragment, bundle)
             }
         }
     }
