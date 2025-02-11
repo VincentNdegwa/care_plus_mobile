@@ -27,13 +27,16 @@ import android.os.PowerManager
 import androidx.navigation.findNavController
 import com.example.careplus.utils.FCMManager
 import com.example.careplus.ui.notification.NotificationViewModel
+import androidx.activity.viewModels
+import androidx.navigation.NavDestination
+import com.example.careplus.services.AlarmService
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var sessionManager: SessionManager
-    private var currentNavController: NavController? = null
+    private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var notificationViewModel: NotificationViewModel
+    private val notificationViewModel: NotificationViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,10 +48,10 @@ class MainActivity : AppCompatActivity() {
 
         sessionManager = SessionManager(this)
 
-        // Get NavController using NavHostFragment
+        // Initialize NavController
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        currentNavController = navHostFragment.navController
+        navController = navHostFragment.navController
 
         appBarConfiguration = AppBarConfiguration(
             setOf(
@@ -59,19 +62,19 @@ class MainActivity : AppCompatActivity() {
         )
 
         // Setup bottom navigation with custom listener
-        binding.bottomNav.setupWithNavController(currentNavController!!)
+        binding.bottomNav.setupWithNavController(navController)
         binding.bottomNav.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.homeFragment -> {
-                    currentNavController!!.navigate(R.id.homeFragment)
+                    navController.navigate(R.id.homeFragment)
                     true
                 }
                 R.id.medicationsFragment -> {
-                    currentNavController!!.navigate(R.id.medicationsFragment)
+                    navController.navigate(R.id.medicationsFragment)
                     true
                 }
                 R.id.caregiversFragment -> {
-                    currentNavController!!.navigate(R.id.caregiversFragment)
+                    navController.navigate(R.id.caregiversFragment)
                     true
                 }
                 R.id.navigation_more -> {
@@ -83,7 +86,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Hide bottom navigation on auth screens
-        currentNavController!!.addOnDestinationChangedListener { _, destination, _ ->
+        navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.loginFragment,
                 R.id.registerFragment,
@@ -112,25 +115,23 @@ class MainActivity : AppCompatActivity() {
                     // Handle profile
                 }
                 R.id.menu_medications -> {
-                    currentNavController!!.navigate(R.id.medicationsFragment)
+                    navController.navigate(R.id.medicationsFragment)
                     binding.drawerLayout.closeDrawer(GravityCompat.END)
                     true
                 }
                 R.id.menu_logout -> {
                     sessionManager.clearSession()
-                    currentNavController!!.navigate(R.id.loginFragment)
+                    navController.navigate(R.id.loginFragment)
                 }
             }
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
 
-        notificationViewModel = NotificationViewModel(application)
-        
         if (sessionManager.isLoggedIn()) {
-            val navGraph = currentNavController!!.navInflater.inflate(R.navigation.nav_graph)
+            val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
             navGraph.setStartDestination(R.id.homeFragment)
-            currentNavController!!.graph = navGraph
+            navController.graph = navGraph
 
             registerFCMToken()
         }
@@ -174,11 +175,23 @@ class MainActivity : AppCompatActivity() {
     private fun handleNotificationIntent(intent: Intent?) {
         if (intent?.action == "MEDICATION_NOTIFICATION") {
             intent.getStringExtra("notification_data")?.let { notificationData ->
-                val navController = findNavController(R.id.nav_host_fragment)
-                val bundle = Bundle().apply {
-                    putString("notification_data", notificationData)
-                }
-                navController.navigate(R.id.medicationReminderFragment, bundle)
+                // Wait for navigation to be ready
+                navController.addOnDestinationChangedListener(object : NavController.OnDestinationChangedListener {
+                    override fun onDestinationChanged(
+                        controller: NavController,
+                        destination: NavDestination,
+                        arguments: Bundle?
+                    ) {
+                        // Remove listener to avoid multiple calls
+                        navController.removeOnDestinationChangedListener(this)
+                        
+                        // Navigate to reminder fragment
+                        val bundle = Bundle().apply {
+                            putString("notification_data", notificationData)
+                        }
+                        navController.navigate(R.id.medicationReminderFragment, bundle)
+                    }
+                })
             }
         }
     }
@@ -205,7 +218,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return currentNavController!!.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
     private fun testFCM() {
@@ -220,6 +233,14 @@ class MainActivity : AppCompatActivity() {
             token?.let {
                 notificationViewModel.registerToken(it)
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (intent?.action == "MEDICATION_NOTIFICATION") {
+            // Stop the alarm service when the app is opened from notification
+            stopService(Intent(this, AlarmService::class.java))
         }
     }
 

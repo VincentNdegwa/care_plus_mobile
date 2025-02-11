@@ -1,122 +1,181 @@
 package com.example.careplus.utils
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.RingtoneManager
 import android.os.Build
+import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.careplus.MainActivity
 import com.example.careplus.R
 import com.example.careplus.data.model.Schedule
+import com.example.careplus.services.AlarmService
 import com.google.gson.Gson
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import android.app.KeyguardManager
+import android.app.Activity
 
 object NotificationHelper {
     private const val CHANNEL_ID = "medication_notifications"
-    private const val SERVICE_CHANNEL_ID = "pusher_service_channel"
-    private const val NOTIFICATION_ID = 1
     private const val TAG = "NotificationHelper"
-
-    fun createNotificationChannel(context: Context) {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // Create medication notifications channel
-                createMedicationChannel(context)
-                // Create service channel
-                createServiceChannel(context)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error creating notification channel", e)
-        }
-    }
-
-    private fun createMedicationChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Medication Notifications"
-            val descriptionText = "Notifications for medication schedules"
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-                enableLights(true)
-                enableVibration(true)
-            }
-            
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
-    private fun createServiceChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Background Service"
-            val descriptionText = "Keeps the app connected to receive notifications"
-            val importance = NotificationManager.IMPORTANCE_LOW
-            val channel = NotificationChannel(SERVICE_CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-                setShowBadge(false)
-            }
-            
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
+    private const val WORKER_CHANNEL_ID = "medication_worker_channel"
+    private const val CHANNEL_NAME = "Medication Reminders"
 
     fun showMedicationNotification(context: Context, jsonMessage: String) {
+        // Get notification manager first
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        // Create channel before building notification
+        createNotificationChannel(context, notificationManager)
+
+        var wakeLock: PowerManager.WakeLock? = null
         try {
             Log.d(TAG, "Attempting to show notification with message: $jsonMessage")
 
-            // Parse the JSON message to get meaningful data
             val medicationData = Gson().fromJson(jsonMessage, Schedule::class.java)
-            val notificationText = "Time to take your ${medicationData.medication.medication_name}"
-
-            // Create an explicit intent for MainActivity
-            val intent = Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            if (medicationData == null) {
+                Log.e(TAG, "Failed to parse medication data")
+                return
+            }
+            
+            // Create full screen intent
+            val fullScreenIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or 
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP
                 putExtra("notification_data", jsonMessage)
-                // Add action to identify notification click
                 action = "MEDICATION_NOTIFICATION"
             }
             
-            val pendingIntent = PendingIntent.getActivity(
-                context, 
-                medicationData.id, // Use unique ID for each notification
-                intent,
+            val fullScreenPendingIntent = PendingIntent.getActivity(
+                context,
+                medicationData.id,
+                fullScreenIntent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
 
+            // Format time
+            val utcDateTime = LocalDateTime.parse(medicationData.dose_time.replace(" ", "T"))
+            val localDateTime = utcDateTime
+                .atZone(ZoneId.of("UTC"))
+                .withZoneSameInstant(ZoneId.systemDefault())
+            val formattedTime = localDateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
+
+            // Build notification using the same channel ID
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_medication)
-                .setContentTitle("Medication Reminder")
-                .setContentText(notificationText)
-                .setPriority(NotificationCompat.PRIORITY_MAX)  // Changed to MAX
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-                .setVibrate(longArrayOf(1000, 1000, 1000, 1000, 1000))
+                .setContentTitle("Time to take your medication")
+                .setContentText("${medicationData.medication.medication_name} - ${medicationData.medication.dosage_quantity} ${medicationData.medication.dosage_strength}")
+                .setSubText("Scheduled for $formattedTime")
+                .setStyle(NotificationCompat.BigTextStyle()
+                    .setBigContentTitle("Time to take your medication")
+                    .bigText("${medicationData.medication.medication_name}\n" +
+                            "Dose: ${medicationData.medication.dosage_quantity} ${medicationData.medication.dosage_strength}\n" +
+                            "Scheduled for $formattedTime"))
+                .setAutoCancel(false)
+                .setOngoing(true)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setFullScreenIntent(fullScreenPendingIntent, true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setVibrate(longArrayOf(0, 500, 200, 500, 200, 500))
+                .setLights(context.getColor(R.color.primary), 3000, 3000)
+                .setColor(context.getColor(R.color.primary))
+                .setOnlyAlertOnce(false)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
 
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            
-            Log.d(TAG, "About to display notification")
-            notificationManager.notify(NOTIFICATION_ID, builder.build())
-            Log.d(TAG, "Notification displayed successfully")
+            // Show notification
+            val notification = builder.build()
+            notificationManager.notify(medicationData.id, notification)
+            Log.d(TAG, "Notification built and sent with ID: ${medicationData.id}")
+
+            // Start alarm service
+            val alarmIntent = Intent(context, AlarmService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(alarmIntent)
+            } else {
+                context.startService(alarmIntent)
+            }
 
         } catch (e: Exception) {
             Log.e(TAG, "Error showing notification", e)
+            e.printStackTrace() // Add stack trace for better debugging
+        } finally {
+            wakeLock?.release()
         }
     }
 
-    private data class MedicationNotificationData(
-        val id: Int,
-        val medication_id: Int,
-        val patient_id: Int,
-        val dose_time: String,
-        val status: String,
-        val medication: Medication
-    )
+    fun createNotificationChannel(context: Context, notificationManager: NotificationManager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Check if channel exists first
+            val existingChannel = notificationManager.getNotificationChannel(CHANNEL_ID)
+            if (existingChannel == null) {
+                Log.d(TAG, "Creating new notification channel: $CHANNEL_ID")
+                val channel = NotificationChannel(
+                    CHANNEL_ID,
+                    CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description = "Reminders for medication schedules"
+                    enableLights(true)
+                    lightColor = context.getColor(R.color.primary)
+                    enableVibration(true)
+                    setShowBadge(true)
+                    setBypassDnd(true)
+                    setSound(
+                        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_ALARM)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .build()
+                    )
+                    importance = NotificationManager.IMPORTANCE_HIGH
+                    lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                }
+                notificationManager.createNotificationChannel(channel)
+                Log.d(TAG, "Notification channel created successfully")
+            } else {
+                Log.d(TAG, "Notification channel already exists")
+            }
+        }
+    }
 
-    private data class Medication(
-        val medication_name: String
-    )
+    fun cancelNotification(context: Context, notificationId: Int) {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(notificationId)
+        
+        // Stop alarm service
+        context.stopService(Intent(context, AlarmService::class.java))
+    }
+
+    fun createWorkerNotification(context: Context): Notification {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                setSound(null, null)
+                enableVibration(false)
+            }
+            val notificationManager = context.getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        return NotificationCompat.Builder(context, WORKER_CHANNEL_ID)
+            .setContentTitle("Processing Medication Reminder")
+            .setSmallIcon(R.drawable.ic_medication)
+            .setSilent(true)
+            .setOngoing(true)
+            .build()
+    }
 } 
