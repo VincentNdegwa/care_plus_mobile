@@ -80,5 +80,9 @@
         <meta-data
             android:name="firebase_analytics_collection_enabled"
             android:value="false" />
+
+        <receiver
+            android:name=".receivers.AlarmStopReceiver"
+            android:exported="false" />
     </application>
 </manifest>

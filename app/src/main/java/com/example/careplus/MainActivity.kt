@@ -29,6 +29,7 @@ import com.example.careplus.utils.FCMManager
 import com.example.careplus.ui.notification.NotificationViewModel
 import androidx.activity.viewModels
 import androidx.navigation.NavDestination
+import androidx.work.WorkManager
 import com.example.careplus.services.AlarmService
 
 class MainActivity : AppCompatActivity() {
@@ -192,6 +193,10 @@ class MainActivity : AppCompatActivity() {
                         navController.navigate(R.id.medicationReminderFragment, bundle)
                     }
                 })
+            }
+            if (intent.getBooleanExtra("stop_alarm", false)) {
+                WorkManager.getInstance(applicationContext)
+                    .cancelAllWorkByTag("alarm_work")
             }
         }
     }

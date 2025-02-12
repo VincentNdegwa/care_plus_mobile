@@ -22,6 +22,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import android.app.KeyguardManager
 import android.app.Activity
+import com.example.careplus.receivers.AlarmStopReceiver
 
 object NotificationHelper {
     private const val CHANNEL_ID = "medication_notifications"
@@ -43,12 +44,13 @@ object NotificationHelper {
                 return
             }
             
-            // Create full screen intent
+            // Create activity intent with alarm stop action
             val fullScreenIntent = Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
                         Intent.FLAG_ACTIVITY_CLEAR_TOP or 
                         Intent.FLAG_ACTIVITY_SINGLE_TOP
                 putExtra("notification_data", jsonMessage)
+                putExtra("stop_alarm", true)
                 action = "MEDICATION_NOTIFICATION"
             }
             
@@ -66,7 +68,7 @@ object NotificationHelper {
                 .withZoneSameInstant(ZoneId.systemDefault())
             val formattedTime = localDateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
 
-            // Build notification using the same channel ID
+            // Build notification
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_medication)
                 .setContentTitle("Time to take your medication")
@@ -77,10 +79,11 @@ object NotificationHelper {
                     .bigText("${medicationData.medication.medication_name}\n" +
                             "Dose: ${medicationData.medication.dosage_quantity} ${medicationData.medication.dosage_strength}\n" +
                             "Scheduled for $formattedTime"))
-                .setAutoCancel(false)
+                .setAutoCancel(true)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setContentIntent(fullScreenPendingIntent)
                 .setFullScreenIntent(fullScreenPendingIntent, true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setVibrate(longArrayOf(0, 500, 200, 500, 200, 500))

@@ -65,8 +65,12 @@ class AlarmWorker(
             // Start alarm and vibration
             startAlarmAndVibration()
 
-            // Keep running for a while
-            delay(60000) // 1 minute
+            // Keep checking if work is cancelled
+            var timeoutCounter = 0
+            while (timeoutCounter < 60 && !isStopped) {
+                delay(1000)
+                timeoutCounter++
+            }
 
             Result.success()
         } catch (e: Exception) {
@@ -77,6 +81,7 @@ class AlarmWorker(
             wakeLock?.release()
         }
     }
+
 
     private fun startAlarmAndVibration() {
         try {
