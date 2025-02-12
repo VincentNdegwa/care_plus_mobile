@@ -6,44 +6,48 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import android.media.RingtoneManager
 import android.os.Build
 import android.os.PowerManager
+import android.os.VibrationEffect
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.*
 import com.example.careplus.MainActivity
 import com.example.careplus.R
-import com.example.careplus.services.AlarmService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import android.os.Vibrator
+import android.content.pm.ServiceInfo
+import kotlinx.coroutines.delay
 
 class AlarmWorker(
     private val context: Context,
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
 
-    override suspend fun getForegroundInfo(): ForegroundInfo {
-        createNotificationChannel()
-        return ForegroundInfo(
-            NOTIFICATION_ID,
-            createForegroundNotification()
-        )
-    }
+    private var mediaPlayer: MediaPlayer? = null
+    private var vibrator: Vibrator? = null
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         var wakeLock: PowerManager.WakeLock? = null
         try {
-            // Acquire wake lock first
             wakeLock = (context.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                 newWakeLock(
-                    PowerManager.FULL_WAKE_LOCK or
-                    PowerManager.ACQUIRE_CAUSES_WAKEUP or
-                    PowerManager.ON_AFTER_RELEASE,
+                    PowerManager.FULL_WAKE_LOCK or 
+                    PowerManager.ACQUIRE_CAUSES_WAKEUP,
                     "CarePlus:AlarmWakeLock"
                 ).apply {
-                    acquire(10 * 60 * 1000L)
+                    acquire(10 * 60 * 1000L) // 10 minutes
                 }
             }
+
+            // Initialize media player and vibrator before using them
+            mediaPlayer = MediaPlayer()
+            vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
             // Turn on screen
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
@@ -58,61 +62,63 @@ class AlarmWorker(
                 }
             }
 
-            // Start the alarm service
-            val intent = Intent(context, AlarmService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
+            // Start alarm and vibration
+            startAlarmAndVibration()
+
+            // Keep running for a while
+            delay(60000) // 1 minute
 
             Result.success()
         } catch (e: Exception) {
             Log.e(TAG, "Error in AlarmWorker", e)
-            Result.retry()
+            Result.failure()
         } finally {
+            cleanup()
             wakeLock?.release()
         }
     }
 
-    private fun createForegroundNotification(): Notification {
-        val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+    private fun startAlarmAndVibration() {
+        try {
+            val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            mediaPlayer?.apply {
+                setDataSource(context, alarmUri)
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                isLooping = true
+                prepare()
+                start()
+            }
+            
+            // Start vibration
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val pattern = longArrayOf(0, 500, 200, 500, 200, 500)
+                vibrator?.vibrate(VibrationEffect.createWaveform(pattern, 0))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator?.vibrate(longArrayOf(0, 500, 200, 500, 200, 500), 0)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting alarm and vibration", e)
         }
-        
-        val pendingIntent = PendingIntent.getActivity(
-            context, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle("Medication Reminder")
-            .setContentText("Starting alarm service...")
-            .setSmallIcon(R.drawable.ic_medication)
-            .setOngoing(true)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setContentIntent(pendingIntent)
-            .build()
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Alarm Worker Channel",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Channel for Alarm Worker"
+    private fun cleanup() {
+        mediaPlayer?.apply {
+            if (isPlaying) {
+                stop()
             }
-            val notificationManager = context.getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
+            release()
         }
+        mediaPlayer = null
+        vibrator?.cancel()
     }
 
     companion object {
         private const val TAG = "AlarmWorker"
-        private const val CHANNEL_ID = "alarm_worker_channel"
-        private const val NOTIFICATION_ID = 1002
     }
 } 
