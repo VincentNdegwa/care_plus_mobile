@@ -26,22 +26,43 @@ class AlarmService : Service() {
         mediaPlayer = MediaPlayer()
         vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
         createNotificationChannel()
+
+        // Start foreground immediately with proper type
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID,
+                createNotification(),
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification())
+        }
+
+        // Acquire wake lock
+        wakeLock = (getSystemService(POWER_SERVICE) as PowerManager).run {
+            newWakeLock(
+                PowerManager.FULL_WAKE_LOCK or
+                PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                PowerManager.ON_AFTER_RELEASE,
+                "CarePlus:AlarmServiceLock"
+            ).apply {
+                acquire(10 * 60 * 1000L)
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("AlarmService", "Service starting...")
         
-        // Start foreground service with notification
-        startForeground(NOTIFICATION_ID, createNotification())
-        
-        // Acquire wake lock
-        wakeLock = (getSystemService(POWER_SERVICE) as PowerManager).run {
-            newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CarePlus:AlarmServiceLock").apply {
-                acquire(10*60*1000L /*10 minutes*/)
-            }
-        }
+        // Start alarm and vibration in background thread
+        Thread {
+            startAlarmAndVibration()
+        }.start()
 
-        // Start alarm sound
+        return START_STICKY
+    }
+
+    private fun startAlarmAndVibration() {
         try {
             val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             mediaPlayer?.apply {
@@ -56,20 +77,18 @@ class AlarmService : Service() {
                 prepare()
                 start()
             }
+            
+            // Start vibration
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val pattern = longArrayOf(0, 500, 200, 500, 200, 500)
+                vibrator?.vibrate(VibrationEffect.createWaveform(pattern, 0))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator?.vibrate(longArrayOf(0, 500, 200, 500, 200, 500), 0)
+            }
         } catch (e: Exception) {
-            Log.e("AlarmService", "Error playing alarm sound", e)
+            Log.e("AlarmService", "Error starting alarm and vibration", e)
         }
-
-        // Start vibration
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val pattern = longArrayOf(0, 500, 200, 500, 200, 500)
-            vibrator?.vibrate(VibrationEffect.createWaveform(pattern, 0))
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator?.vibrate(longArrayOf(0, 500, 200, 500, 200, 500), 0)
-        }
-
-        return START_STICKY
     }
 
     private fun createNotificationChannel() {
@@ -90,11 +109,22 @@ class AlarmService : Service() {
 
     private fun createNotification(): Notification {
         val intent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
+                   Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        // Create a full screen intent
+        val fullScreenIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
+                   Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val fullScreenPendingIntent = PendingIntent.getActivity(
+            this, 0, fullScreenIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
@@ -103,8 +133,12 @@ class AlarmService : Service() {
             .setContentText("Tap to open the app")
             .setSmallIcon(R.drawable.ic_medication)
             .setContentIntent(pendingIntent)
+            .setFullScreenIntent(fullScreenPendingIntent, true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setSilent(true) // No sound for service notification
-            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setOngoing(true)
             .build()
     }
 

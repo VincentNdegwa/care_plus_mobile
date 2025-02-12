@@ -20,13 +20,18 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import androidx.work.BackoffPolicy
 import androidx.work.ExistingWorkPolicy
-import com.example.careplus.workers.NotificationWorker
 import java.util.concurrent.TimeUnit
 import android.app.NotificationManager
+import android.content.Intent
+import androidx.work.OutOfQuotaPolicy
+import com.example.careplus.workers.AlarmWorker
+import android.app.KeyguardManager
+import com.example.careplus.MainActivity
 
 class FCMService : FirebaseMessagingService() {
     private lateinit var sessionManager: SessionManager
     private lateinit var viewModel: NotificationViewModel
+    private var wakeLock: PowerManager.WakeLock? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -38,84 +43,104 @@ class FCMService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
 
         try {
-            // Log the entire message for debugging
-            Log.d(TAG, "Message received - Data: ${remoteMessage.data}, Notification: ${remoteMessage.notification}")
+            Log.d(TAG, "Message data payload: ${remoteMessage.data}")
             
-            // Always handle as data message, ignore notification payload
+            // Acquire wake lock first
+            wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+                newWakeLock(
+                    PowerManager.PARTIAL_WAKE_LOCK or
+                    PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                    "CarePlus:FCMWakeLock"
+                ).apply {
+                    acquire(10 * 60 * 1000L)
+                }
+            }
+            
             if (remoteMessage.data.isNotEmpty()) {
-                // Cancel any default notification that might have been created
-                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                notificationManager.cancel(FCM_DEFAULT_ID)
-                
                 handleNow(remoteMessage.data)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error processing FCM message", e)
+        } finally {
+            wakeLock?.release()
         }
     }
 
     private fun handleNow(data: Map<String, String>) {
         try {
             val nestedData = data["data"] ?: return
-            Log.d(TAG, "Processing data payload: $nestedData")
+            Log.d(TAG, "Nested data: $nestedData")
 
             val fcmData = Gson().fromJson(nestedData, FCMMedicationPayload::class.java)
             
             if (fcmData.type == "medication_reminder") {
                 val medicationJson = Gson().toJson(fcmData.payload)
-                Log.d(TAG, "Processing medication reminder: $medicationJson")
+                Log.d(TAG, "Medication data: $medicationJson")
                 
-                if (isDeviceIdle(applicationContext)) {
-                    // Schedule WorkManager task for when device is more active
-                    scheduleNotification(medicationJson)
-                } else {
-                    // Show notification immediately
-                    NotificationHelper.showMedicationNotification(applicationContext, medicationJson)
-                }
+                // Show notification
+                NotificationHelper.showMedicationNotification(applicationContext, medicationJson)
+                
+                // Start alarm service directly
+                startAlarmService()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error processing FCM data", e)
         }
     }
 
-    private fun isDeviceIdle(context: Context): Boolean {
-        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            powerManager.isDeviceIdleMode
-        } else {
-            false
+    private fun startAlarmService() {
+        try {
+            // Turn on screen if needed
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+                if (keyguardManager.isKeyguardLocked) {
+                    val fullScreenIntent = Intent(this, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    }
+                    startActivity(fullScreenIntent)
+                }
+            }
+
+            // Start alarm service
+            val intent = Intent(this, AlarmService::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting alarm service", e)
         }
-    }
-
-    private fun scheduleNotification(jsonData: String) {
-        val workData = workDataOf("notification_data" to jsonData)
-        
-        val constraints = Constraints.Builder()
-            .setRequiresCharging(false)
-            .setRequiresDeviceIdle(false)
-            .setRequiresBatteryNotLow(true)
-            .build()
-
-        val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
-            .setInputData(workData)
-            .setConstraints(constraints)
-            .setBackoffCriteria(
-                BackoffPolicy.LINEAR,
-                WorkRequest.MIN_BACKOFF_MILLIS,
-                TimeUnit.MILLISECONDS
-            )
-            .build()
-
-        WorkManager.getInstance(applicationContext)
-            .enqueueUniqueWork(
-                "medication_notification_${System.currentTimeMillis()}",
-                ExistingWorkPolicy.REPLACE,
-                workRequest
-            )
     }
 
     override fun onNewToken(token: String) {
         viewModel.registerToken(token)
+    }
+
+    private fun scheduleAlarmService() {
+        val constraints = Constraints.Builder()
+            .setRequiresBatteryNotLow(false)
+            .setRequiresCharging(false)
+            .setRequiresDeviceIdle(false)
+            .build()
+
+        val workRequest = OneTimeWorkRequestBuilder<AlarmWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .setConstraints(constraints)
+            .addTag("alarm_work")
+            .build()
+
+        WorkManager.getInstance(applicationContext)
+            .enqueueUniqueWork(
+                "alarm_service_${System.currentTimeMillis()}",
+                ExistingWorkPolicy.REPLACE,
+                workRequest
+            )
     }
 
     companion object {

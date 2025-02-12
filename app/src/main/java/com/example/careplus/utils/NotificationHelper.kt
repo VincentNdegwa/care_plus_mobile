@@ -30,10 +30,7 @@ object NotificationHelper {
     private const val CHANNEL_NAME = "Medication Reminders"
 
     fun showMedicationNotification(context: Context, jsonMessage: String) {
-        // Get notification manager first
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        // Create channel before building notification
         createNotificationChannel(context, notificationManager)
 
         var wakeLock: PowerManager.WakeLock? = null
@@ -94,21 +91,11 @@ object NotificationHelper {
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
 
             // Show notification
-            val notification = builder.build()
-            notificationManager.notify(medicationData.id, notification)
-            Log.d(TAG, "Notification built and sent with ID: ${medicationData.id}")
-
-            // Start alarm service
-            val alarmIntent = Intent(context, AlarmService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(alarmIntent)
-            } else {
-                context.startService(alarmIntent)
-            }
+            notificationManager.notify(medicationData.id, builder.build())
 
         } catch (e: Exception) {
             Log.e(TAG, "Error showing notification", e)
-            e.printStackTrace() // Add stack trace for better debugging
+            e.printStackTrace()
         } finally {
             wakeLock?.release()
         }
