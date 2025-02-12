@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.work.WorkManager
 import com.example.careplus.R
 import com.example.careplus.data.model.Schedule
 import com.example.careplus.databinding.FragmentMedicationReminderBinding
@@ -51,6 +52,12 @@ class MedicationReminderFragment : Fragment() {
         setupClickListeners()
         observeResults()
         setupToolbar()
+        stopAlarmRinging()
+    }
+
+    private fun stopAlarmRinging(){
+        WorkManager.getInstance(requireContext())
+            .cancelAllWorkByTag("alarm_work")
     }
 
     private fun setupToolbar() {

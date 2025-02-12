@@ -22,6 +22,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import android.os.Vibrator
 import android.content.pm.ServiceInfo
+import com.example.careplus.ui.incoming.IncomingMedicationActivity
 import kotlinx.coroutines.delay
 
 class AlarmWorker(
@@ -49,27 +50,27 @@ class AlarmWorker(
             mediaPlayer = MediaPlayer()
             vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
-            // Turn on screen
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-                val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager
-                if (keyguardManager.isKeyguardLocked) {
-                    val fullScreenIntent = Intent(context, MainActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                                Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                                Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    }
-                    context.startActivity(fullScreenIntent)
-                }
+            // Launch incoming medication screen directly
+            val fullScreenIntent = Intent(context, IncomingMedicationActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP
+                putExtra("notification_data", inputData.getString("notification_data"))
             }
+            context.startActivity(fullScreenIntent)
 
             // Start alarm and vibration
             startAlarmAndVibration()
 
-            // Keep checking if work is cancelled
-            var timeoutCounter = 0
-            while (timeoutCounter < 60 && !isStopped) {
-                delay(1000)
-                timeoutCounter++
+            try {
+                // Keep checking if work is cancelled
+                var timeoutCounter = 0
+                while (timeoutCounter < 60 && !isStopped) {
+                    delay(1000)
+                    timeoutCounter++
+                }
+            } catch (e: Exception) {
+                Log.d(TAG, "Alarm work was cancelled normally: ${e.message} ")
             }
 
             Result.success()
@@ -77,8 +78,12 @@ class AlarmWorker(
             Log.e(TAG, "Error in AlarmWorker", e)
             Result.failure()
         } finally {
-            cleanup()
-            wakeLock?.release()
+            try {
+                cleanup()
+                wakeLock?.release()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in cleanup", e)
+            }
         }
     }
 
@@ -113,14 +118,18 @@ class AlarmWorker(
     }
 
     private fun cleanup() {
-        mediaPlayer?.apply {
-            if (isPlaying) {
-                stop()
+        try {
+            mediaPlayer?.apply {
+                if (isPlaying) {
+                    stop()
+                }
+                release()
             }
-            release()
+            mediaPlayer = null
+            vibrator?.cancel()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in cleanup", e)
         }
-        mediaPlayer = null
-        vibrator?.cancel()
     }
 
     companion object {

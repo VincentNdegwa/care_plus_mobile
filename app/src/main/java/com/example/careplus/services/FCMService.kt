@@ -32,6 +32,7 @@ class FCMService : FirebaseMessagingService() {
     private lateinit var sessionManager: SessionManager
     private lateinit var viewModel: NotificationViewModel
     private var wakeLock: PowerManager.WakeLock? = null
+    private lateinit var medicationJson:String
 
     override fun onCreate() {
         super.onCreate()
@@ -61,7 +62,7 @@ class FCMService : FirebaseMessagingService() {
             val fcmData = Gson().fromJson(nestedData, FCMMedicationPayload::class.java)
             
             if (fcmData.type == "medication_reminder") {
-                val medicationJson = Gson().toJson(fcmData.payload)
+                medicationJson = Gson().toJson(fcmData.payload)
                 Log.d(TAG, "Medication data: $medicationJson")
                 
                 // Show notification
@@ -93,6 +94,9 @@ class FCMService : FirebaseMessagingService() {
                     BackoffPolicy.LINEAR,
                     4000,
                     TimeUnit.MILLISECONDS
+                )
+                .setInputData(
+                    workDataOf("notification_data" to medicationJson)
                 )
                 .build()
 

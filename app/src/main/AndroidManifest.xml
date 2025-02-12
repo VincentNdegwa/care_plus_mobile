@@ -84,5 +84,13 @@
         <receiver
             android:name=".receivers.AlarmStopReceiver"
             android:exported="false" />
+
+        <activity
+            android:name=".ui.incoming.IncomingMedicationActivity"
+            android:exported="false"
+            android:showOnLockScreen="true"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.CarePlus.NoActionBar.Fullscreen"
+            android:excludeFromRecents="true"/>
     </application>
 </manifest>

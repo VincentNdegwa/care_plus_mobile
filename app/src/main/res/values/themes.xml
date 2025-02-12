@@ -63,4 +63,9 @@
         <item name="backgroundTint">@color/primary</item>
         <item name="rippleColor">#40FFFFFF</item>
     </style>
+
+    <style name="Theme.CarePlus.NoActionBar.Fullscreen" parent="Theme.CarePlus">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
 </resources>
