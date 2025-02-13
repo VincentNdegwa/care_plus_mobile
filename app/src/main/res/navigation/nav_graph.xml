@@ -109,4 +109,26 @@
             app:argType="string" />
     </fragment>
 
+    <action
+        android:id="@+id/action_medicationDetail_to_createSideEffect"
+        app:destination="@id/createSideEffectFragment">
+        <argument
+            android:name="medicationId"
+            app:argType="integer" />
+    </action>
+
+    <fragment
+        android:id="@+id/createSideEffectFragment"
+        android:name="com.example.careplus.ui.side_effect.CreateSideEffectFragment"
+        android:label="Create Side Effect">
+        <argument
+            android:name="medicationId"
+            app:argType="integer" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/sideEffectsFragment"
+        android:name="com.example.careplus.ui.side_effect.SideEffectsFragment"
+        android:label="Side Effects" />
+
 </navigation> 

@@ -116,8 +116,13 @@ class MainActivity : AppCompatActivity() {
                     // Handle profile
                 }
                 R.id.menu_medications -> {
-                    navController.navigate(R.id.medicationsFragment)
-                    binding.drawerLayout.closeDrawer(GravityCompat.END)
+                    findNavController(R.id.nav_host_fragment).navigate(R.id.medicationsFragment)
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+                R.id.menu_side_effects -> {
+                    findNavController(R.id.nav_host_fragment).navigate(R.id.sideEffectsFragment)
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
                 R.id.menu_logout -> {

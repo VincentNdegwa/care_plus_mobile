@@ -64,5 +64,12 @@ object ApiClient {
         retrofit.create(NotificationApi::class.java)
     }
 
+    val sideEffectApi: SideEffectApi by lazy {
+        if (!::retrofit.isInitialized) {
+            throw IllegalStateException("ApiClient must be initialized with create() before accessing sideEffectApi")
+        }
+        retrofit.create(SideEffectApi::class.java)
+    }
+
 }
 

@@ -25,6 +25,11 @@
         android:icon="@drawable/ic_medication"
         android:title="Medications"/>
 
+    <item
+        android:id="@+id/menu_side_effects"
+        android:icon="@drawable/ic_side_effect"
+        android:title="Side Effects"/>
+
     <item android:title="Other">
         <menu>
             <item

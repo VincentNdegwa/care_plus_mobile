@@ -3,6 +3,9 @@ package com.example.careplus.ui.medications
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -37,7 +40,7 @@ class MedicationDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-
+        
         val medicationDetails = args.medicationDetails
         updatedMedicationDetails = medicationDetails
         displayMedicationDetails(updatedMedicationDetails)
@@ -65,7 +68,7 @@ class MedicationDetailFragment : Fragment() {
             frequencyText.text = medication.frequency ?: "- - -"
             durationText.text = medication.duration ?: "- - -"
             stockText.text = "${medication.stock ?: 0} units remaining"
-
+            
             // Format prescribed date
             val prescribedDate = LocalDateTime.parse(
                 medication.prescribed_date?.replace(" ", "T")
@@ -179,15 +182,19 @@ class MedicationDetailFragment : Fragment() {
     }
 
     private fun navigateToEdit() {
+            findNavController().navigate(
+                MedicationDetailFragmentDirections.actionMedicationDetailToEdit(
+                    args.medicationDetails.id.toInt(),
+                    updatedMedicationDetails
+                )
+            )
+        }
+    private fun navigateToSideEffectForm(){
         findNavController().navigate(
-            MedicationDetailFragmentDirections.actionMedicationDetailToEdit(
-                args.medicationDetails.id.toInt(),
-                updatedMedicationDetails
+            MedicationDetailFragmentDirections.actionMedicationDetailToCreateSideEffect(
+                medicationId = args.medicationDetails.id.toInt()
             )
         )
-    }
-    private fun navigateToSideEffectForm(){
-//        navigate to new ui
     }
 
     private fun showDeleteConfirmation() {
@@ -291,4 +298,10 @@ class MedicationDetailFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.medication_detail_menu, menu)
+    }
+
 } 
