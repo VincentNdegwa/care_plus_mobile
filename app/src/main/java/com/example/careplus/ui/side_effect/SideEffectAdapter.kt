@@ -50,13 +50,21 @@ class SideEffectAdapter(
         }
 
         private fun formatDateTime(dateTime: String): String {
-            val formatter = DateTimeFormatter.ISO_DATE_TIME
-            val utcDateTime = LocalDateTime.parse(dateTime, formatter)
-            val localDateTime = utcDateTime.atZone(ZoneOffset.UTC)
-                .withZoneSameInstant(ZoneId.systemDefault())
-                .toLocalDateTime()
-            
-            return localDateTime.format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"))
+            return try {
+                // Parse the input format "yyyy-MM-dd HH:mm:ss"
+                val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                val outputFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
+                
+                val localDateTime = LocalDateTime.parse(dateTime, inputFormatter)
+                    .atZone(ZoneOffset.UTC)
+                    .withZoneSameInstant(ZoneId.systemDefault())
+                    .toLocalDateTime()
+                
+                localDateTime.format(outputFormatter)
+            } catch (e: Exception) {
+                // Fallback in case of parsing error
+                dateTime
+            }
         }
     }
 

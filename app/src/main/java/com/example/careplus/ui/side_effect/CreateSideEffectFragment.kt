@@ -16,12 +16,17 @@ import com.example.careplus.utils.SnackbarUtils
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class CreateSideEffectFragment : Fragment() {
     private var _binding: FragmentCreateSideEffectBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SideEffectViewModel by viewModels()
     private val args: CreateSideEffectFragmentArgs by navArgs()
+    private var isProcessing = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,7 +56,7 @@ class CreateSideEffectFragment : Fragment() {
         (binding.severityInput as? AutoCompleteTextView)?.setAdapter(severityAdapter)
 
         binding.createButton.setOnClickListener {
-            if (validateInput()) {
+            if (!isProcessing && validateInput()) {
                 createSideEffect()
             }
         }
@@ -59,21 +64,29 @@ class CreateSideEffectFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.createResult.observe(viewLifecycleOwner) { result ->
-            result.onSuccess {res->
+            result.onSuccess { res ->
+                updateButtonState(isLoading = true)
                 showSnackbar("Side effect registered successfully", false)
-                findNavController().navigateUp()
+                CoroutineScope(Dispatchers.Main).launch {
+                    delay(2000)
+                    findNavController().navigateUp()
+                }
             }.onFailure { exception ->
+                isProcessing = false
+                updateButtonState(isLoading = false)
                 showSnackbar(exception.message ?: "Failed to register side effect")
             }
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.createButton.isEnabled = !isLoading
-            binding.createButton.text = if (isLoading) "Creating..." else "Create"
+            isProcessing = isLoading
+//            updateButtonState(isLoading = isLoading)
         }
     }
 
     private fun createSideEffect() {
+        isProcessing = true
+        updateButtonState(isLoading = true)
         val request = CreateSideEffectRequest(
             medication_id = args.medicationId,
             datetime = LocalDateTime.now(ZoneOffset.UTC)
@@ -84,6 +97,13 @@ class CreateSideEffectFragment : Fragment() {
             notes = binding.notesInput.text.toString().takeIf { it.isNotEmpty() }
         )
         viewModel.createSideEffect(request)
+    }
+
+    private fun updateButtonState(isLoading: Boolean, text: String? = null) {
+        binding.createButton.apply {
+            isEnabled = !isLoading
+            this.text = text ?: if (isLoading) "Creating..." else "Create"
+        }
     }
 
     private fun validateInput(): Boolean {
