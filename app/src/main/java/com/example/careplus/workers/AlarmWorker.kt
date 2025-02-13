@@ -36,21 +36,19 @@ class AlarmWorker(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         var wakeLock: PowerManager.WakeLock? = null
         try {
+            // Acquire wake lock to keep device awake
             wakeLock = (context.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                 newWakeLock(
                     PowerManager.FULL_WAKE_LOCK or 
-                    PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                    PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                    PowerManager.ON_AFTER_RELEASE,
                     "CarePlus:AlarmWakeLock"
                 ).apply {
-                    acquire(10 * 60 * 1000L) // 10 minutes
+                    acquire(10 * 60 * 1000L) // 10 minutes max
                 }
             }
 
-            // Initialize media player and vibrator before using them
-            mediaPlayer = MediaPlayer()
-            vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-
-            // Launch incoming medication screen directly
+            // Launch incoming medication screen
             val fullScreenIntent = Intent(context, IncomingMedicationActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -59,39 +57,9 @@ class AlarmWorker(
             }
             context.startActivity(fullScreenIntent)
 
-            // Start alarm and vibration
-            startAlarmAndVibration()
-
-            try {
-                // Keep checking if work is cancelled
-                var timeoutCounter = 0
-                while (timeoutCounter < 60 && !isStopped) {
-                    delay(1000)
-                    timeoutCounter++
-                }
-            } catch (e: Exception) {
-                Log.d(TAG, "Alarm work was cancelled normally: ${e.message} ")
-            }
-
-            Result.success()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error in AlarmWorker", e)
-            Result.failure()
-        } finally {
-            try {
-                cleanup()
-                wakeLock?.release()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error in cleanup", e)
-            }
-        }
-    }
-
-
-    private fun startAlarmAndVibration() {
-        try {
-            val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            mediaPlayer?.apply {
+            // Initialize and start media player
+            mediaPlayer = MediaPlayer().apply {
+                val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
                 setDataSource(context, alarmUri)
                 setAudioAttributes(
                     AudioAttributes.Builder()
@@ -103,32 +71,45 @@ class AlarmWorker(
                 prepare()
                 start()
             }
-            
+
             // Start vibration
+            vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val pattern = longArrayOf(0, 500, 200, 500, 200, 500)
-                vibrator?.vibrate(VibrationEffect.createWaveform(pattern, 0))
+                vibrator?.vibrate(
+                    VibrationEffect.createWaveform(
+                        longArrayOf(0, 500, 200, 500),
+                        0
+                    )
+                )
             } else {
                 @Suppress("DEPRECATION")
-                vibrator?.vibrate(longArrayOf(0, 500, 200, 500, 200, 500), 0)
+                vibrator?.vibrate(longArrayOf(0, 500, 200, 500), 0)
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error starting alarm and vibration", e)
-        }
-    }
 
-    private fun cleanup() {
-        try {
-            mediaPlayer?.apply {
-                if (isPlaying) {
-                    stop()
+            try {
+                // Keep the worker running until explicitly cancelled
+                while (!isStopped) {
+                    delay(1000)
                 }
-                release()
+            } catch (e: Exception) {
+                Log.d(TAG, "Alarm work was cancelled normally: ${e.message}")
             }
-            mediaPlayer = null
-            vibrator?.cancel()
+
+            Result.success()
         } catch (e: Exception) {
-            Log.e(TAG, "Error in cleanup", e)
+            Log.e(TAG, "Error in AlarmWorker", e)
+            Result.failure()
+        } finally {
+            try {
+                mediaPlayer?.apply {
+                    if (isPlaying) stop()
+                    release()
+                }
+                vibrator?.cancel()
+                wakeLock?.release()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in cleanup", e)
+            }
         }
     }
 
