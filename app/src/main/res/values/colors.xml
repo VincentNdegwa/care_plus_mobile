@@ -31,4 +31,7 @@
     <color name="transparent">#00000000</color>
     <color name="glass_morphism_background_dark">#1A1A1A</color>
     <color name="input_background_light">#0DFFFFFF</color>
+    <color name="warning">#FFA726</color>  <!-- Orange 400 -->
+    <color name="warning_light">#FFB74D</color>  <!-- Orange 300 -->
+    <color name="warning_dark">#F57C00</color>  <!-- Orange 700 -->
 </resources>

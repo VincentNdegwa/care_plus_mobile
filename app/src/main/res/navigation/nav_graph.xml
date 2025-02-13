@@ -129,6 +129,37 @@
     <fragment
         android:id="@+id/sideEffectsFragment"
         android:name="com.example.careplus.ui.side_effect.SideEffectsFragment"
-        android:label="Side Effects" />
+        android:label="Side Effects">
+        
+        <action
+            android:id="@+id/action_sideEffects_to_details"
+            app:destination="@id/sideEffectDetailsFragment" />
+        
+        <action
+            android:id="@+id/action_sideEffects_to_edit"
+            app:destination="@id/editSideEffectFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/sideEffectDetailsFragment"
+        android:name="com.example.careplus.ui.side_effect.SideEffectDetailsFragment"
+        android:label="Side Effect Details">
+        <argument
+            android:name="sideEffect"
+            app:argType="com.example.careplus.data.model.side_effect.SideEffect" />
+        
+        <action
+            android:id="@+id/action_sideEffectDetails_to_edit"
+            app:destination="@id/editSideEffectFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/editSideEffectFragment"
+        android:name="com.example.careplus.ui.side_effect.EditSideEffectFragment"
+        android:label="Edit Side Effect">
+        <argument
+            android:name="sideEffect"
+            app:argType="com.example.careplus.data.model.side_effect.SideEffect" />
+    </fragment>
 
 </navigation> 

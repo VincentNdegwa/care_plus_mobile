@@ -1,7 +1,10 @@
 package com.example.careplus.data.model.side_effect
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import com.example.careplus.data.model.PaginationData
 
+@Parcelize
 data class SideEffect(
     val id: Int,
     val medication_id: Int,
@@ -14,7 +17,9 @@ data class SideEffect(
     val created_at: String,
     val updated_at: String,
     val medication: SideEffectMedication?
-)
+) : Parcelable
+
+@Parcelize
 data class SideEffectMedication(
     val id: Int,
     val patient_id: Int,
@@ -31,7 +36,8 @@ data class SideEffectMedication(
     val caregiver_id: Int?,
     val stock: Int?,
     val active: Int
-)
+) : Parcelable
+
 data class CreateSideEffectRequest(
     val medication_id: Int,
     val datetime: String,
@@ -48,7 +54,6 @@ data class CreateSideEffectResponse(
 )
 
 data class UpdateSideEffectRequest(
-    val datetime: String,
     val side_effect: String,
     val severity: String,
     val duration: Int? = null,

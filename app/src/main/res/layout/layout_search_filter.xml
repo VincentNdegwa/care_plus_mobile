@@ -39,6 +39,7 @@
                 android:imeOptions="actionSearch"
                 android:inputType="text"
                 android:padding="8dp"
+                android:backgroundTint="?android:colorBackgroundFloating"
                 android:textSize="16sp" />
         </LinearLayout>
 

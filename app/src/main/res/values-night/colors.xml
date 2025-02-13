@@ -7,5 +7,8 @@
     <color name="text_secondary_dark">#CBD5E1</color>  <!-- slate-300 -->
     <color name="glass_morphism_background_dark">#1A1A1A</color>
     <color name="input_background_light">#1AFFFFFF</color>
+    <color name="warning">#FFB74D</color>  <!-- Orange 300 - slightly lighter for dark theme -->
+    <color name="warning_light">#FFC77D</color>  <!-- Lighter orange for dark theme -->
+    <color name="warning_dark">#FFA726</color>  <!-- Orange 400 for dark theme -->
 </resources>
 

@@ -5,6 +5,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import android.view.View
+import android.widget.PopupMenu
+import com.example.careplus.R
 import com.example.careplus.data.model.side_effect.SideEffect
 import com.example.careplus.databinding.ItemSideEffectBinding
 import java.time.LocalDateTime
@@ -13,7 +16,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class SideEffectAdapter(
-    private val onItemClick: (SideEffect) -> Unit
+    private val onItemClick: (SideEffect) -> Unit,
+    private val onEditClick: (SideEffect) -> Unit,
+    private val onDeleteClick: (SideEffect) -> Unit
 ) : ListAdapter<SideEffect, SideEffectAdapter.ViewHolder>(SideEffectDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -43,9 +48,32 @@ class SideEffectAdapter(
         fun bind(sideEffect: SideEffect) {
             binding.apply {
                 sideEffectName.text = sideEffect.side_effect
-                severityText.text = "Severity: ${sideEffect.severity}"
+                
+                // Set severity chip color based on severity level
+                severityText.apply {
+                    text = "Severity: ${sideEffect.severity}"
+                    setChipBackgroundColorResource(when(sideEffect.severity.lowercase()) {
+                        "mild" -> R.color.success
+                        "moderate" -> R.color.warning
+                        "severe" -> R.color.error
+                        else -> R.color.primary
+                    })
+                }
+                
+                // Set severity indicator color
+                severityIndicator.setBackgroundResource(when(sideEffect.severity.lowercase()) {
+                    "mild" -> R.color.success
+                    "moderate" -> R.color.warning
+                    "severe" -> R.color.error
+                    else -> R.color.primary
+                })
+                
                 dateTimeText.text = formatDateTime(sideEffect.datetime)
                 notesText.text = sideEffect.notes ?: "No notes"
+                
+                menuButton.setOnClickListener { view ->
+                    showPopupMenu(view, sideEffect)
+                }
             }
         }
 
@@ -64,6 +92,30 @@ class SideEffectAdapter(
             } catch (e: Exception) {
                 // Fallback in case of parsing error
                 dateTime
+            }
+        }
+
+        private fun showPopupMenu(view: View, sideEffect: SideEffect) {
+            PopupMenu(view.context, view).apply {
+                inflate(R.menu.side_effect_item_menu)
+                setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.action_view -> {
+                            onItemClick(sideEffect)
+                            true
+                        }
+                        R.id.action_edit -> {
+                            onEditClick(sideEffect)
+                            true
+                        }
+                        R.id.action_delete -> {
+                            onDeleteClick(sideEffect)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                show()
             }
         }
     }

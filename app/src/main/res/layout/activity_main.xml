@@ -20,6 +20,8 @@
             app:defaultNavHost="true"
             app:navGraph="@navigation/nav_graph" />
 
+<!-- @dimen/bottom_nav_height-->
+
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNav"
             android:layout_width="match_parent"
@@ -29,9 +31,9 @@
             app:itemBackground="@drawable/bottom_nav_item_background"
             app:itemIconTint="@color/bottom_nav_icon_color"
             app:itemTextColor="@color/bottom_nav_text_color"
-            app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
             app:menu="@menu/bottom_navigation_menu" />
 
+        <!--            app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"-->
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <com.google.android.material.navigation.NavigationView

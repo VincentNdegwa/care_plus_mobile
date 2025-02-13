@@ -9,10 +9,13 @@ import android.widget.TextView
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.careplus.data.model.side_effect.FetchSideEffectsRequest
+import com.example.careplus.data.model.side_effect.SideEffect
 import com.example.careplus.databinding.FragmentSideEffectsBinding
 import com.example.careplus.utils.SnackbarUtils
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class SideEffectsFragment : Fragment() {
     private var _binding: FragmentSideEffectsBinding? = null
@@ -47,9 +50,21 @@ class SideEffectsFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        sideEffectAdapter = SideEffectAdapter { sideEffect ->
-            // Handle side effect click - show details or edit
-        }
+        sideEffectAdapter = SideEffectAdapter(
+            onItemClick = { sideEffect ->
+                findNavController().navigate(
+                    SideEffectsFragmentDirections.actionSideEffectsToDetails(sideEffect)
+                )
+            },
+            onEditClick = { sideEffect ->
+                findNavController().navigate(
+                    SideEffectsFragmentDirections.actionSideEffectsToEdit(sideEffect)
+                )
+            },
+            onDeleteClick = { sideEffect ->
+                showDeleteConfirmationDialog(sideEffect)
+            }
+        )
         
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
@@ -97,6 +112,17 @@ class SideEffectsFragment : Fragment() {
         )
 
         }
+    }
+
+    private fun showDeleteConfirmationDialog(sideEffect: SideEffect) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Delete Side Effect")
+            .setMessage("Are you sure you want to delete this side effect?")
+            .setPositiveButton("Delete") { _, _ ->
+                viewModel.deleteSideEffect(sideEffect.id)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onDestroyView() {
