@@ -29,6 +29,12 @@
         
         <!-- Custom Styles -->
         <item name="materialButtonStyle">@style/Widget.CarePlus.Button</item>
+        
+        <!-- Make status bar transparent -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        
+        <!-- Make status bar icons dark for light theme -->
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <!-- Custom Button Style -->
