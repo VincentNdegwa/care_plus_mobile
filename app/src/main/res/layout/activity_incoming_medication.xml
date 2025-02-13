@@ -5,123 +5,198 @@
     android:layout_height="match_parent"
     android:background="?android:windowBackground">
 
+    <!-- Top Wave Background -->
     <View
         android:id="@+id/topCurve"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="320dp"
         android:background="@drawable/incoming_top_curve"
         app:layout_constraintTop_toTopOf="parent"/>
 
-    <ImageView
-        android:id="@+id/medicationIcon"
+    <!-- Alarm Icon with Circle Background -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/iconContainer"
         android:layout_width="120dp"
         android:layout_height="120dp"
-        app:tint="@color/white"
         android:layout_marginTop="48dp"
-        android:elevation="4dp"
+        app:cardCornerRadius="60dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/white"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
 
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_medication"
+            app:tint="@color/primary"/>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Time Display -->
     <TextView
-        android:id="@+id/titleText"
+        android:id="@+id/scheduledTimeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Medication Reminder"
         android:textColor="@color/white"
-        android:textSize="28sp"
+        android:textSize="36sp"
         android:textStyle="bold"
         android:layout_marginTop="24dp"
-        android:elevation="4dp"
-        app:layout_constraintTop_toBottomOf="@id/medicationIcon"
+        app:layout_constraintTop_toBottomOf="@id/iconContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Main Content Card -->
     <androidx.cardview.widget.CardView
-        android:id="@+id/medicationCard"
+        android:id="@+id/contentCard"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="-64dp"
+        android:layout_marginTop="-48dp"
+        android:layout_marginBottom="100dp"
         app:cardCornerRadius="24dp"
         app:cardElevation="8dp"
-        app:cardBackgroundColor="?android:windowBackground"
-        app:layout_constraintTop_toBottomOf="@id/titleText">
+        app:layout_constraintTop_toBottomOf="@id/scheduledTimeText"
+        app:layout_constraintBottom_toBottomOf="parent">
 
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp">
-
-            <TextView
-                android:id="@+id/scheduledTimeText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/primary"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:gravity="center"
-                android:layout_marginBottom="16dp"/>
-
-            <com.google.android.material.divider.MaterialDivider
-                android:layout_width="200dp"
-                android:layout_height="2dp"
-                android:layout_gravity="center"
-                android:layout_marginBottom="24dp"
-                app:dividerColor="@color/primary"/>
-
-            <TextView
-                android:id="@+id/medicationNameText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_primary_light"
-                android:textSize="32sp"
-                android:textStyle="bold"
-                android:gravity="center"/>
-
-            <TextView
-                android:id="@+id/dosageText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="24sp"
-                android:gravity="center"
-                android:layout_marginTop="8dp"/>
+            android:layout_height="match_parent">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="24dp"
-                android:background="@drawable/rounded_border_background"
-                android:padding="16dp">
+                android:padding="24dp">
 
+                <!-- Medication Name -->
                 <TextView
-                    android:id="@+id/frequencyText"
+                    android:id="@+id/medicationNameText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
                     android:gravity="center"/>
 
-                <TextView
-                    android:id="@+id/instructionsText"
+                <!-- Dosage Info -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp"
-                    android:gravity="center"
-                    android:layout_marginTop="8dp"/>
+                    android:layout_marginTop="24dp"
+                    app:cardBackgroundColor="@color/primary"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
 
-                <TextView
-                    android:id="@+id/durationText"
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/dosageText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:textSize="20sp"
+                            android:gravity="center"/>
+
+                        <TextView
+                            android:id="@+id/frequencyText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:alpha="0.9"
+                            android:textSize="16sp"
+                            android:gravity="center"
+                            android:layout_marginTop="8dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Additional Info -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp"
-                    android:gravity="center"
-                    android:layout_marginTop="8dp"/>
+                    android:orientation="vertical"
+                    android:layout_marginTop="24dp">
+
+                    <!-- Stock Info -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="12dp"
+                        android:background="@drawable/rounded_border_background">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_medication"
+                            app:tint="@color/primary"/>
+
+                        <TextView
+                            android:id="@+id/stockText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:textSize="16sp"/>
+                    </LinearLayout>
+
+                    <!-- Duration Info -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="12dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/rounded_border_background">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_calendar"
+                            app:tint="@color/primary"/>
+
+                        <TextView
+                            android:id="@+id/durationText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:textSize="16sp"/>
+                    </LinearLayout>
+
+                    <!-- Status Info -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="12dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/rounded_border_background">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_status"
+                            app:tint="@color/primary"/>
+
+                        <TextView
+                            android:id="@+id/statusText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:textSize="16sp"/>
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
     </androidx.cardview.widget.CardView>
 
+    <!-- Take Medication Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/takeMedicationButton"
         android:layout_width="match_parent"
@@ -134,8 +209,9 @@
         android:textColor="@color/white"
         app:elevation="8dp"
         android:stateListAnimator="@null"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:icon="@drawable/ic_medication"
+        app:iconGravity="textStart"
+        app:iconPadding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout> 

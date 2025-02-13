@@ -54,21 +54,10 @@ class IncomingMedicationActivity : AppCompatActivity() {
                 scheduledTimeText.text = formattedTime
                 medicationNameText.text = schedule.medication.medication_name
                 dosageText.text = "${schedule.medication.dosage_quantity} - ${schedule.medication.dosage_strength}"
-                
-                // Add frequency information
-                schedule.medication.frequency.let { frequency->
-                    frequencyText.text =  frequency
-                }
-                
-                // Add instructions if available
-                schedule.medication.medication_name?.let { instructions ->
-                    instructionsText.text = "Take ${schedule.medication.dosage_quantity} dose"
-                }
-                
-                // Add duration if available
-                schedule.medication.duration?.let { duration ->
-                    durationText.text = "Duration: $duration"
-                }
+                frequencyText.text = schedule.medication.frequency
+                stockText.text = "Available Stock: ${schedule.medication.stock} units"
+                durationText.text = "Duration: ${schedule.medication.duration}"
+                statusText.text = "Status: ${schedule.status}"
             }
         }
 
