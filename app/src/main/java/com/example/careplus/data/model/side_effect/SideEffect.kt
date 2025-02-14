@@ -57,7 +57,8 @@ data class UpdateSideEffectRequest(
     val side_effect: String,
     val severity: String,
     val duration: Int? = null,
-    val notes: String? = null
+    val notes: String? = null,
+    val datetime: String? = null
 )
 
 data class UpdateSideEffectResponse(

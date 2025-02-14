@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -53,20 +54,37 @@ class SideEffectDetailsFragment : Fragment() {
                 binding.apply {
                     sideEffectText.text = sideEffect.side_effect
                     
-                    // Set severity chip
+                    val severityColor = when(sideEffect.severity.lowercase()) {
+                        "mild" -> R.color.success
+                        "moderate" -> R.color.warning
+                        "severe" -> R.color.error
+                        else -> R.color.primary
+                    }
+                    
+                    severityIndicator.setBackgroundColor(
+                        ContextCompat.getColor(requireContext(), severityColor)
+                    )
+                    
                     severityChip.apply {
                         text = sideEffect.severity
-                        setChipBackgroundColorResource(when(sideEffect.severity.lowercase()) {
-                            "mild" -> R.color.success
-                            "moderate" -> R.color.warning
-                            "severe" -> R.color.error
-                            else -> R.color.primary
-                        })
+                        setChipBackgroundColorResource(severityColor)
+                        setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                    }
+                    
+                    sideEffect.medication?.let { medication ->
+                        medicationNameText.text = medication.medication_name
+                        medicationDosageText.text = buildString {
+                            append(medication.dosage_quantity ?: "")
+                            if (!medication.dosage_strength.isNullOrEmpty()) {
+                                append(" ")
+                                append(medication.dosage_strength)
+                            }
+                        }
                     }
                     
                     dateTimeText.text = formatDateTime(sideEffect.datetime)
                     durationText.text = "${sideEffect.duration} hours"
-                    notesText.text = sideEffect.notes ?: "No notes"
+                    notesText.text = sideEffect.notes ?: "No notes added"
                 }
             }.onFailure { exception ->
                 showSnackbar(exception.message ?: "Failed to load side effect details")

@@ -1,5 +1,7 @@
 package com.example.careplus.ui.side_effect
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +17,7 @@ import com.example.careplus.databinding.FragmentEditSideEffectBinding
 import com.example.careplus.data.model.side_effect.UpdateSideEffectRequest
 import com.example.careplus.utils.SnackbarUtils
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
@@ -23,7 +26,8 @@ class EditSideEffectFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: SideEffectViewModel by viewModels()
     private val args: EditSideEffectFragmentArgs by navArgs()
-    private lateinit var sideEffect: SideEffect;
+    private lateinit var sideEffect: SideEffect
+    private var selectedDateTime: LocalDateTime? = null
     private var isProcessing = false
 
     override fun onCreateView(
@@ -54,6 +58,11 @@ class EditSideEffectFragment : Fragment() {
         )
         (binding.severityInput as? AutoCompleteTextView)?.setAdapter(severityAdapter)
 
+        // Setup datetime picker
+        binding.dateTimeInput.setOnClickListener {
+            showDateTimePicker()
+        }
+
         binding.updateButton.setOnClickListener {
             if (!isProcessing && validateInput()) {
                 updateSideEffect()
@@ -68,6 +77,47 @@ class EditSideEffectFragment : Fragment() {
             severityInput.setText(sideEffect.severity, false)
             durationInput.setText(sideEffect.duration?.toString() ?: "")
             notesInput.setText(sideEffect.notes ?: "")
+            
+            // Parse and set the initial datetime
+            try {
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                selectedDateTime = LocalDateTime.parse(sideEffect.datetime, formatter)
+                updateDateTimeDisplay()
+            } catch (e: Exception) {
+                // Handle parsing error
+            }
+        }
+    }
+
+    private fun showDateTimePicker() {
+        val currentDateTime = selectedDateTime ?: LocalDateTime.now()
+        
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                TimePickerDialog(
+                    requireContext(),
+                    { _, hourOfDay, minute ->
+                        selectedDateTime = LocalDateTime.of(
+                            year, month + 1, dayOfMonth, hourOfDay, minute
+                        )
+                        updateDateTimeDisplay()
+                    },
+                    currentDateTime.hour,
+                    currentDateTime.minute,
+                    true
+                ).show()
+            },
+            currentDateTime.year,
+            currentDateTime.monthValue - 1,
+            currentDateTime.dayOfMonth
+        ).show()
+    }
+
+    private fun updateDateTimeDisplay() {
+        selectedDateTime?.let { dateTime ->
+            val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
+            binding.dateTimeInput.setText(dateTime.format(formatter))
         }
     }
 
@@ -92,7 +142,11 @@ class EditSideEffectFragment : Fragment() {
             side_effect = binding.sideEffectInput.text.toString(),
             severity = binding.severityInput.text.toString(),
             duration = binding.durationInput.text.toString().toIntOrNull(),
-            notes = binding.notesInput.text.toString().takeIf { it.isNotEmpty() }
+            notes = binding.notesInput.text.toString().takeIf { it.isNotEmpty() },
+            datetime = selectedDateTime?.atZone(ZoneId.systemDefault())
+                ?.withZoneSameInstant(ZoneOffset.UTC)
+                ?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                ?: sideEffect.datetime
         )
         
         viewModel.updateSideEffect(sideEffect.id, request)
@@ -108,6 +162,11 @@ class EditSideEffectFragment : Fragment() {
 
         if (binding.severityInput.text.isNullOrBlank()) {
             binding.severityLayout.error = "Please select severity"
+            isValid = false
+        }
+
+        if (selectedDateTime == null) {
+            binding.dateTimeLayout.error = "Please select date and time"
             isValid = false
         }
 
