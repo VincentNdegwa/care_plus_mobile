@@ -21,7 +21,8 @@ class SideEffectsFragment : Fragment() {
     private var _binding: FragmentSideEffectsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SideEffectViewModel by viewModels()
-    private lateinit var sideEffectAdapter: SideEffectAdapter
+    private lateinit var adapter: SideEffectAdapter
+    private var currentSideEffects = mutableListOf<SideEffect>()
     private lateinit var loadingIndicator: ProgressBar
     private lateinit var emptyStateText: TextView
 
@@ -50,7 +51,7 @@ class SideEffectsFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        sideEffectAdapter = SideEffectAdapter(
+        adapter = SideEffectAdapter(
             onItemClick = { sideEffect ->
                 findNavController().navigate(
                     SideEffectsFragmentDirections.actionSideEffectsToDetails(sideEffect)
@@ -68,7 +69,7 @@ class SideEffectsFragment : Fragment() {
         
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = sideEffectAdapter
+            adapter = this@SideEffectsFragment.adapter
         }
     }
 
@@ -84,21 +85,47 @@ class SideEffectsFragment : Fragment() {
             binding.loadingIndicator.visibility = View.GONE
             
             result.onSuccess { response ->
-                if (response.data.isEmpty()) {
-                    binding.emptyStateText.visibility = View.VISIBLE
-                    binding.recyclerView.visibility = View.GONE
-                } else {
-                    binding.emptyStateText.visibility = View.GONE
-                    binding.recyclerView.visibility = View.VISIBLE
-                    sideEffectAdapter.submitList(response.data)
-                }
+                currentSideEffects = response.data.toMutableList()
+                updateUI()
             }.onFailure { exception ->
                 binding.emptyStateText.visibility = View.VISIBLE
                 binding.recyclerView.visibility = View.GONE
-                SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Error fetching side effects")
+                showSnackbar(exception.message ?: "Failed to load side effects")
+            }
+        }
+
+        viewModel.deleteResult.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { success ->
+                if (success) {
+                    pendingDeleteSideEffect?.let { deletedSideEffect ->
+                        // Remove from current list
+                        currentSideEffects.removeAll { it.id == deletedSideEffect.id }
+                        // Update UI
+                        updateUI()
+                        showSnackbar("Side effect deleted successfully", false)
+                    }
+                    pendingDeleteSideEffect = null
+                }
+            }.onFailure { exception ->
+                showSnackbar(exception.message ?: "Failed to delete side effect")
+                pendingDeleteSideEffect = null
             }
         }
     }
+
+    private fun updateUI() {
+        adapter.submitList(ArrayList(currentSideEffects))
+        
+        if (currentSideEffects.isEmpty()) {
+            binding.emptyStateText.visibility = View.VISIBLE
+            binding.recyclerView.visibility = View.GONE
+        } else {
+            binding.emptyStateText.visibility = View.GONE
+            binding.recyclerView.visibility = View.VISIBLE
+        }
+    }
+
+    private var pendingDeleteSideEffect: SideEffect? = null
 
     private fun fetchSideEffects(searchQuery: String? = null) {
         binding.loadingIndicator.visibility = View.VISIBLE
@@ -115,14 +142,25 @@ class SideEffectsFragment : Fragment() {
     }
 
     private fun showDeleteConfirmationDialog(sideEffect: SideEffect) {
+        pendingDeleteSideEffect = sideEffect
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Delete Side Effect")
             .setMessage("Are you sure you want to delete this side effect?")
             .setPositiveButton("Delete") { _, _ ->
                 viewModel.deleteSideEffect(sideEffect.id)
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton("Cancel") { _, _ ->
+                pendingDeleteSideEffect = null
+            }
             .show()
+    }
+
+    private fun showSnackbar(message: String, isError: Boolean = true) {
+        SnackbarUtils.showSnackbar(
+            view = binding.root,
+            message = message,
+            isError = isError
+        )
     }
 
     override fun onDestroyView() {
