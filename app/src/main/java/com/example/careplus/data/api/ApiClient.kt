@@ -7,6 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import com.example.careplus.data.SessionManager
 import retrofit2.http.GET
 import retrofit2.http.Path
+import java.util.concurrent.TimeUnit
 
 object ApiClient {
     private const val BASE_URL = "https://care.tech360.systems/v1/"
@@ -20,6 +21,9 @@ object ApiClient {
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(AuthInterceptor(sessionManager))
             .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .build()
 
         retrofit = Retrofit.Builder()
