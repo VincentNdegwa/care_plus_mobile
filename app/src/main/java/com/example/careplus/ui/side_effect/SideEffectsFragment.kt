@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.careplus.data.model.side_effect.FetchSideEffectsRequest
 import com.example.careplus.data.model.side_effect.SideEffect
 import com.example.careplus.databinding.FragmentSideEffectsBinding
@@ -70,7 +71,26 @@ class SideEffectsFragment : Fragment() {
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = this@SideEffectsFragment.adapter
+            
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    
+                    val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                    val visibleItemCount = layoutManager.childCount
+                    val totalItemCount = layoutManager.itemCount
+                    val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 5
+                        && firstVisibleItemPosition >= 0
+                    ) {
+                        viewModel.loadNextPage()
+                    }
+                }
+            })
         }
+
+
     }
 
     private fun setupSearch() {
@@ -93,6 +113,7 @@ class SideEffectsFragment : Fragment() {
                 showSnackbar(exception.message ?: "Failed to load side effects")
             }
         }
+
 
         viewModel.deleteResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { success ->
@@ -135,6 +156,8 @@ class SideEffectsFragment : Fragment() {
         viewModel.fetchSideEffects(
             FetchSideEffectsRequest(
                 patient_id = patientId,
+                page_number = 1,
+                per_page = 20
             )
         )
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.careplus.data.SessionManager
+import com.example.careplus.data.model.PaginationData
 import com.example.careplus.data.model.side_effect.*
 import com.example.careplus.data.repository.SideEffectRepository
 import kotlinx.coroutines.launch
@@ -32,17 +33,100 @@ class SideEffectViewModel(application: Application) : AndroidViewModel(applicati
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    fun fetchSideEffects(request: FetchSideEffectsRequest) {
+    // Pagination state
+    private data class PaginationState(
+        var currentPage: Int = 1,
+        var isLastPage: Boolean = false,
+        var isLoading: Boolean = false,
+        var currentFilter: FetchSideEffectsRequest? = null
+    )
+
+    private val sideEffectsPagination = PaginationState()
+
+    private val _paginationLoading = MutableLiveData<Boolean>()
+    val paginationLoading: LiveData<Boolean> = _paginationLoading
+
+    fun fetchSideEffects(request: FetchSideEffectsRequest? = null, isFirstLoad: Boolean = true) {
+        if (isFirstLoad) {
+            resetPagination()
+            sideEffectsPagination.currentFilter = request
+        }
+
+        if (sideEffectsPagination.isLoading || sideEffectsPagination.isLastPage) return
+
         viewModelScope.launch {
-            _isLoading.value = true
             try {
-                val result = repository.fetchSideEffects(request)
-                _sideEffects.value = result
+                sideEffectsPagination.isLoading = true
+                _paginationLoading.value = true
+
+                val patientId = getPatientId()
+                if (patientId!=null){
+                    val paginatedRequest = sideEffectsPagination.currentFilter?.copy(
+                        page_number = sideEffectsPagination.currentPage,
+                        per_page = 20
+                    ) ?: FetchSideEffectsRequest(
+                        patient_id = patientId,
+                        page_number = sideEffectsPagination.currentPage,
+                        per_page = 20
+                    )
+
+                    val result = repository.fetchSideEffects(paginatedRequest)
+
+                    result.onSuccess { response ->
+                        sideEffectsPagination.isLastPage =
+                            sideEffectsPagination.currentPage >= response.pagination.last_page
+
+                        if (isFirstLoad) {
+                            _sideEffects.value = Result.success(response)
+                        } else {
+                            val currentList = _sideEffects.value?.getOrNull()
+                            if (currentList != null) {
+                                val combinedResponse = FetchSideEffectsResponse(
+                                    data = currentList.data + response.data,
+                                    error= response.error,
+                                    pagination = PaginationData(
+                                        current_page = response.pagination.current_page,
+                                        last_page = response.pagination.last_page,
+                                        per_page = response.pagination.per_page,
+                                        total_items = response.pagination.total_items,
+                                        total_pages = response.pagination.total_pages
+                                    ),
+                                )
+                                _sideEffects.value = Result.success(combinedResponse)
+                            } else {
+                                _sideEffects.value = Result.success(response)
+                            }
+                        }
+
+                        if (!sideEffectsPagination.isLastPage) {
+                            sideEffectsPagination.currentPage++
+                        }
+                    }.onFailure {
+                        _sideEffects.value = Result.failure(it)
+                    }
+                }
+
             } catch (e: Exception) {
                 _sideEffects.value = Result.failure(e)
             } finally {
-                _isLoading.value = false
+                sideEffectsPagination.isLoading = false
+                _paginationLoading.value = false
             }
+        }
+    }
+
+    private fun resetPagination() {
+        sideEffectsPagination.apply {
+            currentPage = 1
+            isLastPage = false
+            isLoading = false
+            currentFilter = null
+        }
+    }
+
+    fun loadNextPage() {
+        if (!sideEffectsPagination.isLoading && !sideEffectsPagination.isLastPage) {
+            fetchSideEffects(sideEffectsPagination.currentFilter, isFirstLoad = false)
         }
     }
 

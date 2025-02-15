@@ -56,7 +56,8 @@ data class PaginationData(
     val current_page: Int,
     val total_pages: Int,
     val total_items: Int,
-    val per_page: Int
+    val per_page: Int,
+    val last_page:Int
 )
 
 @Parcelize
