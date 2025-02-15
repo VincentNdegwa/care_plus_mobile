@@ -74,7 +74,8 @@ data class FetchSideEffectsRequest(
     val from_datetime: String? = null,
     val to_datetime: String? = null,
     val per_page: Int = 10,
-    val page_number: Int = 1
+    val page_number: Int = 1,
+    val search: String? =null
 )
 
 data class FetchSideEffectsResponse(

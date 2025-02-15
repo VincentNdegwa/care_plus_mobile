@@ -14,18 +14,21 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.careplus.data.model.side_effect.FetchSideEffectsRequest
 import com.example.careplus.data.model.side_effect.SideEffect
+import com.example.careplus.data.model.side_effect.SideEffectMedication
 import com.example.careplus.databinding.FragmentSideEffectsBinding
 import com.example.careplus.utils.SnackbarUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class SideEffectsFragment : Fragment() {
+class SideEffectsFragment : Fragment(), SideEffectFilterBottomSheetFragment.FilterListener {
     private var _binding: FragmentSideEffectsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SideEffectViewModel by viewModels()
     private lateinit var adapter: SideEffectAdapter
     private var currentSideEffects = mutableListOf<SideEffect>()
+    private val medicationList = mutableSetOf<SideEffectMedication>()
     private lateinit var loadingIndicator: ProgressBar
     private lateinit var emptyStateText: TextView
+    private var currentFilter: FetchSideEffectsRequest? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,6 +52,8 @@ class SideEffectsFragment : Fragment() {
 
     private fun setupViews() {
         binding.toolbar.setPageTitle("Side Effects")
+        setupRecyclerView()
+        setupFilterButton()
     }
 
     private fun setupRecyclerView() {
@@ -95,9 +100,26 @@ class SideEffectsFragment : Fragment() {
 
     private fun setupSearch() {
         binding.searchFilterLayout.searchEditText.doOnTextChanged { text, _, _, _ ->
-            // Implement search functionality
             fetchSideEffects(searchQuery = text?.toString())
         }
+    }
+
+    private fun setupFilterButton() {
+        binding.searchFilterLayout.filterButton.setOnClickListener {
+            val filterBottomSheet = SideEffectFilterBottomSheetFragment.newInstance(
+                patientId = viewModel.getPatientId(),
+                currentFilter = currentFilter,
+                medicationList = medicationList.toList()
+            )
+            filterBottomSheet.setFilterListener(this)
+            filterBottomSheet.show(parentFragmentManager, filterBottomSheet.tag)
+        }
+        updateFilterIndicator()
+    }
+
+    private fun updateFilterIndicator() {
+        binding.searchFilterLayout.filterIndicator.visibility =
+            if (currentFilter != null) View.VISIBLE else View.GONE
     }
 
     private fun observeViewModel() {
@@ -106,6 +128,11 @@ class SideEffectsFragment : Fragment() {
             
             result.onSuccess { response ->
                 currentSideEffects = response.data.toMutableList()
+                // Clear and update medications list
+                medicationList.clear()
+                response.data.forEach { effect ->
+                    effect.medication?.let { medicationList.add(it) }
+                }
                 updateUI()
             }.onFailure { exception ->
                 binding.emptyStateText.visibility = View.VISIBLE
@@ -152,12 +179,12 @@ class SideEffectsFragment : Fragment() {
         binding.loadingIndicator.visibility = View.VISIBLE
         val patientId = viewModel.getPatientId()
         if (patientId != null){
-
         viewModel.fetchSideEffects(
             FetchSideEffectsRequest(
                 patient_id = patientId,
                 page_number = 1,
-                per_page = 20
+                per_page = 20,
+                search = searchQuery
             )
         )
 
@@ -189,5 +216,11 @@ class SideEffectsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onFiltersApplied(filter: FetchSideEffectsRequest?) {
+        currentFilter = filter
+        viewModel.fetchSideEffects(filter)
+        updateFilterIndicator()
     }
 } 
