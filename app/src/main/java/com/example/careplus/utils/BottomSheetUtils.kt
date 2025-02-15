@@ -22,7 +22,6 @@ object BottomSheetUtils {
             }
         }
         
-        // Make the background transparent
         dialog.window?.let { window ->
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }

@@ -35,8 +35,46 @@ class SideEffectDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupViews()
-        observeViewModel()
-        fetchSideEffect()
+        updateUi()
+    }
+
+    private fun updateUi() {
+        val sideEffect = args.sideEffect
+        binding.apply {
+            sideEffectText.text = sideEffect.side_effect
+
+            val severityColor = when(sideEffect.severity.lowercase()) {
+                "mild" -> R.color.success
+                "moderate" -> R.color.warning
+                "severe" -> R.color.error
+                else -> R.color.primary
+            }
+
+            severityIndicator.setBackgroundColor(
+                ContextCompat.getColor(requireContext(), severityColor)
+            )
+
+            severityChip.apply {
+                text = sideEffect.severity
+                setChipBackgroundColorResource(severityColor)
+                setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+            }
+
+            sideEffect.medication?.let { medication ->
+                medicationNameText.text = medication.medication_name
+                medicationDosageText.text = buildString {
+                    append(medication.dosage_quantity ?: "")
+                    if (!medication.dosage_strength.isNullOrEmpty()) {
+                        append(" ")
+                        append(medication.dosage_strength)
+                    }
+                }
+            }
+
+            dateTimeText.text = formatDateTime(sideEffect.datetime)
+            durationText.text = "${sideEffect.duration} hours"
+            notesText.text = sideEffect.notes ?: "No notes added"
+        }
     }
 
     private fun setupViews() {
@@ -48,53 +86,6 @@ class SideEffectDetailsFragment : Fragment() {
         }
     }
 
-    private fun observeViewModel() {
-        viewModel.sideEffect.observe(viewLifecycleOwner) { result ->
-            result.onSuccess { sideEffect ->
-                binding.apply {
-                    sideEffectText.text = sideEffect.side_effect
-                    
-                    val severityColor = when(sideEffect.severity.lowercase()) {
-                        "mild" -> R.color.success
-                        "moderate" -> R.color.warning
-                        "severe" -> R.color.error
-                        else -> R.color.primary
-                    }
-                    
-                    severityIndicator.setBackgroundColor(
-                        ContextCompat.getColor(requireContext(), severityColor)
-                    )
-                    
-                    severityChip.apply {
-                        text = sideEffect.severity
-                        setChipBackgroundColorResource(severityColor)
-                        setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                    }
-                    
-                    sideEffect.medication?.let { medication ->
-                        medicationNameText.text = medication.medication_name
-                        medicationDosageText.text = buildString {
-                            append(medication.dosage_quantity ?: "")
-                            if (!medication.dosage_strength.isNullOrEmpty()) {
-                                append(" ")
-                                append(medication.dosage_strength)
-                            }
-                        }
-                    }
-                    
-                    dateTimeText.text = formatDateTime(sideEffect.datetime)
-                    durationText.text = "${sideEffect.duration} hours"
-                    notesText.text = sideEffect.notes ?: "No notes added"
-                }
-            }.onFailure { exception ->
-                showSnackbar(exception.message ?: "Failed to load side effect details")
-            }
-        }
-    }
-
-    private fun fetchSideEffect() {
-        viewModel.getSideEffect(args.sideEffect.id)
-    }
 
     private fun formatDateTime(dateTime: String): String {
         return try {
