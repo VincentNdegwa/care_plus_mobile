@@ -162,4 +162,28 @@
             app:argType="com.example.careplus.data.model.side_effect.SideEffect" />
     </fragment>
 
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.careplus.ui.profile.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_profileFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment">
+            <argument
+                android:name="profileData"
+                app:argType="com.example.careplus.data.model.profile.ProfileData"/>
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.example.careplus.ui.profile.EditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_edit_profile">
+        <argument
+            android:name="profileData"
+            app:argType="com.example.careplus.data.model.profile.ProfileData"/>
+    </fragment>
+
 </navigation> 

@@ -1,19 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item
-        android:id="@+id/menu_notifications"
-        android:icon="@drawable/ic_notifications"
-        android:title="Notifications"/>
-    
-    <item
-        android:id="@+id/menu_reports"
-        android:icon="@drawable/ic_reports"
-        android:title="Reports"/>
-
-    <item
-        android:id="@+id/menu_profile"
-        android:icon="@drawable/ic_person"
-        android:title="Profile"/>
 
     <item
         android:id="@+id/menu_medications"
@@ -25,8 +11,23 @@
         android:icon="@drawable/ic_side_effect"
         android:title="Side Effects"/>
 
+    <item
+        android:id="@+id/menu_reports"
+        android:icon="@drawable/ic_reports"
+        android:title="Reports"/>
+
+    <item
+        android:id="@+id/menu_profile"
+        android:icon="@drawable/ic_person"
+        android:title="Profile"/>
+
     <item android:title="Other">
         <menu>
+
+            <item
+                android:id="@+id/menu_notifications"
+                android:icon="@drawable/ic_notifications"
+                android:title="Notifications"/>
             <item
                 android:id="@+id/menu_settings"
                 android:icon="@drawable/ic_settings"
