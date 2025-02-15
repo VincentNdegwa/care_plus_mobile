@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
@@ -26,7 +25,6 @@ class SideEffectsFragment : Fragment(), SideEffectFilterBottomSheetFragment.Filt
     private lateinit var adapter: SideEffectAdapter
     private var currentSideEffects = mutableListOf<SideEffect>()
     private val medicationList = mutableSetOf<SideEffectMedication>()
-    private lateinit var loadingIndicator: ProgressBar
     private lateinit var emptyStateText: TextView
     private var currentFilter: FetchSideEffectsRequest? = null
 
@@ -36,7 +34,6 @@ class SideEffectsFragment : Fragment(), SideEffectFilterBottomSheetFragment.Filt
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSideEffectsBinding.inflate(inflater, container, false)
-        loadingIndicator = binding.loadingIndicator
         emptyStateText = binding.emptyStateText
         return binding.root
     }
@@ -123,9 +120,15 @@ class SideEffectsFragment : Fragment(), SideEffectFilterBottomSheetFragment.Filt
     }
 
     private fun observeViewModel() {
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            if (isLoading) {
+                binding.loadingOverlay.show("Loading side effects...")
+            } else {
+                binding.loadingOverlay.hide()
+            }
+        }
+
         viewModel.sideEffects.observe(viewLifecycleOwner) { result ->
-            binding.loadingIndicator.visibility = View.GONE
-            
             result.onSuccess { response ->
                 currentSideEffects = response.data.toMutableList()
                 // Clear and update medications list
@@ -140,7 +143,6 @@ class SideEffectsFragment : Fragment(), SideEffectFilterBottomSheetFragment.Filt
                 showSnackbar(exception.message ?: "Failed to load side effects")
             }
         }
-
 
         viewModel.deleteResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { success ->
@@ -176,18 +178,16 @@ class SideEffectsFragment : Fragment(), SideEffectFilterBottomSheetFragment.Filt
     private var pendingDeleteSideEffect: SideEffect? = null
 
     private fun fetchSideEffects(searchQuery: String? = null) {
-        binding.loadingIndicator.visibility = View.VISIBLE
         val patientId = viewModel.getPatientId()
-        if (patientId != null){
-        viewModel.fetchSideEffects(
-            FetchSideEffectsRequest(
-                patient_id = patientId,
-                page_number = 1,
-                per_page = 20,
-                search = searchQuery
+        if (patientId != null) {
+            viewModel.fetchSideEffects(
+                FetchSideEffectsRequest(
+                    patient_id = patientId,
+                    page_number = 1,
+                    per_page = 20,
+                    search = searchQuery
+                )
             )
-        )
-
         }
     }
 

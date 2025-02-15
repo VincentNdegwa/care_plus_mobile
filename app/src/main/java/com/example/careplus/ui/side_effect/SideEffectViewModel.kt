@@ -56,6 +56,7 @@ class SideEffectViewModel(application: Application) : AndroidViewModel(applicati
 
         viewModelScope.launch {
             try {
+                _isLoading.value = true
                 sideEffectsPagination.isLoading = true
                 _paginationLoading.value = true
 
@@ -111,6 +112,7 @@ class SideEffectViewModel(application: Application) : AndroidViewModel(applicati
             } finally {
                 sideEffectsPagination.isLoading = false
                 _paginationLoading.value = false
+                _isLoading.value = false
             }
         }
     }
