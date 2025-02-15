@@ -31,6 +31,10 @@ import androidx.activity.viewModels
 import androidx.navigation.NavDestination
 import androidx.work.WorkManager
 import com.example.careplus.services.AlarmService
+import com.google.android.material.imageview.ShapeableImageView
+import android.widget.TextView
+import com.bumptech.glide.Glide
+import com.google.android.material.chip.Chip
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -171,6 +175,8 @@ class MainActivity : AppCompatActivity() {
 
         // Test FCM
         testFCM()
+
+        setupNavigationDrawer()
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -251,6 +257,31 @@ class MainActivity : AppCompatActivity() {
         if (intent?.action == "MEDICATION_NOTIFICATION") {
             // Stop the alarm service when the app is opened from notification
             stopService(Intent(this, AlarmService::class.java))
+        }
+    }
+
+    private fun setupNavigationDrawer() {
+        val navigationView = binding.navigationView
+        val headerView = navigationView.getHeaderView(0)
+        
+        val avatarImage = headerView.findViewById<ShapeableImageView>(R.id.avatarImage)
+        val nameText = headerView.findViewById<TextView>(R.id.nameText)
+        val emailText = headerView.findViewById<TextView>(R.id.emailText)
+        val roleChip = headerView.findViewById<Chip>(R.id.roleChip)
+
+        sessionManager.getUser()?.let { user ->
+            nameText.text = user.name
+            emailText.text = user.email
+            roleChip.text = user.role?.capitalize()
+            
+            user.avatar?.let { avatarUrl ->
+                Glide.with(this)
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.default_profile)
+                    .error(R.drawable.default_profile)
+                    .circleCrop()
+                    .into(avatarImage)
+            }
         }
     }
 

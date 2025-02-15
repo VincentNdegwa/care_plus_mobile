@@ -9,12 +9,7 @@
         android:id="@+id/menu_reports"
         android:icon="@drawable/ic_reports"
         android:title="Reports"/>
-    
-    <item
-        android:id="@+id/menu_settings"
-        android:icon="@drawable/ic_settings"
-        android:title="Settings"/>
-    
+
     <item
         android:id="@+id/menu_profile"
         android:icon="@drawable/ic_person"
@@ -32,6 +27,11 @@
 
     <item android:title="Other">
         <menu>
+            <item
+                android:id="@+id/menu_settings"
+                android:icon="@drawable/ic_settings"
+                android:title="Settings"/>
+
             <item
                 android:id="@+id/menu_logout"
                 android:icon="@drawable/ic_logout"

@@ -32,5 +32,6 @@ data class User(
     val email_verified_at: String?,
     val patient: Patient? = null,
     val caregiver: Caregiver? = null,
-    val doctor: Doctor? = null
+    val doctor: Doctor? = null,
+    val avatar: String? = null
 ) 
