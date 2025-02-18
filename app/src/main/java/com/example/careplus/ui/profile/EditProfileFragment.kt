@@ -171,7 +171,6 @@ class EditProfileFragment : Fragment() {
                 inputStream?.copyTo(outputStream)
             }
 
-            // Create request body
             val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
             val body = MultipartBody.Part.createFormData(
                 name = "file", // This must match Laravel's $request->file('file')
@@ -179,13 +178,11 @@ class EditProfileFragment : Fragment() {
                 body = requestFile
             )
 
-            // Upload and get result
             var uploadResult: Result<FileUploadResponse>? = null
             viewModel.uploadProfileImage(body).collect { result ->
                 uploadResult = result
             }
             
-            // Clean up temp file
             file.delete()
             
             uploadResult ?: Result.failure(Exception("Failed to upload image"))

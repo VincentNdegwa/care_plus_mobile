@@ -33,5 +33,5 @@ data class User(
     val patient: Patient? = null,
     val caregiver: Caregiver? = null,
     val doctor: Doctor? = null,
-    val avatar: String? = null
+    var avatar: String? = null
 ) 

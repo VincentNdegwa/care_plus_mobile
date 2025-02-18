@@ -11,6 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.example.careplus.R
+import com.example.careplus.data.SessionManager
 import com.example.careplus.databinding.FragmentProfileBinding
 import com.google.android.material.snackbar.Snackbar
 import com.example.careplus.data.model.profile.ProfileData
@@ -99,6 +100,14 @@ class ProfileFragment : Fragment() {
             dobText.text = profileData.profile.date_of_birth ?: "Not set"
             phoneText.text = profileData.profile.phone_number ?: "Not set"
             addressText.text = profileData.profile.address ?: "Not set"
+
+            var sessionManager = SessionManager(requireContext())
+            val user = sessionManager.getUser()
+            if (user != null) {
+                user.avatar = profileData.profile.avatar
+                sessionManager.saveUser(user)
+            }
+
         }
     }
 

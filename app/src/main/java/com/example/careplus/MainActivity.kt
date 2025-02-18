@@ -34,6 +34,7 @@ import com.example.careplus.services.AlarmService
 import com.google.android.material.imageview.ShapeableImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import com.example.careplus.ui.profile.ProfileViewModel
 import com.google.android.material.chip.Chip
 
 class MainActivity : AppCompatActivity() {
@@ -275,8 +276,9 @@ class MainActivity : AppCompatActivity() {
             nameText.text = user.name
             emailText.text = user.email
             roleChip.text = user.role?.capitalize()
-            
-            user.avatar?.let { avatarUrl ->
+
+            val imageUrl =  ProfileViewModel(this.application).getDisplayImageUrl(user.avatar)
+            imageUrl.let { avatarUrl->
                 Glide.with(this)
                     .load(avatarUrl)
                     .placeholder(R.drawable.default_profile)
