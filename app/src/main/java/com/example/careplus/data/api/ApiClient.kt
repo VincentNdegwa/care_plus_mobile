@@ -74,6 +74,12 @@ object ApiClient {
         }
         retrofit.create(SideEffectApi::class.java)
     }
+    val fileUploadApi: FileUploadApi by lazy {
+        if (!::retrofit.isInitialized) {
+            throw IllegalStateException("ApiClient must be initialized with create() before accessing fileUploadApi")
+        }
+        retrofit.create(FileUploadApi::class.java)
+    }
 
 }
 

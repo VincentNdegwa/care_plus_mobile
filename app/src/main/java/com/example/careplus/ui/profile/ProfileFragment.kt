@@ -31,11 +31,11 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         setupToolbar()
         setupObservers()
         setupListeners()
-        
+
         viewModel.fetchProfile()
     }
 
@@ -81,12 +81,17 @@ class ProfileFragment : Fragment() {
 
             // Load profile image
             profileData.profile.avatar?.let { avatarUrl ->
-                Glide.with(this@ProfileFragment)
-                    .load(avatarUrl)
-                    .placeholder(R.drawable.default_profile)
-                    .error(R.drawable.default_profile)
-                    .circleCrop()
-                    .into(profileImage)
+                if (!avatarUrl.isNullOrBlank() && avatarUrl != "null") {
+                    val imageUrl = viewModel.getDisplayImageUrl(avatarUrl)
+                    imageUrl?.let {
+                        Glide.with(this@ProfileFragment)
+                            .load(it)
+                            .placeholder(R.drawable.default_profile)
+                            .error(R.drawable.default_profile)
+                            .circleCrop()
+                            .into(profileImage)
+                    }
+                }
             }
 
             // Update profile details

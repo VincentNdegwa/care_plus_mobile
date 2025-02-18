@@ -1,23 +1,38 @@
 package com.example.careplus.ui.profile
 
+import android.Manifest
 import android.app.DatePickerDialog
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.example.careplus.R
+import com.example.careplus.data.api.FileUploadResponse
 import com.example.careplus.databinding.FragmentEditProfileBinding
 import com.example.careplus.utils.SnackbarUtils
 import com.example.careplus.data.model.profile.ProfileData
 import com.example.careplus.data.model.profile.ProfileUpdateRequest
 import com.example.careplus.data.model.profile.UserProfile
+import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 import java.util.Calendar
 
 class EditProfileFragment : Fragment() {
@@ -25,6 +40,21 @@ class EditProfileFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: ProfileViewModel by viewModels()
     private val args: EditProfileFragmentArgs by navArgs()
+
+    private var selectedImageUri: Uri? = null
+
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { selectedUri ->
+            selectedImageUri = selectedUri // Store the URI for later upload
+            // Show image preview
+            Glide.with(this)
+                .load(selectedUri)
+                .placeholder(R.drawable.default_profile)
+                .error(R.drawable.default_profile)
+                .circleCrop()
+                .into(binding.profileImage)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,7 +97,11 @@ class EditProfileFragment : Fragment() {
 
     private fun setupListeners() {
         binding.changeImageButton.setOnClickListener {
-            // Implement image picker
+            if (checkPermissions()) {
+                pickImage.launch("image/*")
+            } else {
+                requestPermissions()
+            }
         }
 
         binding.saveButton.setOnClickListener {
@@ -104,25 +138,92 @@ class EditProfileFragment : Fragment() {
 
             // Load profile image
             profileData.profile.avatar?.let { avatarUrl ->
-                Glide.with(this@EditProfileFragment)
-                    .load(avatarUrl)
-                    .placeholder(R.drawable.default_profile)
-                    .error(R.drawable.default_profile)
-                    .circleCrop()
-                    .into(profileImage)
+                if (!avatarUrl.isNullOrBlank() && avatarUrl != "null") {
+                    val imageUrl = viewModel.getDisplayImageUrl(avatarUrl)
+                    imageUrl?.let {
+                        Glide.with(this@EditProfileFragment)
+                            .load(it)
+                            .placeholder(R.drawable.default_profile)
+                            .error(R.drawable.default_profile)
+                            .circleCrop()
+                            .into(profileImage)
+                    }
+                }
             }
         }
     }
 
+    private suspend fun uploadImage(uri: Uri): Result<FileUploadResponse> {
+        return try {
+            val contentResolver = requireContext().contentResolver
+            
+            // Get file name from URI
+            val fileName = contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                cursor.moveToFirst()
+                cursor.getString(nameIndex)
+            } ?: "image.jpg"
+            
+            // Create temp file
+            val inputStream = contentResolver.openInputStream(uri)
+            val file = File(requireContext().cacheDir, fileName)
+            file.outputStream().use { outputStream ->
+                inputStream?.copyTo(outputStream)
+            }
+
+            // Create request body
+            val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData(
+                name = "file", // This must match Laravel's $request->file('file')
+                filename = fileName,
+                body = requestFile
+            )
+
+            // Upload and get result
+            var uploadResult: Result<FileUploadResponse>? = null
+            viewModel.uploadProfileImage(body).collect { result ->
+                uploadResult = result
+            }
+            
+            // Clean up temp file
+            file.delete()
+            
+            uploadResult ?: Result.failure(Exception("Failed to upload image"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     private fun saveProfile() {
-        val request = ProfileUpdateRequest(
-            gender = binding.genderInput.text?.toString(),
-            date_of_birth = binding.dobInput.text?.toString(),
-            phone_number = binding.phoneInput.text?.toString(),
-            address = binding.addressInput.text?.toString(),
-            avatar = null // Handle image upload separately
-        )
-        viewModel.updateProfile(request)
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                binding.loadingOverlay.show("Updating profile...")
+                
+                // If there's a selected image, upload it first
+                val avatarPath = if (selectedImageUri != null) {
+                    val uploadResult = uploadImage(selectedImageUri!!)
+                    uploadResult.getOrNull()?.data?.file_path
+                } else {
+                    null
+                }
+
+                // Create profile update request with the file path
+                val request = ProfileUpdateRequest(
+                    gender = binding.genderInput.text?.toString(),
+                    date_of_birth = binding.dobInput.text?.toString(),
+                    phone_number = binding.phoneInput.text?.toString(),
+                    address = binding.addressInput.text?.toString(),
+                    avatar = avatarPath
+                )
+                
+                viewModel.updateProfile(request)
+                
+            } catch (e: Exception) {
+                showSnackbar("Failed to update profile: ${e.message}")
+            } finally {
+                binding.loadingOverlay.hide()
+            }
+        }
     }
 
     private fun showDatePicker() {
@@ -145,6 +246,38 @@ class EditProfileFragment : Fragment() {
             message = message,
             isError = isError
         )
+    }
+
+    private fun checkPermissions(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.READ_MEDIA_IMAGES
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun requestPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(
+                arrayOf(Manifest.permission.READ_MEDIA_IMAGES),
+                PERMISSION_REQUEST_CODE
+            )
+        } else {
+            requestPermissions(
+                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                PERMISSION_REQUEST_CODE
+            )
+        }
+    }
+
+    companion object {
+        private const val PERMISSION_REQUEST_CODE = 123
     }
 
     override fun onDestroyView() {
