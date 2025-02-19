@@ -134,12 +134,19 @@ class MedicationDetailFragment : Fragment() {
     private fun updateMenuItems() {
         val menu = binding.toolbar.menu
         val isMedicationActive = updatedMedicationDetails.active == 1
+        val medicationStatus = updatedMedicationDetails.status
         
         // Show/hide menu items based on conditions
 //        menu.findItem(R.id.action_take_medication)?.isVisible = isMedicationActive
 //        menu.findItem(R.id.action_snooze_medication)?.isVisible = isMedicationActive
         menu.findItem(R.id.action_stop_medication)?.isVisible = isMedicationActive
-        menu.findItem(R.id.action_resume_medication)?.isVisible = !isMedicationActive
+        medicationStatus.let { status->
+            if (status == "Expired"){
+                menu.findItem(R.id.action_restart_expired_schedule).isVisible = true
+            }else if(status == "Stopped"){
+                menu.findItem(R.id.action_resume_medication)?.isVisible = true
+            }
+        }
     }
 
     private fun showTakeMedicationDialog() {

@@ -29,6 +29,13 @@
         android:icon="@drawable/ic_play"
         app:showAsAction="never"
         android:visible="false"/>
+    <item
+        android:id="@+id/action_restart_expired_schedule"
+        android:title="Restart Expired Schedule"
+        android:icon="@drawable/ic_play"
+        app:showAsAction="never"
+        android:visible="false"
+        />
 
     <item
         android:id="@+id/action_register_side_effect"
