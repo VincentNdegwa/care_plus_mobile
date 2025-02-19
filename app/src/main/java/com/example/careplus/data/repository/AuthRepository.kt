@@ -78,7 +78,8 @@ class AuthRepository(private val sessionManager: SessionManager) {
                         email_verified_at = profile.email_verified_at,
                         patient = profile.patient,
                         caregiver = profile.caregiver,
-                        doctor = profile.doctor
+                        doctor = profile.doctor,
+                        avatar = profile.profile.avatar
                     ))
                     Result.success(profile)
                 } else {
