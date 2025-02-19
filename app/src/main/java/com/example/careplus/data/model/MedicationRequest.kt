@@ -18,3 +18,27 @@ data class CreateMedicationRequest(
     val route_id: Int?,
     val stock: Int?
 )
+
+data class TakeNowRequest(
+    val medication_id: Int,
+    val date_time:String
+)
+
+data class TakeNowResponse(
+    val error: Boolean,
+    val message: String,
+    val data: TakeNowData
+)
+
+data class TakeNowData(
+    val id: Int,
+    val medication_id: Int,
+    val patient_id: Int,
+    val dose_time: String,
+    val processed_at: String?,
+    val status: String,
+    val taken_at: String?,
+    val second_notification_sent: Int,
+    val created_at: String,
+    val updated_at: String
+)

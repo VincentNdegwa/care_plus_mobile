@@ -371,4 +371,35 @@ class MedicationRepository(private val sessionManager: SessionManager) {
             Result.failure(e)
         }
     }
+
+    suspend fun takeNow(request: TakeNowRequest): Result<TakeNowResponse> {
+        return try {
+            val response = ApiClient.medicationApi.takeNow(request)
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                if (!body.error) {
+                    Result.success(body)
+                } else {
+                    Result.failure(Exception(body.message))
+                }
+            } else if (response.code() == 401) {
+                sessionManager.clearSession()
+                Result.failure(Exception("Please login again"))
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+                Result.failure(Exception(errorResponse?.message ?: "Failed to take medication"))
+            }
+        } catch (e: HttpException) {
+            Log.e("MedicationRepository", "HTTP Error taking medication", e)
+            Result.failure(Exception(when (e.code()) {
+                404 -> "Medication not found"
+                401 -> "Please login again"
+                else -> "Network error: ${e.message()}"
+            }))
+        } catch (e: Exception) {
+            Log.e("MedicationRepository", "Error taking medication", e)
+            Result.failure(e)
+        }
+    }
 } 

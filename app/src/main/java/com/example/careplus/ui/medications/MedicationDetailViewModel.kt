@@ -10,6 +10,8 @@ import com.example.careplus.data.model.*
 import com.example.careplus.data.repository.MedicationRepository
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 class MedicationDetailViewModel(application: Application) : AndroidViewModel(application) {
     private val sessionManager = SessionManager(application)
@@ -32,6 +34,9 @@ class MedicationDetailViewModel(application: Application) : AndroidViewModel(app
 
     private val _deleteMedicationResult = MutableLiveData<Result<DeleteResponse>?>()
     val deleteMedicationResult: LiveData<Result<DeleteResponse>?> = _deleteMedicationResult
+
+    private val _takeNowResult = MutableLiveData<Result<TakeNowResponse>>()
+    val takeNowResult : LiveData<Result<TakeNowResponse>> = _takeNowResult
 
     fun fetchMedicationDetails(medicationId: Long) {
         viewModelScope.launch {
@@ -109,6 +114,25 @@ class MedicationDetailViewModel(application: Application) : AndroidViewModel(app
                 }
             } catch (e: Exception) {
                 _deleteMedicationResult.value = Result.failure(e)
+            }
+        }
+    }
+
+    fun takeNow(medicationId: Int) {
+        viewModelScope.launch {
+            try {
+                // Get current UTC datetime formatted as string
+                val currentUtcDateTime = LocalDateTime.now(ZoneOffset.UTC)
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+
+                val request = TakeNowRequest(
+                    medication_id = medicationId,
+                    date_time = currentUtcDateTime
+                )
+                val result = repository.takeNow(request)
+                _takeNowResult.value = result
+            } catch (e: Exception) {
+                _takeNowResult.value = Result.failure(e)
             }
         }
     }

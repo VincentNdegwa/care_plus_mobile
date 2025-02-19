@@ -26,6 +26,8 @@ import com.example.careplus.data.model.SnoozeMedicationRequest
 import com.example.careplus.data.model.SnoozeMedicationResponse
 import com.example.careplus.data.model.ResumeMedicationRequest
 import com.example.careplus.data.model.ResumeMedicationResponse
+import com.example.careplus.data.model.TakeNowRequest
+import com.example.careplus.data.model.TakeNowResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -81,6 +83,9 @@ interface MedicationApi {
 
     @POST("medications/schedule/resume")
     suspend fun resumeMedication(@Body request: ResumeMedicationRequest): Response<ResumeMedicationResponse>
+
+    @POST("medications/schedule/takeNow")
+    suspend fun takeNow(@Body request: TakeNowRequest): Response<TakeNowResponse>
 
     @DELETE("medications/delete/{medicationId}")
     suspend fun deleteMedication(@Path("medicationId") medicationId: Int): Response<DeleteResponse>

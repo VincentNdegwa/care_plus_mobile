@@ -126,9 +126,42 @@ class MedicationDetailFragment : Fragment() {
                     navigateToSideEffectForm()
                     true
                 }
+                R.id.action_restart_expired_schedule->{
+                    showRestartDialog()
+                    true
+                }
                 else -> false
             }
         }
+    }
+
+    private fun showRestartDialog() {
+        MedicationScheduleDialog(
+            context = requireContext(),
+            medicationDetails = updatedMedicationDetails,
+            viewModel = MedicationScheduleViewModel(requireActivity().application),
+            lifecycleOwner = viewLifecycleOwner,
+            onError = { message ->
+                showSnackbar(message)
+            },
+            onScheduleCreated = { shouldTakeNow ->
+                if (shouldTakeNow) {
+                    viewModel.takeNow(updatedMedicationDetails.id.toInt())
+                } else {
+                    showSnackbar("Schedule created successfully", false)
+                }
+                true
+            }
+        ).show()
+    }
+
+
+    private fun showSnackbar(message: String, isError: Boolean = true) {
+        SnackbarUtils.showSnackbar(
+            view = binding.root,
+            message = message,
+            isError = isError
+        )
     }
 
     private fun updateMenuItems() {
@@ -228,11 +261,10 @@ class MedicationDetailFragment : Fragment() {
         }
 
         viewModel.takeMedicationResult.observe(viewLifecycleOwner) { result ->
-            result?.onSuccess { response ->
-                SnackbarUtils.showSnackbar(binding.root, response.message, false)
-                viewModel.fetchMedicationDetails(updatedMedicationDetails.id)
+            result?.onSuccess {
+                showSnackbar("Medication marked as taken", false)
             }?.onFailure { exception ->
-                SnackbarUtils.showSnackbar(binding.root, exception.message ?: "Failed to take medication")
+                showSnackbar(exception.message ?: "Failed to mark medication as taken")
             }
         }
         viewModel.deleteMedicationResult.observe(viewLifecycleOwner){ result->
@@ -278,7 +310,19 @@ class MedicationDetailFragment : Fragment() {
             }
         }
 
-        // Add similar observers for stop, snooze, and resume results
+        viewModel.takeNowResult.observe(viewLifecycleOwner){result->
+            result?.onSuccess { res->
+                if (res.error){
+                    SnackbarUtils.showSnackbar(binding.root, res.message)
+                }else{
+                    SnackbarUtils.showSnackbar(binding.root, res.message, false)
+                }
+
+            }?.onFailure { exception ->
+                SnackbarUtils.showSnackbar(binding.root, exception.message.toString())
+            }
+        }
+
     }
     private fun showSchedule(){
         MedicationScheduleDialog(
@@ -289,14 +333,13 @@ class MedicationDetailFragment : Fragment() {
             onError = { errorMessage ->
                 SnackbarUtils.showSnackbar(binding.root, errorMessage)
             },
-            onScheduleCreated = { success ->
-                if (success) {
-                    SnackbarUtils.showSnackbar(
-                        binding.root,
-                        "Schedule created successfully",
-                        false
-                    )
+            onScheduleCreated = { shouldTakeNow ->
+                if (shouldTakeNow) {
+                    viewModel.takeNow(updatedMedicationDetails.id.toInt())
+                } else {
+                    showSnackbar("Schedule created successfully", false)
                 }
+                true
             }
         ).show()
     }
@@ -309,6 +352,17 @@ class MedicationDetailFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.medication_detail_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_restart_expired_schedule -> {
+                showRestartDialog()
+                true
+            }
+            // ... other menu items ...
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
 } 
