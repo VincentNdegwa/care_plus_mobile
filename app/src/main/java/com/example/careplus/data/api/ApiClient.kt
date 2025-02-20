@@ -81,5 +81,12 @@ object ApiClient {
         retrofit.create(FileUploadApi::class.java)
     }
 
+    val diagnosisApi: DiagnosisApi by lazy {
+        if (!::retrofit.isInitialized) {
+            throw IllegalStateException("ApiClient must be initialized with create() before accessing diagnosisApi")
+        }
+        retrofit.create(DiagnosisApi::class.java)
+    }
+
 }
 

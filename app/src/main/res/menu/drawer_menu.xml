@@ -21,6 +21,16 @@
         android:icon="@drawable/ic_person"
         android:title="Profile"/>
 
+    <item
+        android:id="@+id/menu_diagnoses"
+        android:icon="@drawable/ic_diagnosis"
+        android:title="Diagnoses"/>
+
+    <item
+        android:id="@+id/menu_caregivers"
+        android:icon="@drawable/ic_caregivers"
+        android:title="Caregivers"/>
+
     <item android:title="Other">
         <menu>
 

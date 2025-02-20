@@ -132,6 +132,16 @@ class MainActivity : AppCompatActivity() {
                     binding.drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
+                R.id.menu_diagnoses -> {
+                    findNavController(R.id.nav_host_fragment).navigate(R.id.diagnosesFragment)
+                    binding.drawerLayout.closeDrawers()
+                    true
+                }
+                R.id.menu_caregivers -> {
+                    findNavController(R.id.nav_host_fragment).navigate(R.id.caregiversFragment)
+                    binding.drawerLayout.closeDrawers()
+                    true
+                }
                 R.id.menu_logout -> {
                     sessionManager.clearSession()
                     navController.navigate(R.id.loginFragment)

@@ -186,4 +186,14 @@
             app:argType="com.example.careplus.data.model.profile.ProfileData"/>
     </fragment>
 
+    <fragment
+        android:id="@+id/diagnosesFragment"
+        android:name="com.example.careplus.ui.diagnosis.DiagnosesFragment"
+        android:label="Diagnoses"
+        tools:layout="@layout/fragment_diagnoses">
+
+    </fragment>
+
+
+
 </navigation> 
