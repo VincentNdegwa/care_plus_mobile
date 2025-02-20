@@ -90,6 +90,25 @@ class MedicationDetailFragment : Fragment() {
             } ?: run {
                 diagnosisContainer.visibility = View.GONE
             }
+
+            // Set status chip color and text based on status
+            statusChip.apply {
+                text = medication.status
+                setChipBackgroundColorResource(when(medication.status.lowercase()) {
+                    "running" -> R.color.success
+                    "stopped" -> R.color.warning
+                    "expired" -> R.color.error
+                    else -> R.color.primary
+                })
+            }
+
+            // Update menu visibility based on status
+            binding.toolbar.menu?.apply {
+//                findItem(R.id.action_take_medication)?.isVisible = medication.status.equals("running", ignoreCase = true)
+                findItem(R.id.action_stop_medication)?.isVisible = medication.status.equals("running", ignoreCase = true)
+                findItem(R.id.action_resume_medication)?.isVisible = medication.status.equals("stopped", ignoreCase = true)
+                findItem(R.id.action_restart_expired_schedule)?.isVisible = medication.status.equals("expired", ignoreCase = true)
+            }
         }
     }
 
@@ -287,6 +306,9 @@ class MedicationDetailFragment : Fragment() {
                 if (res.error){
                     SnackbarUtils.showSnackbar(binding.root, res.message)
                 }else{
+                    var updated = updatedMedicationDetails
+                    updated.status = "Stopped"
+                    displayMedicationDetails(updated)
                     SnackbarUtils.showSnackbar(binding.root, res.message, false)
                 }
 
@@ -299,6 +321,9 @@ class MedicationDetailFragment : Fragment() {
                 if (res.error) {
                     SnackbarUtils.showSnackbar(binding.root, res.message)
                 } else {
+                    var updated = updatedMedicationDetails
+                    updated.status = "Running"
+                    displayMedicationDetails(updated)
                     SnackbarUtils.showSnackbar(binding.root, res.message, false)
                 }
             }?.onFailure { exception ->
