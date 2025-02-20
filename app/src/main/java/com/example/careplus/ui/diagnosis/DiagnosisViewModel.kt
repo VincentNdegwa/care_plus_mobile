@@ -1,6 +1,7 @@
 package com.example.careplus.ui.diagnosis
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -29,62 +30,41 @@ class DiagnosisViewModel(application: Application) : AndroidViewModel(applicatio
     fun getCurrentFilter() = currentFilter
 
     fun loadDiagnoses(patientId: Int, refresh: Boolean = false) {
+        Log.d("DiagnoseViewModel", "In the model fetching data for $patientId")
         if (refresh) {
             currentPage = 1
             isLastPage = false
         }
 
         if (isLastPage) return
-        
-        viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                val result = repository.getPatientDiagnoses(
-                    patientId = patientId,
-                    pageNumber = currentPage,
-                    perPage = 10
-                )
-
-                result.onSuccess { response ->
-                    currentPage = response.pagination.current_page ?: 1
-                    totalPages = response.pagination.total_pages ?: 1
-                    isLastPage = currentPage >= totalPages
-                }
-
-                _diagnoses.value = result
-            } catch (e: Exception) {
-                _diagnoses.value = Result.failure(e)
-            } finally {
-                _isLoading.value = false
-            }
-        }
+        listMyDiagnoses(patientId)
     }
     
-    fun searchDiagnoses(type: String, query: String) {
+    fun searchDiagnoses(query: String) {
+        _isLoading.postValue(true)
         viewModelScope.launch {
-            _isLoading.value = true
             try {
-                val result = repository.searchDiagnoses(type, query)
+                val result = repository.searchDiagnoses(query)
                 _diagnoses.value = result
             } catch (e: Exception) {
                 _diagnoses.value = Result.failure(e)
             } finally {
-                _isLoading.value = false
+                _isLoading.postValue(false)
             }
         }
     }
     
     fun filterDiagnoses(request: DiagnosisFilterRequest) {
         currentFilter = request
+        _isLoading.postValue(true)
         viewModelScope.launch {
-            _isLoading.value = true
             try {
                 val result = repository.filterDiagnoses(request)
                 _diagnoses.value = result
             } catch (e: Exception) {
                 _diagnoses.value = Result.failure(e)
             } finally {
-                _isLoading.value = false
+                _isLoading.postValue(false)
             }
         }
     }
@@ -93,6 +73,38 @@ class DiagnosisViewModel(application: Application) : AndroidViewModel(applicatio
         if (!isLastPage) {
             _diagnoses.value?.getOrNull()?.data?.firstOrNull()?.patient?.id?.let { patientId ->
                 loadDiagnoses(patientId, false)
+            }
+        }
+    }
+    fun listMyDiagnoses(patientId: Int){
+        _isLoading.postValue(true)
+        viewModelScope.launch {
+            try {
+                Log.d("DiagnoseViewModel", "Making API call")
+                val result = repository.getPatientDiagnoses(
+                    patientId = patientId,
+                    pageNumber = currentPage,
+                    perPage = 10
+                )
+
+                Log.d("DiagnoseViewModel", "API call completed")
+
+                result.onSuccess { response ->
+                    Log.d("DiagnoseViewModel", "Success: ${response.data.size} items")
+                    currentPage = response.pagination.current_page ?: 1
+                    totalPages = response.pagination.total_pages ?: 1
+                    isLastPage = currentPage >= totalPages
+                }.onFailure {
+                    Log.e("DiagnoseViewModel", "Error: ${it.message}")
+                }
+
+                _diagnoses.value = result
+            } catch (e: Exception) {
+                Log.e("DiagnoseViewModel", "Exception: ${e.message}")
+                _diagnoses.value = Result.failure(e)
+            } finally {
+                _isLoading.postValue(false)
+                Log.d("DiagnoseViewModel", "Setting final loading state to false")
             }
         }
     }

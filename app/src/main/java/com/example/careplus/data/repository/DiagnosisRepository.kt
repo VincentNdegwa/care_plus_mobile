@@ -37,13 +37,12 @@ class DiagnosisRepository(private val sessionManager: SessionManager) {
     }
 
     suspend fun searchDiagnoses(
-        type: String,
         query: String,
         perPage: Int? = null,
         pageNumber: Int? = null
     ): Result<DiagnosisResponse> {
         return try {
-            val response = ApiClient.diagnosisApi.searchDiagnoses(type, query, perPage, pageNumber)
+            val response = ApiClient.diagnosisApi.searchDiagnoses(query, perPage, pageNumber)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else if (response.code() == 401) {

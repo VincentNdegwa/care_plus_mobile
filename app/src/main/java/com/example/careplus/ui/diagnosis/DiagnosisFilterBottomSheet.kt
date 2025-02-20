@@ -2,6 +2,7 @@ package com.example.careplus.ui.diagnosis
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,10 +16,12 @@ import com.example.careplus.data.model.diagnosis.DiagnosisFilterRequest
 import com.example.careplus.databinding.BottomSheetDiagnosisFilterBinding
 import com.example.careplus.ui.medications.MedicationFilterBottomSheet.FilterListener
 import com.example.careplus.utils.BottomSheetUtils
+import com.example.careplus.utils.SnackbarUtils
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.ZoneId
 
 class DiagnosisFilterBottomSheet() : BottomSheetDialogFragment() {
     private var _binding: BottomSheetDiagnosisFilterBinding? = null
@@ -80,10 +83,25 @@ class DiagnosisFilterBottomSheet() : BottomSheetDialogFragment() {
             }
 
             dateFromInput.setOnClickListener {
+                if (dateTo != null && dateFrom == null) {
+                    // If end date is set but not start date, show message
+                    SnackbarUtils.showSnackbar(
+                        binding.root,
+                        "Please select a start date"
+                    )
+                }
                 showDatePicker(isDateFrom = true)
             }
 
             dateToInput.setOnClickListener {
+                if (dateFrom == null) {
+                    // If trying to set end date without start date
+                    SnackbarUtils.showSnackbar(
+                        binding.root,
+                        "Select start date first"
+                    )
+                    return@setOnClickListener
+                }
                 showDatePicker(isDateFrom = false)
             }
 
@@ -94,6 +112,11 @@ class DiagnosisFilterBottomSheet() : BottomSheetDialogFragment() {
     }
 
     private fun showDatePicker(isDateFrom: Boolean) {
+        if (!isDateFrom && dateFrom == null) {
+            // Don't show end date picker if start date isn't set
+            return
+        }
+
         val today = LocalDate.now()
         val initialDate = if (isDateFrom) dateFrom else dateTo ?: today
         
@@ -102,18 +125,21 @@ class DiagnosisFilterBottomSheet() : BottomSheetDialogFragment() {
             { _, year, month, day ->
                 val selectedDate = LocalDate.of(year, month + 1, day)
                 if (isDateFrom) {
-                    if (dateTo != null && selectedDate.isAfter(dateTo)) {
-                        // If selected date is after dateTo, update dateTo
-                        dateTo = selectedDate
-                        binding.dateToInput.setText(selectedDate.format(dateFormatter))
-                    }
                     dateFrom = selectedDate
                     binding.dateFromInput.setText(selectedDate.format(dateFormatter))
+                    
+                    // Clear end date if it's before new start date
+                    if (dateTo != null && dateTo!!.isBefore(selectedDate)) {
+                        dateTo = null
+                        binding.dateToInput.text?.clear()
+                    }
                 } else {
-                    if (dateFrom != null && selectedDate.isBefore(dateFrom)) {
-                        // If selected date is before dateFrom, update dateFrom
-                        dateFrom = selectedDate
-                        binding.dateFromInput.setText(selectedDate.format(dateFormatter))
+                    if (selectedDate.isBefore(dateFrom)) {
+                        SnackbarUtils.showSnackbar(
+                            binding.root,
+                            "End date must be after start date"
+                        )
+                        return@DatePickerDialog
                     }
                     dateTo = selectedDate
                     binding.dateToInput.setText(selectedDate.format(dateFormatter))
@@ -122,7 +148,11 @@ class DiagnosisFilterBottomSheet() : BottomSheetDialogFragment() {
             initialDate?.year ?: today.year,
             (initialDate?.monthValue ?: today.monthValue) - 1,
             initialDate?.dayOfMonth ?: today.dayOfMonth
-        ).show()
+        ).apply {
+            if (!isDateFrom && dateFrom != null) {
+                datePicker.minDate = dateFrom!!.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            }
+        }.show()
     }
 
     private fun clearFilters() {
@@ -138,10 +168,21 @@ class DiagnosisFilterBottomSheet() : BottomSheetDialogFragment() {
         currentFilter = null
         
         filterListener?.onFiltersApplied(null)
+        Log.d(TAG, "Starting to clear..")
         dismiss()
     }
 
     private fun applyFilters() {
+        // Validate dates
+        if ((dateFrom == null && dateTo != null)) {
+            binding.dateFromLayout.error = "Start date required"
+            return
+        }
+        if ((dateFrom != null && dateTo == null)) {
+            binding.dateToLayout.error = "End date required"
+            return
+        }
+
         val request = DiagnosisFilterRequest(
             diagnosis_name = binding.diagnosisNameInput.text?.toString()?.takeIf { it.isNotEmpty() },
             date_from = dateFrom?.format(apiDateFormatter),

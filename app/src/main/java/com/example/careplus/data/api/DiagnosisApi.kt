@@ -13,9 +13,8 @@ interface DiagnosisApi {
         @Query("page_number") pageNumber: Int? = null
     ): Response<DiagnosisResponse>
 
-    @GET("diagnosis/search/{type}")
+    @GET("diagnosis/search")
     suspend fun searchDiagnoses(
-        @Path("type") type: String, // "doctor" or "patient"
         @Query("search") query: String,
         @Query("per_page") perPage: Int? = null,
         @Query("page_number") pageNumber: Int? = null

@@ -1,6 +1,7 @@
 package com.example.careplus.ui.diagnosis
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -66,10 +67,10 @@ class DiagnosesFragment : Fragment(), DiagnosisFilterBottomSheet.FilterListener 
                 searchEditText.doOnTextChanged { text, _, _, _ ->
                     searchJob?.cancel()
                     searchJob = MainScope().launch {
-                        delay(500)
+                        delay(100)
                         text?.toString()?.let { query ->
                             if (query.isNotEmpty()) {
-                                viewModel.searchDiagnoses("patient", query)
+                                viewModel.searchDiagnoses(query)
                             } else {
                                 loadData(true)
                             }
@@ -83,25 +84,27 @@ class DiagnosesFragment : Fragment(), DiagnosisFilterBottomSheet.FilterListener 
             }
             
             emptyStateLayout.apply {
-                emptyStateImage.setImageResource(R.drawable.ic_empty_diagnoses)
                 emptyStateTitle.text = "No Diagnoses Found"
-                emptyStateDescription.text = "There are no diagnoses to display at the moment"
             }
         }
     }
 
     private fun setupObservers() {
         viewModel.diagnoses.observe(viewLifecycleOwner) { result ->
+            Log.d("DiagnosesFragment", "Received diagnoses update")
             result.onSuccess { response ->
+                Log.d("DiagnosesFragment", "Success: ${response.data.size} items")
                 diagnosisAdapter.submitList(response.data)
                 updateEmptyState(response.data.isEmpty())
             }.onFailure { exception ->
+                Log.e("DiagnosesFragment", "Error: ${exception.message}")
                 SnackbarUtils.showSnackbar(binding.root, exception.message ?: "An error occurred")
                 updateEmptyState(true)
             }
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            Log.d("DiagnosesFragment", "Loading state changed to: $isLoading")
             binding.loadingOverlay.loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
     }
@@ -114,8 +117,13 @@ class DiagnosesFragment : Fragment(), DiagnosisFilterBottomSheet.FilterListener 
     }
 
     private fun loadData(refresh: Boolean = false) {
+        Log.d("DiagnosesFragment", "loadData called with refresh: $refresh")
         sessionManager.getUser()?.patient?.id?.let { patientId ->
+            Log.d("DiagnosesFragment", "Loading data for patient: $patientId")
             viewModel.loadDiagnoses(patientId, refresh)
+        } ?: run {
+            Log.e("DiagnosesFragment", "No patient ID found")
+            SnackbarUtils.showSnackbar(binding.root, "Unable to load data: No patient ID")
         }
     }
 
@@ -144,12 +152,17 @@ class DiagnosesFragment : Fragment(), DiagnosisFilterBottomSheet.FilterListener 
     }
 
     override fun onFiltersApplied(filter: DiagnosisFilterRequest?) {
-        if (filter == null){
-            loadData()
-        }else{
-            viewModel.filterDiagnoses(filter)
-        }
         currentFilter = filter
         updateFilterIndicator()
+        if (filter == null) {
+            sessionManager.getUser()?.patient?.id.let {
+                if (it != null) {
+                    viewModel.listMyDiagnoses(it)
+                    Log.d("Diagnoses Fragment", "Loading.. list mine with ${it}")
+                }
+            }
+        } else {
+            viewModel.filterDiagnoses(filter)
+        }
     }
 } 
