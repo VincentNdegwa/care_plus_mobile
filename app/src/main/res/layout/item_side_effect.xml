@@ -1,104 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="4dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
     app:cardBackgroundColor="?android:colorBackgroundFloating">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Severity Indicator -->
-        <View
-            android:id="@+id/severityIndicator"
-            android:layout_width="4dp"
-            android:layout_height="0dp"
-            android:background="@color/primary"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
-
-        <!-- Content Container -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintStart_toEndOf="@id/severityIndicator"
-            app:layout_constraintEnd_toStartOf="@id/menuButton"
-            app:layout_constraintTop_toTopOf="parent">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/sideEffectName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceSubtitle1"
-                android:textStyle="bold"
-                tools:text="Headache"/>
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/severityText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textSize="12sp"
-                app:chipMinHeight="24dp"
-                tools:text="Severity: Mild"/>
+            <View
+                android:id="@+id/severityIndicator"
+                android:layout_width="4dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="12dp"/>
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="8dp">
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_gravity="center_vertical"
-                    android:src="@drawable/ic_calendar"
-                    app:tint="?android:textColorSecondary"/>
+                <TextView
+                    android:id="@+id/sideEffectName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/severityText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"/>
 
                 <TextView
                     android:id="@+id/dateTimeText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:textAppearance="?attr/textAppearanceCaption"
-                    android:textColor="?android:textColorSecondary"
-                    tools:text="Feb 13, 2025 15:42"/>
+                    android:layout_marginTop="4dp"
+                    android:textSize="14sp"/>
+
+                <TextView
+                    android:id="@+id/notesText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textSize="14sp"/>
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/notesText"
-                android:layout_width="match_parent"
+            <ImageButton
+                android:id="@+id/menuButton"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textAppearance="?attr/textAppearanceBody2"
-                android:maxLines="2"
-                android:ellipsize="end"
-                tools:text="Patient reported severe headache with sensitivity to light"/>
+                android:src="@drawable/ic_more"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="8dp"/>
         </LinearLayout>
-
-        <!-- View Button -->
-        <ImageView
-            android:id="@+id/menuButton"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:padding="2dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_more"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="?android:textColorSecondary"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</com.google.android.material.card.MaterialCardView> 
+    </LinearLayout>
+</androidx.cardview.widget.CardView> 
