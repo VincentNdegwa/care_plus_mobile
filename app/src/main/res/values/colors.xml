@@ -38,4 +38,8 @@
     <!-- Status colors -->
     <color name="success_light">#1A4CAF50</color>  <!-- 10% opacity -->
     <color name="error_light">#1AF44336</color>    <!-- 10% opacity -->
+
+    <color name="chart_background_color">#F0F0F0</color> <!-- Light gray color -->
+    <color name="primary_text_color">#333333</color> <!-- Dark gray for text -->
+    <color name="background_color">#FFFFFF</color> <!-- White background -->
 </resources>

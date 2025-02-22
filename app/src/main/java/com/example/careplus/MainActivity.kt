@@ -36,6 +36,7 @@ import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.example.careplus.ui.profile.ProfileViewModel
 import com.google.android.material.chip.Chip
+import com.example.careplus.ui.report.ReportFragment
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -112,7 +113,10 @@ class MainActivity : AppCompatActivity() {
                     // Handle notifications
                 }
                 R.id.menu_reports -> {
-                    // Handle reports
+                    // Navigate to ReportFragment
+                    findNavController(R.id.nav_host_fragment).navigate(R.id.reportFragment)
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                    true
                 }
                 R.id.menu_settings -> {
                     // Handle settings

@@ -194,6 +194,10 @@
 
     </fragment>
 
-
+    <fragment
+        android:id="@+id/reportFragment"
+        android:name="com.example.careplus.ui.report.ReportFragment"
+        android:label="Report"
+        tools:layout="@layout/fragment_report" />
 
 </navigation> 

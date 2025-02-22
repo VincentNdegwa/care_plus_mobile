@@ -88,5 +88,12 @@ object ApiClient {
         retrofit.create(DiagnosisApi::class.java)
     }
 
+    val reportApi: ReportApi by lazy {
+        if (!::retrofit.isInitialized) {
+            throw IllegalStateException("ApiClient must be initialized with create() before accessing reportApi")
+        }
+        retrofit.create(ReportApi::class.java)
+    }
+
 }
 
