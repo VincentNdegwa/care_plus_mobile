@@ -8,19 +8,19 @@ import androidx.fragment.app.Fragment
 import com.example.careplus.data.SessionManager
 import com.example.careplus.databinding.FragmentReportBinding
 import com.example.careplus.utils.SnackbarUtils
-import android.util.Log
-import android.widget.TextView
-import androidx.cardview.widget.CardView
-import com.example.careplus.data.model.report.MedicationVsSideEffectCountsRequest
-import com.example.careplus.data.model.report.MedicationSideEffectCount
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.careplus.R
 import com.example.careplus.data.model.report.MedicalAdherenceReportRequest
 import com.example.careplus.data.model.report.MedicalAdherenceReportResponse
-import com.example.careplus.data.model.report.MedicationAdherence
-import com.example.careplus.data.model.report.MedicationAdherenceByMedicationRequest
+
 import com.example.careplus.data.model.report.MissedMedication
 import com.example.careplus.data.model.report.MostMissedMedicationsRequest
 import com.example.careplus.data.model.report.TopSideEffect
 import com.example.careplus.data.model.report.TopSideEffectsRequest
+import lecho.lib.hellocharts.model.SliceValue
+import lecho.lib.hellocharts.view.PieChartView
+import lecho.lib.hellocharts.model.PieChartData
+import android.util.TypedValue
 
 class ReportFragment : Fragment() {
     private var _binding: FragmentReportBinding? = null
@@ -105,16 +105,35 @@ class ReportFragment : Fragment() {
     private fun displayTopSideEffects(data: List<TopSideEffect>) {
         val adapter = SideEffectAdapter(data)
         binding.topSideEffectsRecyclerView.adapter = adapter
+        binding.topSideEffectsRecyclerView.layoutManager = LinearLayoutManager(context)
     }
 
     private fun displayMostMissedMedications(data: List<MissedMedication>) {
         val adapter = MissedMedicationAdapter(data)
         binding.missedMedicationsRecyclerView.adapter = adapter
+        binding.missedMedicationsRecyclerView.layoutManager = LinearLayoutManager(context)
     }
 
     private fun displayAdherenceData(data: MedicalAdherenceReportResponse) {
         val adherencePercentage = data.data.adherence_percentage
-        binding.adherenceTextView.text = "$adherencePercentage%"
+        val nonAdherencePercentage = 100 - adherencePercentage
+
+        val values = mutableListOf<SliceValue>()
+        values.add(SliceValue(adherencePercentage.toFloat(), resources.getColor(R.color.success)).setLabel("${adherencePercentage}%"))
+        values.add(SliceValue(nonAdherencePercentage.toFloat(), resources.getColor(R.color.error)).setLabel("${nonAdherencePercentage}%"))
+
+        val pieChartData = PieChartData(values)
+        pieChartData.apply {
+            setHasLabels(false)
+            setHasCenterCircle(true)
+            centerCircleScale = 0.8f
+
+            val typedValue = TypedValue()
+            requireContext().theme.resolveAttribute(android.R.attr.colorBackgroundFloating, typedValue, true)
+            centerCircleColor = typedValue.data
+        }
+
+        binding.adherenceChart.pieChartData = pieChartData
     }
 
     private fun showError(message: String, isError: Boolean = true) {

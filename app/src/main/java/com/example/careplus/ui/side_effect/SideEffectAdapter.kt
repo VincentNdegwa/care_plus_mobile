@@ -67,10 +67,10 @@ class SideEffectAdapter(
                     "severe" -> R.color.error
                     else -> R.color.primary
                 })
-                
+
                 dateTimeText.text = formatDateTime(sideEffect.datetime)
                 notesText.text = sideEffect.notes ?: "No notes"
-                
+
                 menuButton.setOnClickListener { view ->
                     showPopupMenu(view, sideEffect)
                 }
