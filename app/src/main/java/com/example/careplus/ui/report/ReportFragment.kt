@@ -51,6 +51,13 @@ class ReportFragment : Fragment() {
     }
 
     private fun setupObservers() {
+        viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            if (isLoading) {
+                binding.loadingOverlay.show("Loading reports...")
+            } else {
+                binding.loadingOverlay.hide()
+            }        }
+
         viewModel.topSideEffects.observe(viewLifecycleOwner) { result ->
             result.onSuccess { response ->
                 if (!response.error) {
@@ -90,17 +97,17 @@ class ReportFragment : Fragment() {
 
     private fun loadData() {
         sessionManager.getUser()?.patient?.id?.let { patientId ->
-            fetchReports(patientId)
+            viewModel.fetchReports(patientId)
         } ?: run {
             showError("Patient ID not found")
         }
     }
 
-    private fun fetchReports(patientId: Int) {
-        viewModel.fetchTopSideEffects(TopSideEffectsRequest(patient_id = patientId))
-        viewModel.fetchMostMissedMedications(MostMissedMedicationsRequest(patient_id = patientId))
-        viewModel.fetchMedicalAdherenceReport(MedicalAdherenceReportRequest(patient_id = patientId))
-    }
+//    private fun fetchReports(patientId: Int) {
+//        viewModel.fetchTopSideEffects(TopSideEffectsRequest(patient_id = patientId))
+//        viewModel.fetchMostMissedMedications(MostMissedMedicationsRequest(patient_id = patientId))
+//        viewModel.fetchMedicalAdherenceReport(MedicalAdherenceReportRequest(patient_id = patientId))
+//    }
 
     private fun displayTopSideEffects(data: List<TopSideEffect>) {
         val adapter = SideEffectAdapter(data)

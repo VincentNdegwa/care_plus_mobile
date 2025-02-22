@@ -1,191 +1,206 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="?android:windowBackground">
+
     <com.example.careplus.ui.components.PageToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_scrollFlags="noScroll" />
 
-    <!-- Header Section -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?actionBarSize"
         android:orientation="vertical"
         >
-
-        <!-- Adherence Card -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- Header Section -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardBackgroundColor="?android:colorBackgroundFloating"
-            app:cardElevation="4dp">
+            android:orientation="vertical">
 
+            <!-- Adherence Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="?android:colorBackgroundFloating"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/medication"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Overall Adherence"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:layout_marginStart="12dp"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="16dp">
+
+                        <lecho.lib.hellocharts.view.PieChartView
+                            android:id="@+id/adherenceChart"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="16dp"
+                            android:layout_gravity="center_vertical">
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <View
+                                    android:layout_width="12dp"
+                                    android:layout_height="12dp"
+                                    android:background="@color/success"
+                                    android:layout_marginEnd="8dp"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Taken"
+                                    android:textSize="14sp"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="8dp">
+
+                                <View
+                                    android:layout_width="12dp"
+                                    android:layout_height="12dp"
+                                    android:background="@color/error"
+                                    android:layout_marginEnd="8dp"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Missed"
+                                    android:textSize="14sp"/>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <!-- Content Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- Side Effects Section -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
 
                     <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/medication"/>
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/side_effects"
+                        />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Overall Adherence"
+                        android:text="Top Side Effects"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:layout_marginStart="12dp"/>
+                        android:layout_marginStart="8dp"/>
                 </LinearLayout>
 
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/topSideEffectsRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"/>
+
+                <!-- Missed Medications Section -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="16dp">
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
 
-                    <lecho.lib.hellocharts.view.PieChartView
-                        android:id="@+id/adherenceChart"
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/medication"
                         />
 
-                    <LinearLayout
-                        android:layout_width="0dp"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="16dp"
-                        android:layout_gravity="center_vertical">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <View
-                                android:layout_width="12dp"
-                                android:layout_height="12dp"
-                                android:background="@color/success"
-                                android:layout_marginEnd="8dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Taken"
-                                android:textSize="14sp"/>
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:layout_marginTop="8dp">
-
-                            <View
-                                android:layout_width="12dp"
-                                android:layout_height="12dp"
-                                android:background="@color/error"
-                                android:layout_marginEnd="8dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Missed"
-                                android:textSize="14sp"/>
-                        </LinearLayout>
-                    </LinearLayout>
+                        android:text="Most Missed Medications"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_marginStart="8dp"/>
                 </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/missedMedicationsRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 
-    <!-- Content Section -->
-    <ScrollView
+    <com.example.careplus.ui.components.LoadingOverlay
+        android:id="@+id/loadingOverlay"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="visible"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <!-- Side Effects Section -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/side_effects"
-                    />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Top Side Effects"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="8dp"/>
-            </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/topSideEffectsRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"/>
-
-            <!-- Missed Medications Section -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/medication"
-                    />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Most Missed Medications"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="8dp"/>
-            </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/missedMedicationsRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-
-        </LinearLayout>
-    </ScrollView>
-</LinearLayout> 
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
