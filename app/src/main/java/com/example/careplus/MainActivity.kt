@@ -115,7 +115,10 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.menu_settings -> {
-                    // Handle settings
+                    // Navigate to SettingsFragment
+                    findNavController(R.id.nav_host_fragment).navigate(R.id.settingsFragment)
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                    true
                 }
                 R.id.menu_profile -> {
                     navController.navigate(R.id.profileFragment)
