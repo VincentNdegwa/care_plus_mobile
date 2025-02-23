@@ -110,15 +110,29 @@ class ReportFragment : Fragment() {
 //    }
 
     private fun displayTopSideEffects(data: List<TopSideEffect>) {
-        val adapter = SideEffectAdapter(data)
-        binding.topSideEffectsRecyclerView.adapter = adapter
-        binding.topSideEffectsRecyclerView.layoutManager = LinearLayoutManager(context)
+        if (data.isEmpty()) {
+            binding.noDataTopSideEffects.visibility = View.VISIBLE
+            binding.topSideEffectsRecyclerView.visibility = View.GONE
+        } else {
+            binding.noDataTopSideEffects.visibility = View.GONE
+            binding.topSideEffectsRecyclerView.visibility = View.VISIBLE
+            val adapter = SideEffectAdapter(data)
+            binding.topSideEffectsRecyclerView.adapter = adapter
+            binding.topSideEffectsRecyclerView.layoutManager = LinearLayoutManager(context)
+        }
     }
 
     private fun displayMostMissedMedications(data: List<MissedMedication>) {
-        val adapter = MissedMedicationAdapter(data)
-        binding.missedMedicationsRecyclerView.adapter = adapter
-        binding.missedMedicationsRecyclerView.layoutManager = LinearLayoutManager(context)
+        if (data.isEmpty()) {
+            binding.noDataMissedMedications.visibility = View.VISIBLE
+            binding.missedMedicationsRecyclerView.visibility = View.GONE
+        } else {
+            binding.noDataMissedMedications.visibility = View.GONE
+            binding.missedMedicationsRecyclerView.visibility = View.VISIBLE
+            val adapter = MissedMedicationAdapter(data)
+            binding.missedMedicationsRecyclerView.adapter = adapter
+            binding.missedMedicationsRecyclerView.layoutManager = LinearLayoutManager(context)
+        }
     }
 
     private fun displayAdherenceData(data: MedicalAdherenceReportResponse) {

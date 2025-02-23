@@ -20,10 +20,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.content.Intent
 import android.util.Log
-import android.net.Uri
-import android.provider.Settings
-import android.content.Context
-import android.os.PowerManager
 import androidx.navigation.findNavController
 import com.example.careplus.utils.FCMManager
 import com.example.careplus.ui.notification.NotificationViewModel
@@ -192,7 +188,7 @@ class MainActivity : AppCompatActivity() {
 
         // Test FCM
         testFCM()
-
+        subscribeNotifications()
         setupNavigationDrawer()
     }
 
@@ -237,19 +233,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun requestBatteryOptimizationExemption() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val intent = Intent()
-            val packageName = packageName
-            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-                intent.data = Uri.parse("package:$packageName")
-                startActivity(intent)
-            }
-        }
-    }
-
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
@@ -257,7 +240,6 @@ class MainActivity : AppCompatActivity() {
     private fun testFCM() {
         FCMManager.getCurrentToken { token ->
             Log.d(TAG, "FCM Token for testing: $token")
-            // You can copy this token and use it to send test notifications
         }
     }
 
@@ -267,6 +249,9 @@ class MainActivity : AppCompatActivity() {
                 notificationViewModel.registerToken(it)
             }
         }
+    }
+    private  fun subscribeNotifications(){
+        FCMManager.subscribeToTopic("new_diagnosis_notification")
     }
 
     override fun onResume() {

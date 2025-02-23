@@ -15,15 +15,12 @@ import androidx.core.app.NotificationCompat
 import com.example.careplus.MainActivity
 import com.example.careplus.R
 import com.example.careplus.data.model.Schedule
-import com.example.careplus.services.AlarmService
 import com.google.gson.Gson
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import android.app.KeyguardManager
-import android.app.Activity
-import com.example.careplus.receivers.AlarmStopReceiver
-import com.example.careplus.ui.incoming.IncomingMedicationActivity
+import com.example.careplus.services.FCMNotification
+import com.google.gson.JsonObject
 
 object NotificationHelper {
     private const val CHANNEL_ID = "medication_notifications"
@@ -105,6 +102,48 @@ object NotificationHelper {
         }
     }
 
+    fun showNewDiagnosisNotification(
+        context: Context,
+        jsonMessage: String,
+        notification: FCMNotification
+    ) {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        createNotificationChannel(context, notificationManager)
+
+        try {
+            Log.d(TAG, "Attempting to show new diagnosis notification with message: $jsonMessage")
+
+            val payload = Gson().fromJson(jsonMessage, JsonObject::class.java)
+
+            val intent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra("notification_data", jsonMessage)
+            }
+
+            val pendingIntent = PendingIntent.getActivity(
+                context,
+                0,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_diagnosis)
+                .setContentTitle(notification.title)
+                .setContentText(notification.body)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(pendingIntent)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+
+            notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error showing new diagnosis notification", e)
+        }
+    }
+
     fun createNotificationChannel(context: Context, notificationManager: NotificationManager) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Check if channel exists first
@@ -138,35 +177,5 @@ object NotificationHelper {
                 Log.d(TAG, "Notification channel already exists")
             }
         }
-    }
-
-    fun cancelNotification(context: Context, notificationId: Int) {
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(notificationId)
-        
-        // Stop alarm service
-        context.stopService(Intent(context, AlarmService::class.java))
-    }
-
-    fun createWorkerNotification(context: Context): Notification {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                setSound(null, null)
-                enableVibration(false)
-            }
-            val notificationManager = context.getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        return NotificationCompat.Builder(context, WORKER_CHANNEL_ID)
-            .setContentTitle("Processing Medication Reminder")
-            .setSmallIcon(R.drawable.ic_medication)
-            .setSilent(true)
-            .setOngoing(true)
-            .build()
     }
 } 

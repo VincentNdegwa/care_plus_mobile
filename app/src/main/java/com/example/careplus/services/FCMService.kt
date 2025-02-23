@@ -5,34 +5,36 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.example.careplus.utils.NotificationHelper
 import com.example.careplus.data.SessionManager
-import com.example.careplus.data.model.fcm.FCMMedicationPayload
-import kotlinx.coroutines.launch
 import com.example.careplus.ui.notification.NotificationViewModel
 import com.google.gson.Gson
-import android.content.Context
 import android.os.PowerManager
-import android.os.Build
 import androidx.work.Constraints
-import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkRequest
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import androidx.work.BackoffPolicy
 import androidx.work.ExistingWorkPolicy
 import java.util.concurrent.TimeUnit
-import android.app.NotificationManager
-import android.content.Intent
 import androidx.work.OutOfQuotaPolicy
 import com.example.careplus.workers.AlarmWorker
-import android.app.KeyguardManager
-import com.example.careplus.MainActivity
+import com.google.gson.JsonParser
+import com.google.gson.JsonObject
+
+data class FCMNotification(
+    val title: String,
+    val body: String,
+    val event: String,
+    val receiver: String,
+    val room_name: String?
+)
 
 class FCMService : FirebaseMessagingService() {
     private lateinit var sessionManager: SessionManager
     private lateinit var viewModel: NotificationViewModel
     private var wakeLock: PowerManager.WakeLock? = null
-    private lateinit var medicationJson:String
+    private lateinit var medicationJson: String
+    private val gson = Gson()
+    private val jsonParser = JsonParser()
 
     override fun onCreate() {
         super.onCreate()
@@ -45,7 +47,7 @@ class FCMService : FirebaseMessagingService() {
 
         try {
             Log.d(TAG, "Message data payload: ${remoteMessage.data}")
-            
+
             if (remoteMessage.data.isNotEmpty()) {
                 handleNow(remoteMessage.data)
             }
@@ -59,21 +61,50 @@ class FCMService : FirebaseMessagingService() {
             val nestedData = data["data"] ?: return
             Log.d(TAG, "Nested data: $nestedData")
 
-            val fcmData = Gson().fromJson(nestedData, FCMMedicationPayload::class.java)
-            
-            if (fcmData.type == "medication_reminder") {
-                medicationJson = Gson().toJson(fcmData.payload)
-                Log.d(TAG, "Medication data: $medicationJson")
-                
-                // Show notification
-                NotificationHelper.showMedicationNotification(applicationContext, medicationJson)
-                
-                // Schedule alarm through WorkManager
-                scheduleAlarmWork()
+            val jsonElement = jsonParser.parse(nestedData)
+            val jsonObject = jsonElement.asJsonObject
+
+            val type = jsonObject.get("type").asString
+
+            val notification = gson.fromJson(
+                jsonObject.get("notification"),
+                FCMNotification::class.java
+            )
+
+            val payload = jsonObject.get("payload").asJsonObject
+
+            when (type) {
+                "new_diagnosis_notification" -> {
+                    handleDiagnosisNotification(notification, payload)
+                }
+                "medication_reminder" -> {
+                    handleMedicationReminder(notification, payload)
+                }
+                else -> {
+                    Log.d(TAG, "Unknown notification type: $type")
+                }
             }
+
         } catch (e: Exception) {
             Log.e(TAG, "Error processing FCM data", e)
         }
+    }
+
+    private fun handleDiagnosisNotification(
+        notification: FCMNotification,
+        payload: JsonObject
+    ) {
+        NotificationHelper.showNewDiagnosisNotification(applicationContext,
+            payload.toString(), notification)
+    }
+
+    private fun handleMedicationReminder(
+        notification: FCMNotification,
+        payload: JsonObject
+    ) {
+        medicationJson = payload.toString()
+        NotificationHelper.showMedicationNotification(applicationContext, medicationJson)
+        scheduleAlarmWork()
     }
 
     private fun scheduleAlarmWork() {
@@ -100,7 +131,6 @@ class FCMService : FirebaseMessagingService() {
                 )
                 .build()
 
-            // Use enqueueUniqueWork instead of beginUniqueWork
             WorkManager.getInstance(applicationContext)
                 .enqueueUniqueWork(
                     "alarm_service_${System.currentTimeMillis()}",
