@@ -1,12 +1,15 @@
 package com.example.careplus.ui.settings
 
 import android.app.AlertDialog
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -85,12 +88,19 @@ class SettingsFragment : Fragment() {
 
     private fun showAddEmergencyContactDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_emergency_contact, null)
+
+        val typedValue = TypedValue()
+        requireContext().theme.resolveAttribute(android.R.attr.windowBackground, typedValue, true)
+        val backgroundColor = typedValue.data
+
+        dialogView.setBackgroundColor(backgroundColor)
+
         val nameEditText = dialogView.findViewById<EditText>(R.id.editTextName)
         val phoneEditText = dialogView.findViewById<EditText>(R.id.editTextPhone)
         val emailEditText = dialogView.findViewById<EditText>(R.id.editTextEmail)
         val addressEditText = dialogView.findViewById<EditText>(R.id.editTextAddress)
 
-        AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Add Emergency Contact")
             .setView(dialogView)
             .setPositiveButton("OK") { _, _ ->
@@ -105,8 +115,12 @@ class SettingsFragment : Fragment() {
                 }
             }
             .setNegativeButton("Cancel", null)
-            .show()
+            .create()
+
+        dialog.window?.setBackgroundDrawable(ColorDrawable(backgroundColor))
+        dialog.show()
     }
+
 
     private fun saveSettings() {
         // Collect data from UI and save settings
