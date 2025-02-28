@@ -54,6 +54,16 @@ class SettingsFragment : Fragment() {
         binding.saveSettingsButton.setOnClickListener {
             saveSettings()
         }
+
+        binding.viewProfile.setOnClickListener {
+            // Handle personal information click
+            // Navigate to personal information screen or show a dialog
+        }
+
+        binding.changePassword.setOnClickListener {
+            // Handle forget password click
+            // Navigate to forget password screen or show a dialog
+        }
     }
 
     private fun observeViewModel() {
