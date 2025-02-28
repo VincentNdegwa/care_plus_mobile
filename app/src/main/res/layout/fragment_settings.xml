@@ -117,56 +117,86 @@
             <!-- Language Selection -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:orientation="horizontal"
                 android:layout_marginTop="12dp"
-                android:layout_gravity="center">
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_language"
+                    android:contentDescription="Language Icon"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Language: "
-                    android:textSize="16sp"/>
+                    android:textSize="16sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginStart="8dp"
+                    />
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/languageTextView"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    app:boxStrokeColor="@color/primary">
+                    android:layout_weight="1"
+                    android:text=""
+                    android:textSize="16sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginStart="8dp"/>
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/languageEditText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?android:colorBackground"
-                        android:enabled="false"/>
-                </com.google.android.material.textfield.TextInputLayout>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_arrow_right"
+                    android:contentDescription="Arrow Icon"/>
             </LinearLayout>
 
             <!-- Timezone Selection -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:orientation="horizontal"
-                android:layout_gravity="center">
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_time"
+                    android:contentDescription="Timezone Icon"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Timezone:  "
-                    android:textSize="16sp"/>
+                    android:text="Timezone: "
+                    android:textSize="16sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginStart="8dp"
+                    />
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
+
+                <TextView
+                    android:id="@+id/timezoneTextView"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    app:boxStrokeColor="@color/primary">
+                    android:layout_weight="1"
+                    android:text=""
+                    android:textSize="16sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginStart="8dp"/>
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/timezoneEditText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?android:colorBackground"
-                        android:enabled="false"/>
-                </com.google.android.material.textfield.TextInputLayout>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_arrow_right"
+                    android:contentDescription="Arrow Icon"/>
             </LinearLayout>
 
             <!-- Divider -->

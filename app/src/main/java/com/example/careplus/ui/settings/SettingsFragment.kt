@@ -24,6 +24,7 @@ class SettingsFragment : Fragment() {
     private lateinit var viewModel: SettingsViewModel
     private lateinit var emergencyContactAdapter: EmergencyContactAdapter
     private val emergencyContacts = mutableListOf<EmergencyContact>()
+    private lateinit var currentSettings: Settings
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,13 +57,23 @@ class SettingsFragment : Fragment() {
         }
 
         binding.viewProfile.setOnClickListener {
-            // Handle personal information click
             // Navigate to personal information screen or show a dialog
+            // Example: findNavController().navigate(R.id.action_settings_to_profile)
         }
 
         binding.changePassword.setOnClickListener {
-            // Handle forget password click
-            // Navigate to forget password screen or show a dialog
+            // Navigate to change password screen or show a dialog
+            // Example: findNavController().navigate(R.id.action_settings_to_change_password)
+        }
+
+        binding.languageTextView.setOnClickListener {
+            // Show bottom sheet for language selection
+            // Example: showLanguageSelectionBottomSheet()
+        }
+
+        binding.timezoneTextView.setOnClickListener {
+            // Show bottom sheet for timezone selection
+            // Example: showTimezoneSelectionBottomSheet()
         }
     }
 
@@ -77,15 +88,17 @@ class SettingsFragment : Fragment() {
 
         viewModel.settings.observe(viewLifecycleOwner, Observer { result ->
             result.onSuccess { settingsResponse ->
+                currentSettings= settingsResponse
                 displaySettings(settingsResponse)
             }.onFailure { error ->
-                binding.languageEditText.setText("Error fetching settings: ${error.message}")
+                SnackbarUtils.showSnackbar(binding.root, "Error updating settings: ${error.message}")
             }
         })
 
         viewModel.updateSetting.observe(viewLifecycleOwner, { result ->
             result.onSuccess { settingsResponse ->
                 if (settingsResponse.error) {
+                    currentSettings = settingsResponse.data
                     SnackbarUtils.showSnackbar(binding.root, settingsResponse.message)
                 } else {
                     SnackbarUtils.showSnackbar(binding.root, settingsResponse.message, false)
@@ -102,8 +115,8 @@ class SettingsFragment : Fragment() {
 
     private fun displaySettings(settings: Settings) {
         // Update UI with settings data
-        binding.languageEditText.setText(settings.user_management.language_preferences)
-        binding.timezoneEditText.setText(settings.user_management.timezone)
+        binding.languageTextView.setText(settings.user_management.language_preferences)
+        binding.timezoneTextView.setText(settings.user_management.timezone)
 
         // Set notification preferences
         binding.emailNotificationSwitch.isChecked = settings.user_management.notification_preferences.email
@@ -173,8 +186,8 @@ class SettingsFragment : Fragment() {
     }
 
     private fun saveSettings() {
-        val language = binding.languageEditText.text.toString()
-        val timezone = binding.timezoneEditText.text.toString()
+        val language = binding.languageTextView.text.toString()
+        val timezone = binding.timezoneTextView.text.toString()
         val emailNotifications = binding.emailNotificationSwitch.isChecked
         val smsNotifications = binding.smsNotificationSwitch.isChecked
         val pushNotifications = binding.pushNotificationSwitch.isChecked
