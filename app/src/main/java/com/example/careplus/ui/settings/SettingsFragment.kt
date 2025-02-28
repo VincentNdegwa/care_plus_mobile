@@ -9,15 +9,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.careplus.R
-import com.example.careplus.data.model.settings.EmergencyContact
+import com.example.careplus.data.model.settings.*
 import com.example.careplus.databinding.FragmentSettingsBinding
-import com.example.careplus.data.model.settings.Settings
+import com.example.careplus.utils.SnackbarUtils
 
 class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
@@ -40,15 +39,8 @@ class SettingsFragment : Fragment() {
         binding.toolbar.setPageTitle("Settings")
         viewModel = ViewModelProvider(this).get(SettingsViewModel::class.java)
 
-        viewModel.getSettings()
-
-        viewModel.settings.observe(viewLifecycleOwner, Observer { result ->
-            result.onSuccess { settingsResponse ->
-                displaySettings(settingsResponse)
-            }.onFailure { error ->
-                binding.languageEditText.setText("Error fetching settings: ${error.message}")
-            }
-        })
+        fetchData()
+        observeViewModel()
 
         // Initialize the RecyclerView and Adapter
         emergencyContactAdapter = EmergencyContactAdapter(emergencyContacts)
@@ -62,6 +54,30 @@ class SettingsFragment : Fragment() {
         binding.saveSettingsButton.setOnClickListener {
             saveSettings()
         }
+    }
+
+    private fun observeViewModel() {
+        viewModel.settings.observe(viewLifecycleOwner, Observer { result ->
+            result.onSuccess { settingsResponse ->
+                displaySettings(settingsResponse)
+            }.onFailure { error ->
+                binding.languageEditText.setText("Error fetching settings: ${error.message}")
+            }
+        })
+
+        viewModel.updateSetting.observe(viewLifecycleOwner, { result ->
+            result.onSuccess { settingsResponse ->
+                // Show message from settingsResponse.message
+                SnackbarUtils.showSnackbar(binding.root, settingsResponse.message)
+            }.onFailure { error ->
+                // Show error message using SnackbarUtils
+                SnackbarUtils.showSnackbar(binding.root, "Error updating settings: ${error.message}")
+            }
+        })
+    }
+
+    private fun fetchData() {
+        viewModel.getSettings()
     }
 
     private fun displaySettings(settings: Settings) {
@@ -79,10 +95,10 @@ class SettingsFragment : Fragment() {
         emergencyContacts.addAll(settings.emergency_alerts.emergency_contacts)
         emergencyContactAdapter.notifyDataSetChanged()
 
-        if(settings.emergency_alerts.emergency_contacts.size>0){
-            binding.emergencyContactsRecyclerView.visibility = View.VISIBLE
-        }else{
-            binding.emergencyContactsRecyclerView.visibility = View.GONE
+        binding.emergencyContactsRecyclerView.visibility = if (settings.emergency_alerts.emergency_contacts.isNotEmpty()) {
+            View.VISIBLE
+        } else {
+            View.GONE
         }
     }
 
@@ -123,16 +139,32 @@ class SettingsFragment : Fragment() {
 
 
     private fun saveSettings() {
-        // Collect data from UI and save settings
         val language = binding.languageEditText.text.toString()
         val timezone = binding.timezoneEditText.text.toString()
         val emailNotifications = binding.emailNotificationSwitch.isChecked
         val smsNotifications = binding.smsNotificationSwitch.isChecked
         val pushNotifications = binding.pushNotificationSwitch.isChecked
 
-        // Here you would typically call a method in your ViewModel to save these settings
-        // For example:
-        // viewModel.saveSettings(language, timezone, emailNotifications, smsNotifications, pushNotifications)
+        val updatedSettings = Settings(
+            user_management = UserManagement(
+                notification_preferences = NotificationPreferences(
+                    email = emailNotifications,
+                    sms = smsNotifications,
+                    push_notifications = pushNotifications
+                ),
+                language_preferences = language,
+                timezone = timezone
+            ),
+            emergency_alerts = EmergencyAlerts(
+                emergency_contacts = emergencyContacts,
+                alert_preferences = AlertPreferences(
+                    sms = smsNotifications,
+                    email = emailNotifications
+                )
+            )
+        )
+
+        viewModel.updateSettings(updatedSettings)
     }
 
     override fun onDestroyView() {
