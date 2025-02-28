@@ -57,6 +57,14 @@ class SettingsFragment : Fragment() {
     }
 
     private fun observeViewModel() {
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            if (isLoading) {
+                binding.loadingOverlay.show()
+            } else {
+                binding.loadingOverlay.hide()
+            }
+        }
+
         viewModel.settings.observe(viewLifecycleOwner, Observer { result ->
             result.onSuccess { settingsResponse ->
                 displaySettings(settingsResponse)
@@ -67,11 +75,10 @@ class SettingsFragment : Fragment() {
 
         viewModel.updateSetting.observe(viewLifecycleOwner, { result ->
             result.onSuccess { settingsResponse ->
-                if (settingsResponse.error){
+                if (settingsResponse.error) {
                     SnackbarUtils.showSnackbar(binding.root, settingsResponse.message)
-                }
-                else{
-                    SnackbarUtils.showSnackbar(binding.root, settingsResponse.message,false)
+                } else {
+                    SnackbarUtils.showSnackbar(binding.root, settingsResponse.message, false)
                 }
             }.onFailure { error ->
                 SnackbarUtils.showSnackbar(binding.root, "Error updating settings: ${error.message}")

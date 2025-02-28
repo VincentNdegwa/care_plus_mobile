@@ -20,9 +20,13 @@ class SettingsViewModel(application: Application):AndroidViewModel(application) 
     private val _updateSetting = MutableLiveData<Result<UpdateSettingsResponse>>()
     var updateSetting: LiveData<Result<UpdateSettingsResponse>> = _updateSetting
 
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading
+
     fun getSettings(){
-        try {
-            viewModelScope.launch {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
                 val results = repository.getSettings()
 
                 results.onSuccess { res->
@@ -31,15 +35,18 @@ class SettingsViewModel(application: Application):AndroidViewModel(application) 
                 results.onFailure { error->
                     _settings.value = Result.failure(error)
                 }
+            }catch (e:Exception){
+                _settings.value = Result.failure(e)
+            } finally {
+                _isLoading.value = false
             }
-        }catch (e:Exception){
-            _settings.value = Result.failure(e)
         }
     }
 
     fun  updateSettings(settings: Settings){
-        try {
-            viewModelScope.launch {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
                 val results = repository.updateSettings(settings)
 
                 results.onSuccess { res->
@@ -51,9 +58,11 @@ class SettingsViewModel(application: Application):AndroidViewModel(application) 
                 results.onFailure { error->
                     _updateSetting.value = Result.failure(error)
                 }
+            }catch (e:Exception){
+                _updateSetting.value = Result.failure(e)
+            } finally {
+                _isLoading.value = false
             }
-        }catch (e:Exception){
-            _updateSetting.value = Result.failure(e)
         }
     }
 
