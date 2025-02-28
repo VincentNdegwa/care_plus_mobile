@@ -12,6 +12,7 @@ import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.careplus.R
 import com.example.careplus.data.model.settings.*
@@ -57,8 +58,7 @@ class SettingsFragment : Fragment() {
         }
 
         binding.viewProfile.setOnClickListener {
-            // Navigate to personal information screen or show a dialog
-            // Example: findNavController().navigate(R.id.action_settings_to_profile)
+            findNavController().navigate(R.id.action_from_settings_to_profile)
         }
 
         binding.changePassword.setOnClickListener {
