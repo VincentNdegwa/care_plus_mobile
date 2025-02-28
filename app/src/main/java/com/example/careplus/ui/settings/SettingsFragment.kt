@@ -67,10 +67,13 @@ class SettingsFragment : Fragment() {
 
         viewModel.updateSetting.observe(viewLifecycleOwner, { result ->
             result.onSuccess { settingsResponse ->
-                // Show message from settingsResponse.message
-                SnackbarUtils.showSnackbar(binding.root, settingsResponse.message)
+                if (settingsResponse.error){
+                    SnackbarUtils.showSnackbar(binding.root, settingsResponse.message)
+                }
+                else{
+                    SnackbarUtils.showSnackbar(binding.root, settingsResponse.message,false)
+                }
             }.onFailure { error ->
-                // Show error message using SnackbarUtils
                 SnackbarUtils.showSnackbar(binding.root, "Error updating settings: ${error.message}")
             }
         })
