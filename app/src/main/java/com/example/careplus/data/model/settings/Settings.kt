@@ -33,3 +33,12 @@ data class AlertPreferences(
     val sms: Boolean,
     val email: Boolean
 )
+data class UpdateSettingsRequest(
+    val settings: Settings
+)
+
+data class UpdateSettingsResponse(
+    val error: Boolean,
+    val message: String,
+    val data: Settings
+)

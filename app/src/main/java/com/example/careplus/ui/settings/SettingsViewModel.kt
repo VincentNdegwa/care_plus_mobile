@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.careplus.data.SessionManager
 import com.example.careplus.data.model.settings.Settings
+import com.example.careplus.data.model.settings.UpdateSettingsResponse
 import com.example.careplus.data.repository.SettingsRepository
 import kotlinx.coroutines.launch
 
@@ -15,6 +16,9 @@ class SettingsViewModel(application: Application):AndroidViewModel(application) 
 
     private val _settings = MutableLiveData<Result<Settings>>()
     var settings: LiveData<Result<Settings>> = _settings
+
+    private val _updateSetting = MutableLiveData<Result<UpdateSettingsResponse>>()
+    var updateSetting: LiveData<Result<UpdateSettingsResponse>> = _updateSetting
 
     fun getSettings(){
         try {
@@ -30,6 +34,26 @@ class SettingsViewModel(application: Application):AndroidViewModel(application) 
             }
         }catch (e:Exception){
             _settings.value = Result.failure(e)
+        }
+    }
+
+    fun  updateSettings(settings: Settings){
+        try {
+            viewModelScope.launch {
+                val results = repository.updateSettings(settings)
+
+                results.onSuccess { res->
+                    _updateSetting.value = Result.success(res)
+                    if(!res.error){
+                        _settings.value = Result.success(res.data)
+                    }
+                }
+                results.onFailure { error->
+                    _updateSetting.value = Result.failure(error)
+                }
+            }
+        }catch (e:Exception){
+            _updateSetting.value = Result.failure(e)
         }
     }
 
