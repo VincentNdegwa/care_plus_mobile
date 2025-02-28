@@ -43,7 +43,7 @@ class SettingsFragment : Fragment() {
         observeViewModel()
 
         // Initialize the RecyclerView and Adapter
-        emergencyContactAdapter = EmergencyContactAdapter(emergencyContacts)
+        emergencyContactAdapter = EmergencyContactAdapter(emergencyContacts, this)
         binding.emergencyContactsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.emergencyContactsRecyclerView.adapter = emergencyContactAdapter
 
@@ -102,13 +102,13 @@ class SettingsFragment : Fragment() {
         }
     }
 
-    private fun showAddEmergencyContactDialog() {
+    fun showAddEmergencyContactDialog(contact: EmergencyContact? = null, position: Int? = null) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_emergency_contact, null)
 
+        // Set the background color of the dialog to use the theme's window background
         val typedValue = TypedValue()
         requireContext().theme.resolveAttribute(android.R.attr.windowBackground, typedValue, true)
         val backgroundColor = typedValue.data
-
         dialogView.setBackgroundColor(backgroundColor)
 
         val nameEditText = dialogView.findViewById<EditText>(R.id.editTextName)
@@ -116,18 +116,33 @@ class SettingsFragment : Fragment() {
         val emailEditText = dialogView.findViewById<EditText>(R.id.editTextEmail)
         val addressEditText = dialogView.findViewById<EditText>(R.id.editTextAddress)
 
+        // If contact is not null, populate the fields for editing
+        contact?.let {
+            nameEditText.setText(it.name)
+            phoneEditText.setText(it.phone)
+            emailEditText.setText(it.email)
+            addressEditText.setText(it.address)
+        }
+
         val dialog = AlertDialog.Builder(requireContext())
-            .setTitle("Add Emergency Contact")
+            .setTitle(if (contact == null) "Add Emergency Contact" else "Edit Emergency Contact")
             .setView(dialogView)
             .setPositiveButton("OK") { _, _ ->
                 val name = nameEditText.text.toString()
                 val phone = phoneEditText.text.toString()
                 val email = emailEditText.text.toString()
                 val address = addressEditText.text.toString()
+
                 if (name.isNotEmpty() && phone.isNotEmpty() && email.isNotEmpty()) {
-                    val newContact = EmergencyContact(name, phone, email, address)
-                    emergencyContacts.add(newContact)
-                    emergencyContactAdapter.notifyItemInserted(emergencyContacts.size - 1)
+                    if (contact == null) {
+                        val newContact = EmergencyContact(name, email, phone, address)
+                        emergencyContacts.add(newContact)
+                        emergencyContactAdapter.notifyItemInserted(emergencyContacts.size - 1)
+                    } else {
+                        val updatedContact = EmergencyContact(name, email, phone, address)
+                        emergencyContacts[position!!] = updatedContact
+                        emergencyContactAdapter.notifyItemChanged(position!!)
+                    }
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -136,7 +151,6 @@ class SettingsFragment : Fragment() {
         dialog.window?.setBackgroundDrawable(ColorDrawable(backgroundColor))
         dialog.show()
     }
-
 
     private fun saveSettings() {
         val language = binding.languageEditText.text.toString()
