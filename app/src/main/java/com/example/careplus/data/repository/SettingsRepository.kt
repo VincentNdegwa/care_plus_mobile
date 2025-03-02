@@ -5,6 +5,7 @@ import com.example.careplus.data.api.ApiClient
 import com.example.careplus.data.model.ServerResponseError
 import com.example.careplus.data.model.profile.ProfileErrorResponse
 import com.example.careplus.data.model.settings.Settings
+import com.example.careplus.data.model.settings.TimezoneResponse
 import com.example.careplus.data.model.settings.UpdateSettingsRequest
 import com.example.careplus.data.model.settings.UpdateSettingsResponse
 import com.google.gson.Gson
@@ -55,6 +56,23 @@ class SettingsRepository(private val sessionManager: SessionManager) {
                 val errorMessage = parseErrorMessage(response.errorBody()?.string())
                 Result.failure(Exception(errorMessage))            }
         }catch (e:Exception){
+            Result.failure(e)
+        }
+    }
+
+    suspend fun searchTimezones(query: String): Result<List<TimezoneResponse>> {
+        return try {
+            val response = ApiClient.settingsApi.searchTimezones(query)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else if (response.code() == 401) {
+                sessionManager.clearSession()
+                Result.failure(Exception("Unauthorized"))
+            } else {
+                val errorMessage = parseErrorMessage(response.errorBody()?.string())
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
             Result.failure(e)
         }
     }

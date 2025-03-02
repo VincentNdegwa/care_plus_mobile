@@ -8,16 +8,24 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.careplus.R
 import com.example.careplus.data.model.settings.*
 import com.example.careplus.databinding.FragmentSettingsBinding
+import com.example.careplus.databinding.BottomSheetSelectionBinding
 import com.example.careplus.utils.SnackbarUtils
+import com.example.careplus.utils.BottomSheetUtils
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.*
+import java.util.TimeZone
 
 class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
@@ -67,13 +75,11 @@ class SettingsFragment : Fragment() {
         }
 
         binding.languageTextView.setOnClickListener {
-            // Show bottom sheet for language selection
-            // Example: showLanguageSelectionBottomSheet()
+            showLanguageSelectionBottomSheet()
         }
 
         binding.timezoneTextView.setOnClickListener {
-            // Show bottom sheet for timezone selection
-            // Example: showTimezoneSelectionBottomSheet()
+            showTimezoneSelectionBottomSheet()
         }
     }
 
@@ -214,8 +220,92 @@ class SettingsFragment : Fragment() {
         viewModel.updateSettings(updatedSettings)
     }
 
+    private fun showLanguageSelectionBottomSheet() {
+        val dialog = BottomSheetDialog(requireContext())
+//        val bottomSheetBinding = BottomSheetSelectionBinding.inflate(layoutInflater)
+//        dialog.setContentView(bottomSheetBinding.root)
+//
+//        val languages = listOf("English", "Spanish", "French", "German", "Chinese", "Japanese", "Arabic")
+//
+//        bottomSheetBinding.titleTextView.text = "Select Language"
+//        val adapter = SelectionAdapter(languages) { selectedLanguage ->
+//            binding.languageTextView.text = selectedLanguage
+//            dialog.dismiss()
+//        }
+//
+//        bottomSheetBinding.selectionRecyclerView.adapter = adapter
+//        BottomSheetUtils.setupBottomSheetDialog(this, dialog)
+//        dialog.show()
+    }
+
+    private fun showTimezoneSelectionBottomSheet() {
+        val dialog = BottomSheetDialog(requireContext())
+        val bottomSheetBinding = BottomSheetSelectionBinding.inflate(layoutInflater)
+        dialog.setContentView(bottomSheetBinding.root)
+        
+        dialog.setOnShowListener { dialogInterface ->
+            val bottomSheetDialog = dialogInterface as BottomSheetDialog
+            val bottomSheet = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            bottomSheet?.let {
+                val behavior = BottomSheetBehavior.from(it)
+                val displayMetrics = resources.displayMetrics
+                behavior.peekHeight = this.resources.displayMetrics.heightPixels / 2
+                behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                behavior.skipCollapsed = true
+                it.setBackgroundResource(R.drawable.bottom_sheet_background)
+            }
+        }
+        
+        bottomSheetBinding.titleTextView.text = "Select Timezone"
+        
+        val timezoneList = mutableListOf<TimezoneResponse>()
+        val adapter = SelectionAdapter(mutableListOf()) { selectedTimezone ->
+            val selectedItem = timezoneList.find { it.name == selectedTimezone }
+            selectedItem?.let {
+                binding.timezoneTextView.text = it.name
+                dialog.dismiss()
+            }
+        }
+        
+        bottomSheetBinding.selectionRecyclerView.adapter = adapter
+        
+        // Setup search functionality with debounce
+        var searchJob: Job? = null
+        bottomSheetBinding.searchEditText.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                searchJob?.cancel()
+                searchJob = lifecycleScope.launch {
+                    delay(300)
+                    val query = s?.toString() ?: ""
+                    if (query.length >= 2) {
+                        viewModel.searchTimezones(query)
+                    } else {
+                        timezoneList.clear()
+                        adapter.updateItems(emptyList())
+                    }
+                }
+            }
+        })
+        
+        viewModel.timezones.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { timezones ->
+                timezoneList.clear()
+                timezoneList.addAll(timezones)
+                adapter.updateItems(timezones.map { it.name })
+            }.onFailure { error ->
+                SnackbarUtils.showSnackbar(binding.root, "Error loading timezones: ${error.message}")
+            }
+        }
+        
+        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        BottomSheetUtils.setupBottomSheetDialog(this, dialog)
+        dialog.show()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-} 
+}

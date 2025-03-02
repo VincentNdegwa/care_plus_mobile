@@ -33,6 +33,12 @@ data class AlertPreferences(
     val sms: Boolean,
     val email: Boolean
 )
+
+data class TimezoneResponse(
+    val name: String,
+    val utc_offset: String
+)
+
 data class UpdateSettingsRequest(
     val settings: Settings
 )

@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.careplus.data.SessionManager
 import com.example.careplus.data.model.settings.Settings
+import com.example.careplus.data.model.settings.TimezoneResponse
 import com.example.careplus.data.model.settings.UpdateSettingsResponse
 import com.example.careplus.data.repository.SettingsRepository
 import kotlinx.coroutines.launch
@@ -19,6 +20,9 @@ class SettingsViewModel(application: Application):AndroidViewModel(application) 
 
     private val _updateSetting = MutableLiveData<Result<UpdateSettingsResponse>>()
     var updateSetting: LiveData<Result<UpdateSettingsResponse>> = _updateSetting
+
+    private val _timezones = MutableLiveData<Result<List<TimezoneResponse>>>()
+    var timezones: LiveData<Result<List<TimezoneResponse>>> = _timezones
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
@@ -66,4 +70,14 @@ class SettingsViewModel(application: Application):AndroidViewModel(application) 
         }
     }
 
+    fun searchTimezones(query: String) {
+        viewModelScope.launch {
+            try {
+                val results = repository.searchTimezones(query)
+                _timezones.value = results
+            } catch (e: Exception) {
+                _timezones.value = Result.failure(e)
+            }
+        }
+    }
 }
