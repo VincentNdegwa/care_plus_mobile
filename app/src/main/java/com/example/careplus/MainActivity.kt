@@ -93,6 +93,7 @@ class MainActivity : AppCompatActivity() {
             when (destination.id) {
                 R.id.loginFragment,
                 R.id.registerFragment,
+                R.id.changePasswordFragment,
                 R.id.forgotPasswordFragment -> {
                     binding.bottomNav.visibility = View.GONE
                 }
