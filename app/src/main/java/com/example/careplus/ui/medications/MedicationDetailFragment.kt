@@ -94,7 +94,7 @@ class MedicationDetailFragment : Fragment() {
             // Set status chip color and text based on status
             statusChip.apply {
                 text = medication.status
-                setChipBackgroundColorResource(when(medication.status.lowercase()) {
+                setChipBackgroundColorResource(when(medication.status?.lowercase()) {
                     "running" -> R.color.success
                     "stopped" -> R.color.warning
                     "expired" -> R.color.error
