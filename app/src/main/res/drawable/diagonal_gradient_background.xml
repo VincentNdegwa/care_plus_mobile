@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Base gradient -->
+    <item>
+        <shape>
+            <gradient
+                android:angle="135"
+                android:startColor="#FF6B95"
+                android:endColor="#4568DC"
+                android:type="linear" />
+        </shape>
+    </item>
+    <!-- Diagonal overlay -->
+    <item>
+        <rotate
+            android:fromDegrees="45"
+            android:pivotX="50%"
+            android:pivotY="50%">
+            <shape android:shape="rectangle">
+                <gradient
+                    android:startColor="#40FFFFFF"
+                    android:centerColor="#00FFFFFF"
+                    android:endColor="#40FFFFFF"
+                    android:type="linear"
+                    android:angle="45"/>
+            </shape>
+        </rotate>
+    </item>
+</layer-list>
