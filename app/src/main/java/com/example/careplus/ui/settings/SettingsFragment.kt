@@ -65,20 +65,20 @@ class SettingsFragment : Fragment() {
             saveSettings()
         }
 
-        binding.viewProfile.setOnClickListener {
+        binding.clickViewProfile.setOnClickListener {
             findNavController().navigate(R.id.action_from_settings_to_profile)
         }
 
-        binding.changePassword.setOnClickListener {
+        binding.clickChangePassword.setOnClickListener {
             // Navigate to change password screen or show a dialog
             // Example: findNavController().navigate(R.id.action_settings_to_change_password)
         }
 
-        binding.languageTextView.setOnClickListener {
+        binding.clickLanguage.setOnClickListener {
             showLanguageSelectionBottomSheet()
         }
 
-        binding.timezoneTextView.setOnClickListener {
+        binding.clickTimeZone.setOnClickListener {
             showTimezoneSelectionBottomSheet()
         }
     }

@@ -59,11 +59,17 @@
                     android:focusable="true"
                     android:layout_marginStart="8dp"/>
 
-                <ImageView
+                <ImageButton
+                    android:id="@+id/clickViewProfile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_arrow_right"
-                    android:contentDescription="Arrow Icon"/>
+                    android:contentDescription="Arrow Icon"
+                    android:background="@drawable/rounded_background"
+                    android:backgroundTint="?android:colorBackgroundFloating"
+                    android:padding="3dp"
+                    android:clickable="true"
+                    android:focusable="true"                    />
             </LinearLayout>
 
             <LinearLayout
@@ -90,11 +96,18 @@
                     android:focusable="true"
                     android:layout_marginStart="8dp"/>
 
-                <ImageView
+                <ImageButton
+                    android:id="@+id/clickChangePassword"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_arrow_right"
-                    android:contentDescription="Arrow Icon"/>
+                    android:contentDescription="Arrow Icon"
+                    android:background="@drawable/rounded_background"
+                    android:backgroundTint="?android:colorBackgroundFloating"
+                    android:padding="3dp"
+                    android:clickable="true"
+                    android:focusable="true"                    />
+
             </LinearLayout>
 
             <!-- Divider -->
@@ -150,11 +163,18 @@
                     android:focusable="true"
                     android:layout_marginStart="8dp"/>
 
-                <ImageView
+                <ImageButton
+                    android:id="@+id/clickLanguage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_arrow_right"
-                    android:contentDescription="Arrow Icon"/>
+                    android:contentDescription="Arrow Icon"
+                    android:background="@drawable/rounded_background"
+                    android:backgroundTint="?android:colorBackgroundFloating"
+                    android:padding="3dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    />
             </LinearLayout>
 
             <!-- Timezone Selection -->
@@ -193,11 +213,19 @@
                     android:focusable="true"
                     android:layout_marginStart="8dp"/>
 
-                <ImageView
+                <ImageButton
+                    android:id="@+id/clickTimeZone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_arrow_right"
-                    android:contentDescription="Arrow Icon"/>
+                    android:contentDescription="Arrow Icon"
+                    android:background="@drawable/rounded_background"
+                    android:backgroundTint="?android:colorBackgroundFloating"
+                    android:padding="3dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    />
+
             </LinearLayout>
 
             <!-- Divider -->

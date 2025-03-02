@@ -20,6 +20,7 @@ class EmergencyContactAdapter(
         val emailTextView: TextView = itemView.findViewById(R.id.textViewEmail)
         val deleteIcon: ImageView = itemView.findViewById(R.id.iconDelete)
         val editIcon: ImageView = itemView.findViewById(R.id.iconEdit)
+        val addressTextView : TextView = itemView.findViewById(R.id.textViewAddress)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
@@ -33,6 +34,7 @@ class EmergencyContactAdapter(
         holder.nameTextView.text = contact.name
         holder.phoneTextView.text = contact.phone
         holder.emailTextView.text = contact.email
+        holder.addressTextView.text = contact.address
 
         holder.editIcon.setOnClickListener {
             fragment.showAddEmergencyContactDialog(contact, position)
