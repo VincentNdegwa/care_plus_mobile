@@ -18,6 +18,9 @@ interface AuthApi {
     @POST("forgot-password")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): Response<AuthResponse>
 
+    @POST("change-password")
+    suspend fun changePassword(@Body request: ChangePasswordRequest): Response<AuthResponse>
+
     @GET("profile")
     suspend fun getProfile(): Response<AuthProfileResponse>
 
@@ -26,6 +29,7 @@ interface AuthApi {
         @Path("patientId") patientId: Int,
         @Query("today_date") date: String
     ): Response<MedicationScheduleResponse>
+    
     @GET("dashboard/patient-data/{patientId}")
     suspend fun getPatientData(@Path("patientId") patientId: Int): DashboardResponse
-} 
+}

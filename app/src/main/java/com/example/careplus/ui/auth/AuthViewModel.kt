@@ -17,6 +17,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _authResult = MutableLiveData<Result<AuthResponse>>()
     val authResult: LiveData<Result<AuthResponse>> = _authResult
 
+    private val _passwordChangeResult = MutableLiveData<Result<AuthResponse>>()
+    val passwordChangeResult: LiveData<Result<AuthResponse>> = _passwordChangeResult
+
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
@@ -56,6 +59,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _isLoading.value = true
             _authResult.value = repository.forgotPassword(email)
+            _isLoading.value = false
+        }
+    }
+
+    fun changePassword(currentPassword: String, newPassword: String, newPasswordConfirmation: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _passwordChangeResult.value = repository.changePassword(currentPassword, newPassword, newPasswordConfirmation)
             _isLoading.value = false
         }
     }

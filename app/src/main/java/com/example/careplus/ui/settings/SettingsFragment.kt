@@ -71,7 +71,7 @@ class SettingsFragment : Fragment() {
 
         binding.clickChangePassword.setOnClickListener {
             // Navigate to change password screen or show a dialog
-            // Example: findNavController().navigate(R.id.action_settings_to_change_password)
+            findNavController().navigate(R.id.action_settings_to_changePassword)
         }
 
         binding.clickLanguage.setOnClickListener {

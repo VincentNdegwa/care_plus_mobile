@@ -103,7 +103,28 @@
             app:destination="@id/profileFragment"
             />
 
+        <action
+            android:id="@+id/action_settings_to_changePassword"
+            app:destination="@id/changePasswordFragment"
+            />
+
     </fragment>
+
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="com.example.careplus.ui.auth.ChangePasswordFragment"
+        android:label="ChangePassword"
+        tools:layout="@layout/fragment_change_password"
+        >
+
+        <action
+            android:id="@+id/action_changePassword_to_login"
+            app:destination="@id/loginFragment"
+            />
+
+    </fragment>
+
+
 
     <action
         android:id="@+id/action_homeFragment_to_medicationDetailFragment"

@@ -3,6 +3,7 @@ package com.example.careplus.data.repository
 import com.example.careplus.data.api.ApiClient
 import com.example.careplus.data.model.*
 import com.example.careplus.data.SessionManager
+import com.google.gson.Gson
 import retrofit2.HttpException
 
 class AuthRepository(private val sessionManager: SessionManager) {
@@ -128,4 +129,33 @@ class AuthRepository(private val sessionManager: SessionManager) {
         return response
     }
 
-} 
+    suspend fun changePassword(currentPassword: String, newPassword: String, newPasswordConfirmation: String): Result<AuthResponse> {
+        return try {
+            val response = api.changePassword(
+                ChangePasswordRequest(
+                    current_password = currentPassword,
+                    new_password = newPassword,
+                    new_password_confirmation = newPasswordConfirmation
+                )
+            )
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorMessage = parseErrorMessage(response.errorBody()?.string())
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    private fun parseErrorMessage(errorBody: String?): String {
+        return try {
+            errorBody?.let {
+                val errorResponse = Gson().fromJson(it, ServerResponseError::class.java)
+                errorResponse.message
+            } ?: "Unknown error occurred"
+        } catch (e: Exception) {
+            e.message ?: "Unknown error occurred"
+        }
+    }
+}
