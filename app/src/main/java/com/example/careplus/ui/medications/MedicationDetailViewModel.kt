@@ -7,15 +7,19 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.careplus.data.SessionManager
 import com.example.careplus.data.model.*
+import com.example.careplus.data.model.report.MedicationProgressResponse
 import com.example.careplus.data.repository.MedicationRepository
+import com.example.careplus.data.repository.ReportRepository
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import android.util.Log
 
 class MedicationDetailViewModel(application: Application) : AndroidViewModel(application) {
     private val sessionManager = SessionManager(application)
     private val repository = MedicationRepository(sessionManager)
+    private val reportRepository = ReportRepository(sessionManager)
 
     private val _medication = MutableLiveData<Result<MedicationDetails>>()
     val medication: LiveData<Result<MedicationDetails>> = _medication
@@ -38,19 +42,48 @@ class MedicationDetailViewModel(application: Application) : AndroidViewModel(app
     private val _takeNowResult = MutableLiveData<Result<TakeNowResponse>>()
     val takeNowResult : LiveData<Result<TakeNowResponse>> = _takeNowResult
 
+    private val _medicationProgress = MutableLiveData<Result<MedicationProgressResponse>>()
+    val medicationProgress: LiveData<Result<MedicationProgressResponse>> = _medicationProgress
+
+    private lateinit var medicationDetails: MedicationDetails
+
     fun fetchMedicationDetails(medicationId: Long) {
         viewModelScope.launch {
             try {
-                val medicationDetails = repository.getMedicationById(medicationId.toInt())
-                _medication.value = Result.success(medicationDetails)
+                val result = repository.getMedicationById(medicationId.toInt())
+                _medication.value = result
+                result.onSuccess { medication ->
+                    medicationDetails = medication
+                    fetchMedicationProgress(medicationId.toInt())
+                }
             } catch (e: Exception) {
                 _medication.value = Result.failure(e)
             }
         }
     }
 
+    fun getMedicationProgress(medicationId: Int){
+        fetchMedicationProgress(medicationId)
+    }
+
     fun setMedicationDetails(details: MedicationDetails) {
+        medicationDetails = details
         _medication.value = Result.success(details)
+        fetchMedicationProgress(details.id.toInt())
+    }
+
+    private fun fetchMedicationProgress(medicationId: Int) {
+        viewModelScope.launch {
+            try {
+                Log.d("MedicationDetailViewModel", "Fetching progress for medication $medicationId")
+                val result = reportRepository.getMedicationProgress(medicationId)
+                Log.d("MedicationDetailViewModel", "Progress result: $result")
+                _medicationProgress.value = result
+            } catch (e: Exception) {
+                Log.e("MedicationDetailViewModel", "Error fetching progress", e)
+                _medicationProgress.value = Result.failure(e)
+            }
+        }
     }
 
     fun takeMedication(scheduleId: Int, takenAt: LocalDateTime? = null) {

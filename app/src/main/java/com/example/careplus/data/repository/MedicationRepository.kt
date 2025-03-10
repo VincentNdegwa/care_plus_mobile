@@ -61,12 +61,12 @@ class MedicationRepository(private val sessionManager: SessionManager) {
         }
     }
 
-    suspend fun getMedicationById(id: Int): MedicationDetails {
-        try {
+    suspend fun getMedicationById(id: Int): Result<MedicationDetails> {
+        return try {
             Log.d("MedicationRepository", "Getting medication details for id: $id")
             val response = ApiClient.medicationApi.getMedicationById(id)
             // Convert MedicationDetailResponse to MedicationDetails
-            return MedicationDetails(
+            val medicationDetails = MedicationDetails(
                 id = response.id,
                 patient = PatientInfo(
                     patient_id = response.patient.patient_id,
@@ -97,16 +97,18 @@ class MedicationRepository(private val sessionManager: SessionManager) {
                 diagnosis = response.diagnosis,
                 status = response.status
             )
+            Result.success(medicationDetails)
         } catch (e: HttpException) {
             Log.e("MedicationRepository", "HTTP Error: ${e.code()}", e)
-            when (e.code()) {
-                404 -> throw Exception("Medication not found")
-                401 -> throw Exception("Please login again")
-                else -> throw Exception("Network error: ${e.message()}")
+            val errorMessage = when (e.code()) {
+                404 -> "Medication not found"
+                401 -> "Please login again"
+                else -> "Network error: ${e.message()}"
             }
+            Result.failure(Exception(errorMessage))
         } catch (e: Exception) {
             Log.e("MedicationRepository", "Error fetching medication details", e)
-            throw Exception("Failed to load medication details: ${e.message}")
+            Result.failure(Exception("Failed to load medication details: ${e.message}"))
         }
     }
 

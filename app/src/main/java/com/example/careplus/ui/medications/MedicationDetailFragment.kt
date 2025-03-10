@@ -9,6 +9,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -19,16 +20,10 @@ import com.example.careplus.utils.SnackbarUtils
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import com.example.careplus.data.model.MedicationDetails
+import com.example.careplus.data.model.report.MedicationProgressResponse
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import lecho.lib.hellocharts.model.PieChartData
 import lecho.lib.hellocharts.model.SliceValue
-
-data class MedicationProgress(
-    val progress: Int = 0,
-    val totalSchedules: Int = 0,
-    val completedSchedules: Int = 0,
-    val takenSchedules: Int = 0
-)
 
 class MedicationDetailFragment : Fragment() {
     private var _binding: FragmentMedicationDetailBinding? = null
@@ -54,14 +49,8 @@ class MedicationDetailFragment : Fragment() {
         updatedMedicationDetails = medicationDetails
         displayMedicationDetails(updatedMedicationDetails)
         
-        // Dummy data for testing - replace with actual data
-        val progressData = MedicationProgress(
-            progress = 75,
-            totalSchedules = 100,
-            completedSchedules = 80,
-            takenSchedules = 85
-        )
-        displayProgressCharts(progressData)
+        // Display default charts initially
+        displayDefaultCharts()
         
         viewModel.setMedicationDetails(medicationDetails)
 
@@ -72,12 +61,77 @@ class MedicationDetailFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Fetch the updated medication details when the fragment is resumed
-        val medicationId = args.medicationDetails.id // Assuming you have the ID from the args
+        val medicationId = args.medicationDetails.id
         viewModel.fetchMedicationDetails(medicationId)
-        setupObservers()
-
     }
+
+    private fun displayDefaultCharts() {
+        // Using empty state for charts initially
+        val defaultData = MedicationProgressResponse(
+            progress = 0,
+            total_schedules = 1,
+            completed_schedules = 0,
+            taken_schedules = 0
+        )
+        displayProgressCharts(defaultData)
+        
+        // Show loading indicators
+        binding.apply {
+            progressLoadingIndicator.isVisible = true
+            adherenceLoadingIndicator.isVisible = true
+            adherenceChart.isVisible = false
+            stockUsageChart.isVisible = false
+        }
+    }
+
+    private fun displayProgressCharts(response: MedicationProgressResponse) {
+        Log.d("MedicationDetailFragment", "Displaying progress charts with data: $response")
+        
+        binding.apply {
+            // Hide loading indicators and show charts
+            progressLoadingIndicator.isVisible = false
+            adherenceLoadingIndicator.isVisible = false
+            adherenceChart.isVisible = true
+            stockUsageChart.isVisible = true
+
+            // Update progress labels
+            progressLabel.text = "Overall Progress"
+            adherenceLabel.text = "Medication Adherence"
+            
+            // Update schedule counts
+            progressDescription.text = "${response.completed_schedules} of ${response.total_schedules} schedules completed"
+            adherenceDescription.text = "${response.taken_schedules} of ${response.total_schedules} medications taken"
+        }
+
+        // Progress Chart - shows overall progress
+        displayPieChart(
+            chartView = binding.adherenceChart,
+            percentage = response.progress.toFloat(),
+            percentageTextView = binding.adherencePercentageText,
+            primaryColor = R.color.success,
+            secondaryColor = R.color.error,
+            label = "Progress"
+        )
+
+        // Adherence Chart - shows taken vs scheduled ratio
+        val adherencePercentage = if (response.total_schedules > 0) {
+            (response.taken_schedules.toFloat() / response.total_schedules.toFloat()) * 100
+        } else {
+            0f
+        }
+
+        displayPieChart(
+            chartView = binding.stockUsageChart,
+            percentage = adherencePercentage,
+            percentageTextView = binding.stockUsagePercentageText,
+            primaryColor = R.color.primary,
+            secondaryColor = R.color.warning,
+            label = "Adherence"
+        )
+
+        Log.d("MedicationDetailFragment", "Charts updated - Progress: ${response.progress}%, Adherence: $adherencePercentage%")
+    }
+
     private fun displayMedicationDetails(medication: MedicationDetails) {
         binding.apply {
             toolbar.setPageTitle(medication.medication_name ?: "Unknown Medication")
@@ -131,34 +185,6 @@ class MedicationDetailFragment : Fragment() {
         }
     }
 
-    private fun displayProgressCharts(data: MedicationProgress) {
-        // Progress Chart
-        displayPieChart(
-            chartView = binding.adherenceChart,
-            percentage = data.progress.toFloat(),
-            percentageTextView = binding.adherencePercentageText,
-            primaryColor = R.color.success,
-            secondaryColor = R.color.error,
-            label = "Progress"
-        )
-
-        // Adherence Chart (taken/total_schedules * 100)
-        val adherencePercentage = if (data.totalSchedules > 0) {
-            (data.takenSchedules.toFloat() / data.totalSchedules.toFloat()) * 100
-        } else {
-            0f
-        }
-        
-        displayPieChart(
-            chartView = binding.stockUsageChart,
-            percentage = adherencePercentage,
-            percentageTextView = binding.stockUsagePercentageText,
-            primaryColor = R.color.primary,
-            secondaryColor = R.color.warning,
-            label = "Adherence"
-        )
-    }
-
     private fun displayPieChart(
         chartView: lecho.lib.hellocharts.view.PieChartView,
         percentage: Float,
@@ -170,23 +196,44 @@ class MedicationDetailFragment : Fragment() {
         val safePercentage = percentage.coerceIn(0f, 100f)
         val remainingPercentage = 100f - safePercentage
 
+        // Update percentage text with label
+        percentageTextView.text = "${safePercentage.toInt()}%"
+
+        // Get theme-aware colors
+        val primaryThemeColor = resources.getColor(primaryColor)
+        val secondaryThemeColor = resources.getColor(secondaryColor)
+
         val values = mutableListOf<SliceValue>().apply {
-            add(SliceValue(safePercentage, resources.getColor(primaryColor)))
-            add(SliceValue(remainingPercentage, resources.getColor(secondaryColor)))
+            // Primary slice (progress)
+            add(SliceValue(safePercentage).apply {
+                color = primaryThemeColor
+                setLabel("") // No label needed
+            })
+            // Secondary slice (remaining)
+            add(SliceValue(remainingPercentage).apply {
+                color = secondaryThemeColor
+                setLabel("") // No label needed
+            })
         }
 
         val pieChartData = PieChartData(values).apply {
             setHasLabels(false)
             setHasCenterCircle(true)
-            centerCircleScale = 0.8f
+            centerCircleScale = 0.85f // Slightly larger center circle
 
+            // Use theme background color for center circle
             val typedValue = TypedValue()
             requireContext().theme.resolveAttribute(android.R.attr.colorBackgroundFloating, typedValue, true)
             centerCircleColor = typedValue.data
         }
 
-        chartView.pieChartData = pieChartData
-        percentageTextView.text = "${safePercentage.toInt()}% $label"
+        // Configure chart
+        chartView.apply {
+            this.pieChartData = pieChartData
+            isClickable = false
+            isValueSelectionEnabled = false
+            circleFillRatio = 0.9f // Slightly thicker chart
+        }
     }
 
     private fun setupToolbar() {
@@ -347,20 +394,40 @@ class MedicationDetailFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.medication.observe(viewLifecycleOwner) { result ->
-            result.onSuccess { medicationDetails ->
-                displayMedicationDetails(updatedMedicationDetails)
-                updatedMedicationDetails = medicationDetails
+            result.onSuccess { medication ->
+                updatedMedicationDetails = medication
+                displayMedicationDetails(medication)
             }.onFailure { exception ->
-                Log.e("MedicationDetailFragment", "Error fetching medication details", exception)
-                SnackbarUtils.showSnackbar(binding.root, "Failed to load medication details")
+                showSnackbar(exception.message ?: "Failed to fetch medication details")
+            }
+        }
+
+        viewModel.medicationProgress.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { response ->
+                Log.d("MedicationDetailFragment", "Updated chart data: ${response}")
+                displayProgressCharts(response)
+            }.onFailure { exception ->
+                showSnackbar(exception.message ?: "Failed to fetch progress data")
+                // Show empty state on error
+                displayProgressCharts(MedicationProgressResponse(
+                    progress = 0,
+                    total_schedules = 1,
+                    completed_schedules = 0,
+                    taken_schedules = 0
+                ))
             }
         }
 
         viewModel.takeMedicationResult.observe(viewLifecycleOwner) { result ->
-            result?.onSuccess {
-                showSnackbar("Medication marked as taken", false)
-            }?.onFailure { exception ->
-                showSnackbar(exception.message ?: "Failed to mark medication as taken")
+            result.onSuccess { response ->
+                if (response.error) {
+                    showSnackbar(response.message)
+                } else {
+                    showSnackbar("Medication taken successfully")
+                    viewModel.fetchMedicationDetails(args.medicationDetails.id)
+                }
+            }.onFailure { exception ->
+                showSnackbar(exception.message ?: "Failed to take medication")
             }
         }
         viewModel.deleteMedicationResult.observe(viewLifecycleOwner){ result->
@@ -394,7 +461,7 @@ class MedicationDetailFragment : Fragment() {
             }
         }
         viewModel.resumeMedicationResult.observe(viewLifecycleOwner) { result ->
-            result?.onSuccess { res ->
+            result.onSuccess { res ->
                 if (res.error) {
                     SnackbarUtils.showSnackbar(binding.root, res.message)
                 } else {
@@ -403,7 +470,7 @@ class MedicationDetailFragment : Fragment() {
                     displayMedicationDetails(updated)
                     SnackbarUtils.showSnackbar(binding.root, res.message, false)
                 }
-            }?.onFailure { exception ->
+            }.onFailure { exception ->
                 SnackbarUtils.showSnackbar(binding.root, exception.message.toString())
                 // Use regex to match "No medication tracker found" with case insensitivity
                 if (exception.message?.matches(Regex("(?i).*no\\s+medication\\s+tracker\\s+found.*")) == true) {

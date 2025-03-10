@@ -313,79 +313,117 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
+                        android:orientation="vertical">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Progress"
-                            android:textAppearance="?attr/textAppearanceHeadline6"
-                            android:textStyle="bold"
-                            android:layout_marginBottom="16dp"/>
-
+                        <!-- Progress Chart Section -->
                         <LinearLayout
+                            android:id="@+id/progressChartContainer"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:orientation="vertical"
+                            android:padding="16dp">
 
-                            <!-- Adherence Chart Container -->
-                            <LinearLayout
-                                android:layout_width="0dp"
+                            <TextView
+                                android:id="@+id/progressLabel"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:gravity="center">
+                                android:text="Overall Progress"
+                                android:textAppearance="?attr/textAppearanceHeadline6"
+                                android:layout_marginBottom="4dp"/>
 
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Progress"
-                                    android:textStyle="bold"
-                                    android:layout_marginBottom="8dp"/>
+                            <TextView
+                                android:id="@+id/progressDescription"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0 of 0 schedules completed"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textColor="?android:attr/textColorSecondary"
+                                android:layout_marginBottom="16dp"/>
+
+                            <FrameLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="180dp">
 
                                 <lecho.lib.hellocharts.view.PieChartView
                                     android:id="@+id/adherenceChart"
-                                    android:layout_width="120dp"
-                                    android:layout_height="120dp"/>
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="gone"/>
 
-                                <TextView
-                                    android:id="@+id/adherencePercentageText"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="8dp"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"/>
-                            </LinearLayout>
+                                <ProgressBar
+                                    android:id="@+id/progressLoadingIndicator"
+                                    android:layout_width="48dp"
+                                    android:layout_height="48dp"
+                                    android:layout_gravity="center"
+                                    android:visibility="visible"/>
 
-                            <!-- Stock Usage Chart Container -->
-                            <LinearLayout
-                                android:layout_width="0dp"
+                            </FrameLayout>
+
+                            <TextView
+                                android:id="@+id/adherencePercentageText"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:gravity="center">
+                                android:layout_gravity="center"
+                                android:textAppearance="?attr/textAppearanceHeadline5"
+                                android:layout_marginTop="8dp"/>
+                        </LinearLayout>
 
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Adherence"
-                                    android:textStyle="bold"
-                                    android:layout_marginBottom="8dp"/>
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="?android:attr/listDivider"/>
+
+                        <!-- Adherence Chart Section -->
+                        <LinearLayout
+                            android:id="@+id/adherenceChartContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/adherenceLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Medication Adherence"
+                                android:textAppearance="?attr/textAppearanceHeadline6"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:id="@+id/adherenceDescription"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0 of 0 medications taken"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textColor="?android:attr/textColorSecondary"
+                                android:layout_marginBottom="16dp"/>
+
+                            <FrameLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="180dp">
 
                                 <lecho.lib.hellocharts.view.PieChartView
                                     android:id="@+id/stockUsageChart"
-                                    android:layout_width="120dp"
-                                    android:layout_height="120dp"/>
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="gone"/>
 
-                                <TextView
-                                    android:id="@+id/stockUsagePercentageText"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="8dp"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"/>
-                            </LinearLayout>
+                                <ProgressBar
+                                    android:id="@+id/adherenceLoadingIndicator"
+                                    android:layout_width="48dp"
+                                    android:layout_height="48dp"
+                                    android:layout_gravity="center"
+                                    android:visibility="visible"/>
+
+                            </FrameLayout>
+
+                            <TextView
+                                android:id="@+id/stockUsagePercentageText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:textAppearance="?attr/textAppearanceHeadline5"
+                                android:layout_marginTop="8dp"/>
                         </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>

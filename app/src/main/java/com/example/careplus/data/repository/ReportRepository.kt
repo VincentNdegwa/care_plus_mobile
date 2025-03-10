@@ -9,11 +9,31 @@ import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
+import retrofit2.Response
 
 class ReportRepository(private val sessionManager: SessionManager) {
     
     init {
         ApiClient.create(sessionManager)
+    }
+
+    suspend fun getMedicationProgress(medicationId: Int): Result<MedicationProgressResponse> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = ApiClient.reportApi.getMedicationProgress(medicationId)
+                if (response.isSuccessful && response.body() != null) {
+                    Result.success(response.body()!!)
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+                    Result.failure(Exception(errorResponse?.message ?: "Failed to fetch medication progress"))
+                }
+            } catch (e: HttpException) {
+                handleHttpException(e, "medication progress")
+            } catch (e: Exception) {
+                handleException(e)
+            }
+        }
     }
 
     suspend fun getMedicationVsSideEffectCounts(request: MedicationVsSideEffectCountsRequest): Result<MedicationVsSideEffectCountsResponse> {
