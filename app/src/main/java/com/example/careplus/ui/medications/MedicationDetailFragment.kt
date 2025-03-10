@@ -2,6 +2,7 @@ package com.example.careplus.ui.medications
 
 import android.os.Bundle
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -19,6 +20,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import com.example.careplus.data.model.MedicationDetails
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import lecho.lib.hellocharts.model.PieChartData
+import lecho.lib.hellocharts.model.SliceValue
+
+data class MedicationProgress(
+    val progress: Int = 0,
+    val totalSchedules: Int = 0,
+    val completedSchedules: Int = 0,
+    val takenSchedules: Int = 0
+)
 
 class MedicationDetailFragment : Fragment() {
     private var _binding: FragmentMedicationDetailBinding? = null
@@ -40,10 +50,19 @@ class MedicationDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        
         val medicationDetails = args.medicationDetails
         updatedMedicationDetails = medicationDetails
         displayMedicationDetails(updatedMedicationDetails)
+        
+        // Dummy data for testing - replace with actual data
+        val progressData = MedicationProgress(
+            progress = 75,
+            totalSchedules = 100,
+            completedSchedules = 80,
+            takenSchedules = 85
+        )
+        displayProgressCharts(progressData)
+        
         viewModel.setMedicationDetails(medicationDetails)
 
         setupToolbar()
@@ -110,6 +129,64 @@ class MedicationDetailFragment : Fragment() {
                 findItem(R.id.action_restart_expired_schedule)?.isVisible = medication.status.equals("expired", ignoreCase = true)
             }
         }
+    }
+
+    private fun displayProgressCharts(data: MedicationProgress) {
+        // Progress Chart
+        displayPieChart(
+            chartView = binding.adherenceChart,
+            percentage = data.progress.toFloat(),
+            percentageTextView = binding.adherencePercentageText,
+            primaryColor = R.color.success,
+            secondaryColor = R.color.error,
+            label = "Progress"
+        )
+
+        // Adherence Chart (taken/total_schedules * 100)
+        val adherencePercentage = if (data.totalSchedules > 0) {
+            (data.takenSchedules.toFloat() / data.totalSchedules.toFloat()) * 100
+        } else {
+            0f
+        }
+        
+        displayPieChart(
+            chartView = binding.stockUsageChart,
+            percentage = adherencePercentage,
+            percentageTextView = binding.stockUsagePercentageText,
+            primaryColor = R.color.primary,
+            secondaryColor = R.color.warning,
+            label = "Adherence"
+        )
+    }
+
+    private fun displayPieChart(
+        chartView: lecho.lib.hellocharts.view.PieChartView,
+        percentage: Float,
+        percentageTextView: android.widget.TextView,
+        primaryColor: Int,
+        secondaryColor: Int,
+        label: String
+    ) {
+        val safePercentage = percentage.coerceIn(0f, 100f)
+        val remainingPercentage = 100f - safePercentage
+
+        val values = mutableListOf<SliceValue>().apply {
+            add(SliceValue(safePercentage, resources.getColor(primaryColor)))
+            add(SliceValue(remainingPercentage, resources.getColor(secondaryColor)))
+        }
+
+        val pieChartData = PieChartData(values).apply {
+            setHasLabels(false)
+            setHasCenterCircle(true)
+            centerCircleScale = 0.8f
+
+            val typedValue = TypedValue()
+            requireContext().theme.resolveAttribute(android.R.attr.colorBackgroundFloating, typedValue, true)
+            centerCircleColor = typedValue.data
+        }
+
+        chartView.pieChartData = pieChartData
+        percentageTextView.text = "${safePercentage.toInt()}% $label"
     }
 
     private fun setupToolbar() {
