@@ -75,12 +75,9 @@ class MedicationDetailViewModel(application: Application) : AndroidViewModel(app
     private fun fetchMedicationProgress(medicationId: Int) {
         viewModelScope.launch {
             try {
-                Log.d("MedicationDetailViewModel", "Fetching progress for medication $medicationId")
                 val result = reportRepository.getMedicationProgress(medicationId)
-                Log.d("MedicationDetailViewModel", "Progress result: $result")
                 _medicationProgress.value = result
             } catch (e: Exception) {
-                Log.e("MedicationDetailViewModel", "Error fetching progress", e)
                 _medicationProgress.value = Result.failure(e)
             }
         }

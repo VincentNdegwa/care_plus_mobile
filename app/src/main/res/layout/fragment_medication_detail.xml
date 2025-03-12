@@ -55,11 +55,10 @@
                             android:layout_marginBottom="12dp">
 
                             <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_medication"
-                                android:tint="@color/primary"
-                                android:layout_gravity="center_vertical"/>
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:src="@drawable/ic_medication" />
 
                             <LinearLayout
                                 android:layout_width="match_parent"

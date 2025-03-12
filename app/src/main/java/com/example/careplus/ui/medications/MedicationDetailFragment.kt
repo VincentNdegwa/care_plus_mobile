@@ -85,8 +85,7 @@ class MedicationDetailFragment : Fragment() {
     }
 
     private fun displayProgressCharts(response: MedicationProgressResponse) {
-        Log.d("MedicationDetailFragment", "Displaying progress charts with data: $response")
-        
+
         binding.apply {
             // Hide loading indicators and show charts
             progressLoadingIndicator.isVisible = false
@@ -100,7 +99,7 @@ class MedicationDetailFragment : Fragment() {
             
             // Update schedule counts
             progressDescription.text = "${response.completed_schedules} of ${response.total_schedules} schedules completed"
-            adherenceDescription.text = "${response.taken_schedules} of ${response.total_schedules} medications taken"
+            adherenceDescription.text = "${response.taken_schedules} of ${response.completed_schedules} medications taken"
         }
 
         // Progress Chart - shows overall progress
@@ -114,8 +113,8 @@ class MedicationDetailFragment : Fragment() {
         )
 
         // Adherence Chart - shows taken vs scheduled ratio
-        val adherencePercentage = if (response.total_schedules > 0) {
-            (response.taken_schedules.toFloat() / response.total_schedules.toFloat()) * 100
+        val adherencePercentage = if (response.completed_schedules > 0) {
+            (response.taken_schedules.toFloat() / response.completed_schedules.toFloat()) * 100
         } else {
             0f
         }
@@ -129,7 +128,6 @@ class MedicationDetailFragment : Fragment() {
             label = "Adherence"
         )
 
-        Log.d("MedicationDetailFragment", "Charts updated - Progress: ${response.progress}%, Adherence: $adherencePercentage%")
     }
 
     private fun displayMedicationDetails(medication: MedicationDetails) {
@@ -404,11 +402,9 @@ class MedicationDetailFragment : Fragment() {
 
         viewModel.medicationProgress.observe(viewLifecycleOwner) { result ->
             result.onSuccess { response ->
-                Log.d("MedicationDetailFragment", "Updated chart data: ${response}")
                 displayProgressCharts(response)
             }.onFailure { exception ->
                 showSnackbar(exception.message ?: "Failed to fetch progress data")
-                // Show empty state on error
                 displayProgressCharts(MedicationProgressResponse(
                     progress = 0,
                     total_schedules = 1,
