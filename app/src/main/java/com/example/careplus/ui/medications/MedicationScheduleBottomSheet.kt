@@ -1,14 +1,12 @@
 package com.example.careplus.ui.medications
 
-import android.content.Context
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -33,11 +31,11 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 // Data class for the schedule request
-data class CreateScheduleRequest_1(
-    val medication_id: Int,
-    val schedules: List<String>,
-    val start_datetime: String
-)
+//data class CreateScheduleRequest_1(
+//    val medication_id: Int,
+//    val schedules: List<String>,
+//    val start_datetime: String
+//)
 
 class MedicationScheduleBottomSheet : BottomSheetDialogFragment() {
 
@@ -172,7 +170,7 @@ class MedicationScheduleBottomSheet : BottomSheetDialogFragment() {
         }
 
         viewModel.scheduleCreated.observe(lifecycleOwner) { result ->
-            result.onSuccess { res ->
+            result.onSuccess { _ ->
                 if (isNearNowSchedule) {
                     showTakeMedicationNowDialog()
                 } else {
@@ -305,6 +303,7 @@ class MedicationScheduleBottomSheet : BottomSheetDialogFragment() {
         )
     }
 
+    @SuppressLint("DefaultLocale")
     private fun showTimeSlotPicker() {
         MaterialTimePicker.Builder()
             .setTimeFormat(TimeFormat.CLOCK_24H)
@@ -386,7 +385,7 @@ class MedicationScheduleBottomSheet : BottomSheetDialogFragment() {
         if (request.schedules.size != expectedSlots) {
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Invalid Schedule")
-                .setMessage("Please add ${expectedSlots} time slot${if (expectedSlots > 1) "s" else ""} for ${medicationDetails.frequency?.lowercase()}")
+                .setMessage("Please add $expectedSlots time slot${if (expectedSlots > 1) "s" else ""} for ${medicationDetails.frequency?.lowercase()}")
                 .setPositiveButton("OK", null)
                 .show()
             return false
@@ -490,7 +489,7 @@ class MedicationScheduleBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun showLoading(isLoading: Boolean) {
-        binding.loadingOverlay?.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
         binding.startButton.isEnabled = !isLoading
         binding.cancelButton.isEnabled = !isLoading
     }
