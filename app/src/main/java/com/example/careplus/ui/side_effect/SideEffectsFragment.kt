@@ -53,6 +53,7 @@ class SideEffectsFragment : Fragment(), SideEffectFilterBottomSheetFragment.Filt
         setupFilterButton()
     }
 
+
     private fun setupRecyclerView() {
         adapter = SideEffectAdapter(
             onItemClick = { sideEffect ->

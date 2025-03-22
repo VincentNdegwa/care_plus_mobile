@@ -66,7 +66,6 @@ class MedicationDetailFragment : Fragment() {
         setupToolbar()
         updateMenuItems()
         setupObservers()
-        binding.sideEffectsRecyclerView.adapter = sideEffectsAdapter
     }
 
     override fun onResume() {
@@ -514,17 +513,17 @@ class MedicationDetailFragment : Fragment() {
         sideEffectsAdapter = SideEffectAdapter(
             onItemClick = { sideEffect ->
                 findNavController().navigate(
-                    SideEffectsFragmentDirections.actionSideEffectsToDetails(sideEffect)
+                    MedicationDetailFragmentDirections.actionSideEffectsToDetails(sideEffect)
                 )
             },
             onEditClick = { sideEffect ->
                 findNavController().navigate(
-                    SideEffectsFragmentDirections.actionSideEffectsToEdit(sideEffect)
+                    MedicationDetailFragmentDirections.actionSideEffectsToEdit(sideEffect)
                 )
             },
             onDeleteClick = { sideEffect ->
 //                showDeleteConfirmationDialog(sideEffect)
-            }
+            }, hideDelete = true
         )
         sideEffectsAdapter.submitList(data)
 

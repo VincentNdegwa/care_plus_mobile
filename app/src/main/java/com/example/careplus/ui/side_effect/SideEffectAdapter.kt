@@ -18,7 +18,8 @@ import java.time.format.DateTimeFormatter
 class SideEffectAdapter(
     private val onItemClick: (SideEffect) -> Unit,
     private val onEditClick: (SideEffect) -> Unit,
-    private val onDeleteClick: (SideEffect) -> Unit
+    private val onDeleteClick: (SideEffect) -> Unit,
+    val hideDelete:Boolean = false
 ) : ListAdapter<SideEffect, SideEffectAdapter.ViewHolder>(SideEffectDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -98,6 +99,7 @@ class SideEffectAdapter(
         private fun showPopupMenu(view: View, sideEffect: SideEffect) {
             PopupMenu(view.context, view).apply {
                 inflate(R.menu.side_effect_item_menu)
+                menu.findItem(R.id.action_delete)?.isVisible = !hideDelete
                 setOnMenuItemClickListener { item ->
                     when (item.itemId) {
                         R.id.action_view -> {
