@@ -64,6 +64,7 @@ class MedicationScheduleViewModel(application: Application) : AndroidViewModel(a
                         _scheduleCreated.value = Result.failure(Exception(res.message))
                     } else {
                         _scheduleCreated.value = Result.success(res)
+
                     }
                 }.onFailure { exception ->
                     Log.e("MedicationScheduleViewModel", "Failed to create schedule", exception)

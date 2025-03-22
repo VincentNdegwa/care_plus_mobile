@@ -125,7 +125,6 @@ class MedicationScheduleBottomSheet : BottomSheetDialogFragment() {
 
         binding.dateButton.setOnClickListener { showDatePicker() }
         binding.timeButton.setOnClickListener { showTimePicker() }
-
         binding.scheduleModeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.defaultScheduleRadio -> {
@@ -466,6 +465,7 @@ class MedicationScheduleBottomSheet : BottomSheetDialogFragment() {
         Log.d("MedicationScheduleBottomSheet", "Creating schedule with request: $request")
 
         viewModel.createSchedule(request)
+        dismiss()
     }
 
     private fun isTimeNearNow(dateTime: LocalDateTime): Boolean {
