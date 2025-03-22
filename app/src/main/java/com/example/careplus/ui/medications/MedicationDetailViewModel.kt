@@ -15,11 +15,18 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import android.util.Log
+import androidx.fragment.app.viewModels
+import com.example.careplus.data.model.side_effect.FetchSideEffectsRequest
+import com.example.careplus.data.model.side_effect.FetchSideEffectsResponse
+import com.example.careplus.data.repository.SideEffectRepository
+import com.example.careplus.ui.side_effect.SideEffectViewModel
 
 class MedicationDetailViewModel(application: Application) : AndroidViewModel(application) {
     private val sessionManager = SessionManager(application)
     private val repository = MedicationRepository(sessionManager)
     private val reportRepository = ReportRepository(sessionManager)
+    private val sideEffectsRepository = SideEffectRepository(sessionManager)
+
 
     private val _medication = MutableLiveData<Result<MedicationDetails>>()
     val medication: LiveData<Result<MedicationDetails>> = _medication
@@ -44,6 +51,9 @@ class MedicationDetailViewModel(application: Application) : AndroidViewModel(app
 
     private val _medicationProgress = MutableLiveData<Result<MedicationProgressResponse>>()
     val medicationProgress: LiveData<Result<MedicationProgressResponse>> = _medicationProgress
+
+    private val _sideEffects = MutableLiveData<Result<FetchSideEffectsResponse>>()
+    val sideEffects: LiveData<Result<FetchSideEffectsResponse>> = _sideEffects
 
     private lateinit var medicationDetails: MedicationDetails
 
@@ -116,6 +126,42 @@ class MedicationDetailViewModel(application: Application) : AndroidViewModel(app
         }
     }
 
+    fun getMedicationSideEffects(){
+        viewModelScope.launch {
+            try {
+                val patient_id = getPatientId()
+                if (patient_id!= null){
+                    val request = FetchSideEffectsRequest(patient_id = patient_id, medication_id = medicationDetails.id.toInt())
+                    val result = sideEffectsRepository.fetchSideEffects(request)
+
+                    result.onSuccess { response->
+                        val currentList = _sideEffects.value?.getOrNull()
+                        if (currentList != null) {
+                            val combinedResponse = FetchSideEffectsResponse(
+                                data = currentList.data + response.data,
+                                error= response.error,
+                                pagination = PaginationData(
+                                    current_page = response.pagination.current_page,
+                                    last_page = response.pagination.last_page,
+                                    per_page = response.pagination.per_page,
+                                    total_items = response.pagination.total_items,
+                                    total_pages = response.pagination.total_pages
+                                ),
+                            )
+                            _sideEffects.value = Result.success(combinedResponse)
+                        } else {
+                            _sideEffects.value = Result.success(response)
+                        }
+                    }.onFailure {
+                        _sideEffects.value = Result.failure(it)
+                    }
+                }
+            }catch (e: Exception){
+                _sideEffects.value = Result.failure(e)
+            }
+        }
+    }
+
     fun resumeMedication(medicationId: Int, extendDays: Boolean = false) {
         viewModelScope.launch {
             try {
@@ -166,6 +212,8 @@ class MedicationDetailViewModel(application: Application) : AndroidViewModel(app
             }
         }
     }
+    fun getPatientId(): Int? = sessionManager.getUser()?.patient?.id
+
 
     // Helper function to clear results after handling them
 //    fun clearTakeMedicationResult() {
