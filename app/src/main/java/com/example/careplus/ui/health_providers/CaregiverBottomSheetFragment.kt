@@ -24,6 +24,8 @@ import com.google.android.material.snackbar.Snackbar
 import androidx.core.content.ContextCompat
 import com.example.careplus.MainActivity
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.example.careplus.utils.BottomSheetUtils
@@ -95,6 +97,12 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
         menu.findItem(R.id.action_set_as_caregiver).isVisible = !myHealthProvider
         menu.findItem(R.id.action_set_as_doctor).isVisible = !myHealthProvider
 
+        //in the meantime hide this
+        menu.findItem(R.id.action_send_report).isVisible = false
+
+        //hide call option if the health provider has not set phone number
+        menu.findItem(R.id.action_call).isVisible = !caregiverData.profile.phone_number.isNullOrEmpty()
+
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.action_set_as_doctor -> {
@@ -113,11 +121,10 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
                     handleRemoveCaregiver()
                     true
                 }
-//                R.id.action_call -> {
-//                    // Handle call action
-//                    Toast.makeText(context, "Call action clicked", Toast.LENGTH_SHORT).show()
-//                    true
-//                }
+                R.id.action_call -> {
+                    handleCall()
+                    true
+                }
 //                R.id.action_send_report -> {
 //                    // Handle send report action
 //                    Toast.makeText(context, "Send report clicked", Toast.LENGTH_SHORT).show()
@@ -222,6 +229,22 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
                 showSnackbar(e.message ?: "An error occurred")
             }
             dismiss()
+        }
+    }
+    private fun handleCall() {
+        val phone = caregiverData.profile.phone_number
+        if (!phone.isNullOrEmpty()) {
+            val intent = Intent(Intent.ACTION_DIAL).apply {
+                data = Uri.parse("tel:$phone")
+            }
+            try {
+                val chooser = Intent.createChooser(intent, "Select Dialer") // Show dialer options
+                startActivity(chooser)
+            } catch (e: Exception) {
+                Toast.makeText(context, "Failed to open dialer", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, "Phone number is not available", Toast.LENGTH_SHORT).show()
         }
     }
 
