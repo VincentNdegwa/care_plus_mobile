@@ -14,13 +14,21 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.example.careplus.R
 import com.example.careplus.databinding.FragmentMedicationDetailBinding
+import com.example.careplus.databinding.ItemSideEffectBinding
 import com.example.careplus.utils.SnackbarUtils
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import com.example.careplus.data.model.MedicationDetails
 import com.example.careplus.data.model.report.MedicationProgressResponse
+import com.example.careplus.data.model.side_effect.FetchSideEffectsResponse
+import com.example.careplus.data.model.side_effect.SideEffect
+import com.example.careplus.ui.side_effect.SideEffectAdapter
+import com.example.careplus.ui.side_effect.SideEffectsFragmentDirections
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import lecho.lib.hellocharts.model.PieChartData
 import lecho.lib.hellocharts.model.SliceValue
@@ -32,6 +40,7 @@ class MedicationDetailFragment : Fragment() {
     private val args: MedicationDetailFragmentArgs by navArgs()
     private lateinit var updatedMedicationDetails: MedicationDetails
     private var isFabExpanded = false
+    private lateinit var sideEffectsAdapter: SideEffectAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,6 +66,7 @@ class MedicationDetailFragment : Fragment() {
         setupToolbar()
         updateMenuItems()
         setupObservers()
+        binding.sideEffectsRecyclerView.adapter = sideEffectsAdapter
     }
 
     override fun onResume() {
@@ -488,7 +498,43 @@ class MedicationDetailFragment : Fragment() {
             }
         }
 
+        viewModel.sideEffects.observe(viewLifecycleOwner){
+            results->
+            results.onSuccess { res->
+                showSideEffectsInUi(res)
+            }
+        }
+
     }
+
+    private fun showSideEffectsInUi(res: FetchSideEffectsResponse) {
+        val data:List<SideEffect> = res.data
+        binding.sideEffectsCard.visibility = if (data.isEmpty()) View.GONE else View.VISIBLE
+
+        sideEffectsAdapter = SideEffectAdapter(
+            onItemClick = { sideEffect ->
+                findNavController().navigate(
+                    SideEffectsFragmentDirections.actionSideEffectsToDetails(sideEffect)
+                )
+            },
+            onEditClick = { sideEffect ->
+                findNavController().navigate(
+                    SideEffectsFragmentDirections.actionSideEffectsToEdit(sideEffect)
+                )
+            },
+            onDeleteClick = { sideEffect ->
+//                showDeleteConfirmationDialog(sideEffect)
+            }
+        )
+        sideEffectsAdapter.submitList(data)
+
+        binding.sideEffectsRecyclerView.apply {
+            adapter = sideEffectsAdapter
+            layoutManager = LinearLayoutManager(context)
+
+        }
+    }
+
     private fun showSchedule(){
         MedicationScheduleDialog(
             context = requireContext(),
@@ -530,4 +576,4 @@ class MedicationDetailFragment : Fragment() {
         }
     }
 
-} 
+}

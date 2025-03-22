@@ -80,6 +80,7 @@ class MedicationDetailViewModel(application: Application) : AndroidViewModel(app
         medicationDetails = details
         _medication.value = Result.success(details)
         fetchMedicationProgress(details.id.toInt())
+        getMedicationSideEffects()
     }
 
     private fun fetchMedicationProgress(medicationId: Int) {
