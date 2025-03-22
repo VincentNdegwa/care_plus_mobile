@@ -9,7 +9,7 @@ import com.example.careplus.data.model.CaregiverData
 import com.example.careplus.databinding.ItemCaregiverBinding
 
 class HealthProvidersAdapter(
-    private val onProviderClick: (CaregiverData) -> Unit // Callback to handle item clicks
+    private val onProviderClick: (CaregiverData) -> Unit, // Callback to handle item clicks
 ) : ListAdapter<CaregiverData, HealthProvidersAdapter.CaregiverViewHolder>(CaregiverDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CaregiverViewHolder {

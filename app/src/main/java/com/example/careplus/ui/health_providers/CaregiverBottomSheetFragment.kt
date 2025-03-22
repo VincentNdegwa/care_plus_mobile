@@ -37,6 +37,7 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
     private var _binding: FragmentCaregiverBottomSheetBinding? = null
     private val binding get() = _binding!!
     private var actionListener: CaregiverActionListener? = null
+    private var myHealthProvider:Boolean = false
 
     private lateinit var caregiverData: CaregiverData
     private lateinit var repository: CaregiverRepository
@@ -91,6 +92,8 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
                 menu.findItem(R.id.action_remove_as_doctor)?.isVisible = false
             }
         }
+        menu.findItem(R.id.action_set_as_caregiver).isVisible = !myHealthProvider
+        menu.findItem(R.id.action_set_as_doctor).isVisible = !myHealthProvider
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -282,8 +285,9 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
     companion object {
         private const val ARG_CAREGIVER = "arg_caregiver"
 
-        fun newInstance(caregiver: CaregiverData): CaregiverBottomSheetFragment {
+        fun newInstance(caregiver: CaregiverData, myHealthProvider:Boolean = false): CaregiverBottomSheetFragment {
             val fragment = CaregiverBottomSheetFragment()
+            fragment.myHealthProvider = myHealthProvider
             val args = Bundle().apply {
                 putParcelable(ARG_CAREGIVER, caregiver)
             }

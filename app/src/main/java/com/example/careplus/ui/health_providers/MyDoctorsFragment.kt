@@ -80,7 +80,7 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheet
     private fun setupRecyclerView() {
         healthProvidersAdapter = HealthProvidersAdapter { caregiver ->
             Log.d("MyDoctorsFragment", "Opening bottom sheet for caregiver: ${caregiver.id}")
-            val bottomSheet = CaregiverBottomSheetFragment.newInstance(caregiver)
+            val bottomSheet = CaregiverBottomSheetFragment.newInstance(caregiver, myHealthProvider = true)
             bottomSheet.show(childFragmentManager, bottomSheet.tag)
         }
         binding.recyclerView.apply {
