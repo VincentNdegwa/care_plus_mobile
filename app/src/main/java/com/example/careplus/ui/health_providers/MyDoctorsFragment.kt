@@ -14,12 +14,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.careplus.databinding.FragmentMyDoctorsBinding
 import com.example.careplus.utils.SnackbarUtils
 import android.widget.ProgressBar
-import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import com.example.careplus.data.filter_model.FilterCareProviders
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 
 class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheetFragment.FilterListener {
     private var _binding: FragmentMyDoctorsBinding? = null
@@ -139,7 +136,7 @@ class MyDoctorsFragment : Fragment(), CaregiverActionListener, FilterBottomSheet
     }
     private fun updateFilterIndicator() {
         binding.searchFilterLayout.filterIndicator.visibility =
-            if (currentFilter != null) View.VISIBLE else View.GONE
+            if (currentFilter != null) VISIBLE else GONE
     }
 
     override fun onDoctorRemoved(roleId: Int) {
