@@ -286,23 +286,7 @@ class MedicationDetailFragment : Fragment() {
     }
 
     private fun showRestartDialog() {
-        MedicationScheduleDialog(
-            context = requireContext(),
-            medicationDetails = updatedMedicationDetails,
-            viewModel = MedicationScheduleViewModel(requireActivity().application),
-            lifecycleOwner = viewLifecycleOwner,
-            onError = { message ->
-                showSnackbar(message)
-            },
-            onScheduleCreated = { shouldTakeNow ->
-                if (shouldTakeNow) {
-                    viewModel.takeNow(updatedMedicationDetails.id.toInt())
-                } else {
-                    showSnackbar("Schedule created successfully", false)
-                }
-                true
-            }
-        ).show()
+        showSchedule()
     }
 
 
@@ -535,13 +519,30 @@ class MedicationDetailFragment : Fragment() {
     }
 
     private fun showSchedule(){
-        MedicationScheduleDialog(
-            context = requireContext(),
+//        MedicationScheduleDialog(
+//            context = requireContext(),
+//            medicationDetails = updatedMedicationDetails,
+//            viewModel = MedicationScheduleViewModel(requireActivity().application),
+//            lifecycleOwner = viewLifecycleOwner,
+//            onError = { message ->
+//                showSnackbar(message)
+//            },
+//            onScheduleCreated = { shouldTakeNow ->
+//                if (shouldTakeNow) {
+//                    viewModel.takeNow(updatedMedicationDetails.id.toInt())
+//                } else {
+//                    showSnackbar("Schedule created successfully", false)
+//                }
+//                true
+//            }
+//        ).show()
+
+        MedicationScheduleBottomSheet.newInstance(
             medicationDetails = updatedMedicationDetails,
             viewModel = MedicationScheduleViewModel(requireActivity().application),
             lifecycleOwner = viewLifecycleOwner,
-            onError = { errorMessage ->
-                SnackbarUtils.showSnackbar(binding.root, errorMessage)
+            onError = { message ->
+                showSnackbar(message)
             },
             onScheduleCreated = { shouldTakeNow ->
                 if (shouldTakeNow) {
@@ -550,8 +551,9 @@ class MedicationDetailFragment : Fragment() {
                     showSnackbar("Schedule created successfully", false)
                 }
                 true
-            }
-        ).show()
+            },
+            fragment = parentFragmentManager
+        ).show(parentFragmentManager, this.tag)
     }
 
     override fun onDestroyView() {
