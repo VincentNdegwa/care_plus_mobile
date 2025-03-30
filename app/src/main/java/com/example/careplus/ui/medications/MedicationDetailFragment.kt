@@ -280,6 +280,11 @@ class MedicationDetailFragment : Fragment() {
                     showRestartDialog()
                     true
                 }
+                R.id.action_start_medication->{
+                    showRestartDialog()
+                    true
+
+                }
                 else -> false
             }
         }
@@ -312,6 +317,8 @@ class MedicationDetailFragment : Fragment() {
                 menu.findItem(R.id.action_restart_expired_schedule).isVisible = true
             }else if(status == "Stopped"){
                 menu.findItem(R.id.action_resume_medication)?.isVisible = true
+            }else if(status == "Not Started"){
+                menu.findItem(R.id.action_start_medication)?.isVisible = true
             }
         }
     }

@@ -269,16 +269,16 @@ class CaregiverBottomSheetFragment : BottomSheetDialogFragment() {
         binding.caregiverEmail.text = caregiverData.email
         binding.caregiverRole.text = caregiverData.role
 
-        binding.caregiverAddress.text = caregiverData.profile.address ?: "---"
-        binding.caregiverPhone.text = caregiverData.profile.phone_number ?: "---"
-        binding.caregiverSpecialization.text = caregiverData.user_role.specialization ?: "---"
+        binding.caregiverAddress.text = caregiverData?.profile?.address ?: "---"
+        binding.caregiverPhone.text = caregiverData?.profile?.phone_number ?: "---"
+        binding.caregiverSpecialization.text = caregiverData?.user_role?.specialization ?: "---"
 
         // Load agency and clinic details
-        binding.agencyName.text = caregiverData.user_role.agency_name ?: "---"
-        binding.clinicName.text = caregiverData.user_role.clinic_name ?: "---"
+        binding.agencyName.text = caregiverData?.user_role?.agency_name ?: "---"
+        binding.clinicName.text = caregiverData?.user_role?.clinic_name ?: "---"
 
         // Load profile image (if available)
-        if (!caregiverData.profile.avatar.isNullOrEmpty()) {
+        if (!caregiverData?.profile?.avatar.isNullOrEmpty()) {
             Glide.with(binding.root.context)
                 .load(caregiverData.profile.avatar)
                 .placeholder(R.drawable.caregiver)

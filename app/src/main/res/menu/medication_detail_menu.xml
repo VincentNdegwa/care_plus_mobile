@@ -8,6 +8,12 @@
         android:icon="@drawable/ic_medication"
         app:showAsAction="ifRoom"
         android:visible="false"/>
+    <item
+        android:id="@+id/action_start_medication"
+        android:title="Start Schedule"
+        android:icon="@drawable/ic_play"
+        app:showAsAction="ifRoom"
+        android:visible="false"/>
 
     <item
         android:id="@+id/action_snooze_medication"
