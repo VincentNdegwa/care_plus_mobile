@@ -80,6 +80,9 @@ class FCMService : FirebaseMessagingService() {
                 "medication_reminder" -> {
                     handleMedicationReminder(notification, payload)
                 }
+                "new_prescription_added"->{
+                    handleNewMedication(notification,payload)
+                }
                 else -> {
                     Log.d(TAG, "Unknown notification type: $type")
                 }
@@ -105,6 +108,11 @@ class FCMService : FirebaseMessagingService() {
         medicationJson = payload.toString()
         NotificationHelper.showMedicationNotification(applicationContext, medicationJson)
         scheduleAlarmWork()
+    }
+
+    private fun handleNewMedication( notification: FCMNotification,payload: JsonObject){
+        NotificationHelper.showNewMedicationNotification(applicationContext,
+            payload.toString(), notification)
     }
 
     private fun scheduleAlarmWork() {

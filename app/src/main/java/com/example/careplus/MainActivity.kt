@@ -106,9 +106,9 @@ class MainActivity : AppCompatActivity() {
         // Setup Navigation Drawer
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.menu_notifications -> {
-                    // Handle notifications
-                }
+//                R.id.menu_notifications -> {
+//                    // Handle notifications
+//                }
                 R.id.menu_reports -> {
                     // Navigate to ReportFragment
                     findNavController(R.id.nav_host_fragment).navigate(R.id.reportFragment)

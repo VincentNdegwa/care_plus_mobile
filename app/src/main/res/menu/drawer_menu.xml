@@ -34,10 +34,10 @@
     <item android:title="Other">
         <menu>
 
-            <item
-                android:id="@+id/menu_notifications"
-                android:icon="@drawable/ic_notifications"
-                android:title="Notifications"/>
+<!--            <item-->
+<!--                android:id="@+id/menu_notifications"-->
+<!--                android:icon="@drawable/ic_notifications"-->
+<!--                android:title="Notifications"/>-->
             <item
                 android:id="@+id/menu_settings"
                 android:icon="@drawable/ic_settings"
