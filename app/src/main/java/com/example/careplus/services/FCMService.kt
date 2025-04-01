@@ -1,5 +1,6 @@
 package com.example.careplus.services
 
+import android.annotation.SuppressLint
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -19,6 +20,8 @@ import androidx.work.OutOfQuotaPolicy
 import com.example.careplus.workers.AlarmWorker
 import com.google.gson.JsonParser
 import com.google.gson.JsonObject
+import android.provider.Settings
+import com.example.careplus.data.model.notification.TokenRegisterRequest
 
 data class FCMNotification(
     val title: String,
@@ -27,6 +30,7 @@ data class FCMNotification(
     val receiver: String,
     val room_name: String?
 )
+
 
 class FCMService : FirebaseMessagingService() {
     private lateinit var sessionManager: SessionManager
@@ -152,12 +156,13 @@ class FCMService : FirebaseMessagingService() {
         }
     }
 
+    @SuppressLint("HardwareIds")
     override fun onNewToken(token: String) {
-        viewModel.registerToken(token)
+        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+        viewModel.registerToken(TokenRegisterRequest(token = token, device_type = deviceId))
     }
 
     companion object {
         private const val TAG = "FCMService"
     }
 }
-

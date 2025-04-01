@@ -19,6 +19,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.content.Intent
+import android.provider.Settings
 import android.util.Log
 import androidx.navigation.findNavController
 import com.example.careplus.utils.FCMManager
@@ -30,6 +31,7 @@ import com.example.careplus.services.AlarmService
 import com.google.android.material.imageview.ShapeableImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import com.example.careplus.data.model.notification.TokenRegisterRequest
 import com.example.careplus.ui.profile.ProfileViewModel
 import com.google.android.material.chip.Chip
 import com.example.careplus.ui.report.ReportFragment
@@ -248,9 +250,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun registerFCMToken() {
+
+        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+
         FCMManager.getCurrentToken { token ->
             token?.let {
-                notificationViewModel.registerToken(it)
+                notificationViewModel.registerToken(TokenRegisterRequest(token,deviceId))
             }
         }
     }

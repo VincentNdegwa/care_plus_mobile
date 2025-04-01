@@ -10,10 +10,9 @@ class NotificationRepository(private val sessionManager: SessionManager) {
         ApiClient.create(sessionManager)
     }
 
-    suspend fun registerToken(token: String): Result<DeviceTokenResponse> {
+    suspend fun registerToken(token: TokenRegisterRequest): Result<DeviceTokenResponse> {
         return try {
-            val request = TokenRegisterRequest(token)
-            val response = ApiClient.notificationApi.registerToken(request)
+            val response = ApiClient.notificationApi.registerToken(token)
             Result.success(response)
         } catch (e: Exception) {
             Result.failure(e)
